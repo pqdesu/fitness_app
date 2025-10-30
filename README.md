@@ -17,10 +17,10 @@ Fitness Tracking App is a personal workout tracker built with Ruby on Rails. Use
 
 ## Tech Stack
 
-- **Backend:** Ruby on Rails  
+- **Backend:** Ruby on Rails 
 - **Database:** SQLite / PostgreSQL / MySQL  
-- **Frontend:** Rails Views / Hotwire / Optional React or Vue  
-- **Authentication:** Devise or other session-based authentication  
+- **Frontend:** Rails Views / Hotwire / Vue.js  
+- **Authentication:** Devise
 
 ---
 
