@@ -10,9 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_30_120750) do
+ActiveRecord::Schema[7.1].define(version: 2025_10_30_155939) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "exercises", force: :cascade do |t|
+    t.string "name"
+    t.string "muscle_group"
+    t.string "equipment"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "splits", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_splits_on_user_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -26,4 +42,54 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_30_120750) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "workout_days", force: :cascade do |t|
+    t.bigint "split_id", null: false
+    t.string "day"
+    t.integer "order_index"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["split_id"], name: "index_workout_days_on_split_id"
+  end
+
+  create_table "workout_exercises", force: :cascade do |t|
+    t.bigint "workout_day_id", null: false
+    t.bigint "exercise_id", null: false
+    t.integer "sets"
+    t.integer "reps"
+    t.decimal "target_weight"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["exercise_id"], name: "index_workout_exercises_on_exercise_id"
+    t.index ["workout_day_id"], name: "index_workout_exercises_on_workout_day_id"
+  end
+
+  create_table "workout_log_exercises", force: :cascade do |t|
+    t.bigint "workout_log_id", null: false
+    t.bigint "workout_exercise_id", null: false
+    t.integer "sets_completed"
+    t.integer "reps_completed"
+    t.decimal "weight_used"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workout_exercise_id"], name: "index_workout_log_exercises_on_workout_exercise_id"
+    t.index ["workout_log_id"], name: "index_workout_log_exercises_on_workout_log_id"
+  end
+
+  create_table "workout_logs", force: :cascade do |t|
+    t.bigint "workout_day_id", null: false
+    t.date "date"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workout_day_id"], name: "index_workout_logs_on_workout_day_id"
+  end
+
+  add_foreign_key "splits", "users"
+  add_foreign_key "workout_days", "splits"
+  add_foreign_key "workout_exercises", "exercises"
+  add_foreign_key "workout_exercises", "workout_days"
+  add_foreign_key "workout_log_exercises", "workout_exercises"
+  add_foreign_key "workout_log_exercises", "workout_logs"
+  add_foreign_key "workout_logs", "workout_days"
 end
