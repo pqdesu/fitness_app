@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_10_30_155939) do
+ActiveRecord::Schema[7.1].define(version: 2025_11_12_015710) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -66,9 +66,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_30_155939) do
   create_table "workout_log_exercises", force: :cascade do |t|
     t.bigint "workout_log_id", null: false
     t.bigint "workout_exercise_id", null: false
-    t.integer "sets_completed"
-    t.integer "reps_completed"
-    t.decimal "weight_used"
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -85,6 +82,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_30_155939) do
     t.index ["workout_day_id"], name: "index_workout_logs_on_workout_day_id"
   end
 
+  create_table "workout_sets", force: :cascade do |t|
+    t.bigint "workout_log_exercise_id", null: false
+    t.integer "set_number"
+    t.integer "reps_completed"
+    t.decimal "weight_used"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workout_log_exercise_id"], name: "index_workout_sets_on_workout_log_exercise_id"
+  end
+
   add_foreign_key "splits", "users"
   add_foreign_key "workout_days", "splits"
   add_foreign_key "workout_exercises", "exercises"
@@ -92,4 +100,5 @@ ActiveRecord::Schema[7.1].define(version: 2025_10_30_155939) do
   add_foreign_key "workout_log_exercises", "workout_exercises"
   add_foreign_key "workout_log_exercises", "workout_logs"
   add_foreign_key "workout_logs", "workout_days"
+  add_foreign_key "workout_sets", "workout_log_exercises"
 end
