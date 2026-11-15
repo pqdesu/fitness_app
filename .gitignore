@@ -41,4 +41,4 @@
 .DS_Store
 
 # Ignore Doc folder and it's files
-/doc
+# /doc
