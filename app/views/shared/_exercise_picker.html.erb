@@ -1,0 +1,58 @@
+<%#
+  "Add exercises" modal: the catalogue and the user's own exercises, grouped by muscle group,
+  plus a form to create a new exercise. Open it with data-bs-toggle="modal" data-bs-target="#exercise-picker".
+  Locals: url (where both forms post), exercises, taken_ids (exercises already added, shown as such).
+%>
+<div class="modal fade" id="exercise-picker" tabindex="-1" aria-labelledby="exercise-picker-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="exercise-picker-title">Add exercises</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <% if exercises.empty? %>
+          <p class="text-muted">There are no exercises yet. Create your first one below.</p>
+        <% else %>
+          <%= form_with url: url, id: "exercise-picker-form" do %>
+            <% exercises.group_by(&:group).sort.each do |group, group_exercises| %>
+              <h3 class="picker-group"><%= group %></h3>
+              <% group_exercises.each do |exercise| %>
+                <% taken = taken_ids.include?(exercise.id) %>
+                <label class="picker-row <%= "is-taken" if taken %>">
+                  <%= check_box_tag "exercise_ids[]", exercise.id, false, id: "pick_exercise_#{exercise.id}", class: "form-check-input", disabled: taken %>
+                  <span class="picker-name"><%= exercise.name %></span>
+                  <% if taken %><span class="text-muted small">Added</span><% end %>
+                  <% unless exercise.shared? %><span class="chip">Yours</span><% end %>
+                </label>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+
+        <h3 class="picker-group">Create your own</h3>
+        <%= form_with url: url, scope: :exercise, class: "row g-2 align-items-end inline-form" do |f| %>
+          <div class="col-12 col-sm-6">
+            <%= f.label :name, "Exercise name", class: "form-label" %>
+            <%= f.text_field :name, placeholder: "Bench press", autocomplete: "off", required: true, class: "form-control" %>
+          </div>
+          <div class="col-7 col-sm-3">
+            <%= f.label :muscle_group, "Muscle group", class: "form-label" %>
+            <%= f.select :muscle_group, (Exercise::MUSCLE_GROUPS | exercises.filter_map { |e| e.muscle_group.presence }),
+                  { include_blank: "Other" }, class: "form-select" %>
+          </div>
+          <div class="col-5 col-sm-3 d-grid">
+            <%= f.submit "Create", class: "btn btn-light" %>
+          </div>
+        <% end %>
+      </div>
+
+      <% if exercises.any? %>
+        <div class="modal-footer">
+          <button type="submit" form="exercise-picker-form" class="btn btn-primary w-100">Add selected</button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

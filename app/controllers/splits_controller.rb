@@ -6,7 +6,7 @@ class SplitsController < ApplicationController
   end
 
   def show
-    @workout_days = @split.workout_days.includes(workout_exercises: :exercise).order(:order_index, :id)
+    @workout_days = @split.workout_days.order(:weekday, :id)
   end
 
   def new

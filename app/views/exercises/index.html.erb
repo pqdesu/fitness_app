@@ -2,7 +2,7 @@
   <div>
     <p class="eyebrow">Catalogue</p>
     <h1>Exercises</h1>
-    <p class="text-muted mb-0">Shared by everyone. <%= current_user.admin? ? "As an admin you can add, edit and delete them." : "Only an admin can change the catalogue." %></p>
+    <p class="text-muted mb-0"><%= current_user.admin? ? "The catalogue is shared by everyone. As an admin you can add, edit and delete its exercises." : "The catalogue is shared by everyone and managed by an admin. Exercises you create yourself are marked “Yours”, and only you see them." %></p>
   </div>
   <% if current_user.admin? %>
     <%= link_to new_exercise_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> New exercise<% end %>
@@ -19,17 +19,16 @@
     <div class="table-responsive">
       <table class="table app-table">
         <thead>
-          <tr><th>Name</th><th>Muscle group</th><th>Equipment</th><th>Used in plans</th><th></th></tr>
+          <tr><th>Name</th><th>Muscle group</th><th>Used in plans</th><th></th></tr>
         </thead>
         <tbody>
           <% @exercises.each do |exercise| %>
             <tr>
-              <td class="fw-semibold"><%= exercise.name %></td>
+              <td class="fw-semibold"><%= exercise.name %><% unless exercise.shared? %> <span class="chip ms-1">Yours</span><% end %></td>
               <td><% if exercise.muscle_group.present? %><span class="chip"><%= exercise.muscle_group %></span><% else %>–<% end %></td>
-              <td><%= exercise.equipment.presence || "–" %></td>
               <td><%= @usage.fetch(exercise.id, 0) %></td>
               <td class="text-end">
-                <% if current_user.admin? %>
+                <% if current_user.admin? ? exercise.shared? : exercise.user_id == current_user.id %>
                   <div class="row-actions">
                     <%= link_to "Edit", edit_exercise_path(exercise), class: "btn btn-light btn-sm" %>
                     <%= button_to "Delete", exercise, method: :delete, class: "btn btn-outline-danger btn-sm",

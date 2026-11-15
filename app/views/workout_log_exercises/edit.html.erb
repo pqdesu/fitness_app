@@ -1,0 +1,20 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow"><%= link_to "#{@entry.workout_log.workout_day.day} workout", workout_log_path(@entry.workout_log_id) %></p>
+    <h1><%= @entry.name %></h1>
+  </div>
+</div>
+<div class="card form-card">
+  <div class="card-body">
+    <%= form_with model: @entry, class: "inline-form" do |f| %>
+      <% if @entry.errors.any? %>
+        <div class="alert alert-danger"><%= @entry.errors.full_messages.to_sentence %>.</div>
+      <% end %>
+      <%= render "shared/equipment_fields", f: f %>
+      <div class="form-actions">
+        <%= f.submit "Save", class: "btn btn-primary" %>
+        <%= link_to "Cancel", workout_log_path(@entry.workout_log_id), class: "btn btn-light" %>
+      </div>
+    <% end %>
+  </div>
+</div>

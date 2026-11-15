@@ -2,24 +2,26 @@ Rails.application.routes.draw do
   devise_for :users
   root to: "pages#home"
 
-  # Shared exercise catalogue (admins manage it, everyone can browse it)
+  # Exercises: the shared catalogue (admins manage it) and each user's own exercises
   resources :exercises, except: [:show]
 
-  # Program: split -> workout days -> planned exercises
+  # Program: split -> workout days (one per weekday) -> exercises
   resources :splits do
     resources :workout_days, only: [:new, :create]
   end
   resources :workout_days, only: [:show, :edit, :update, :destroy] do
     resources :workout_exercises, only: [:create]
-    resources :workout_logs, only: [:create]
   end
-  resources :workout_exercises, only: [:edit, :update, :destroy]
+  # Opening an exercise shows today's sets; adding a set there logs it under today's workout.
+  resources :workout_exercises, only: [:show, :update, :destroy] do
+    resources :workout_sets, only: [:create]
+  end
 
   # Recording: log -> logged exercises -> sets
   resources :workout_logs, only: [:index, :show, :update, :destroy] do
     resources :workout_log_exercises, only: [:create]
   end
-  resources :workout_log_exercises, only: [:destroy] do
+  resources :workout_log_exercises, only: [:edit, :update, :destroy] do
     resources :workout_sets, only: [:create]
   end
   resources :workout_sets, only: [:destroy]

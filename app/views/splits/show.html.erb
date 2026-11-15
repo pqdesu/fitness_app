@@ -4,41 +4,31 @@
     <h1><%= @split.name %></h1>
   </div>
   <div class="header-actions">
-    <%= link_to new_split_workout_day_path(@split), class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add workout day<% end %>
     <%= link_to "Rename", edit_split_path(@split), class: "btn btn-light" %>
     <%= button_to "Delete", @split, method: :delete, class: "btn btn-outline-danger",
           form: { data: { turbo_confirm: "Delete this split with all its days and logged workouts?" } } %>
   </div>
 </div>
 
-<% if @workout_days.empty? %>
-  <div class="card">
-    <div class="empty-state">
-      <i class="fa-solid fa-calendar-day"></i>
-      <p>This split has no workout days yet, for example “Push”, “Pull” and “Legs”.</p>
-      <%= link_to "Add the first workout day", new_split_workout_day_path(@split), class: "btn btn-primary" %>
-    </div>
+<div class="card">
+  <div class="card-header"><h2>Your week</h2></div>
+  <div class="card-body">
+    <%= render "week", split: @split, workout_days: @workout_days %>
+    <p class="text-muted small text-center mb-0 mt-3">Tap a coloured day to open its workout, or an empty day to add one.</p>
   </div>
-<% else %>
-  <div class="row g-3">
-    <% @workout_days.each do |day| %>
-      <div class="col-md-6 col-lg-4">
-        <%= link_to day, class: "card card-link" do %>
-          <div class="card-body">
-            <span class="order-badge"><%= day.order_index %></span>
-            <h2><%= day.day %></h2>
-            <% if day.workout_exercises.empty? %>
-              <p class="text-muted small mb-0">No exercises planned yet</p>
-            <% else %>
-              <ul class="plain-list">
-                <% day.workout_exercises.sort_by(&:id).each do |we| %>
-                  <li><span><%= we.exercise.name %></span><span class="text-muted"><%= we.sets %> × <%= we.reps %></span></li>
-                <% end %>
-              </ul>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
+</div>
+
+<% unscheduled = @workout_days.select { |day| day.weekday.nil? } %>
+<% if unscheduled.any? %>
+  <div class="card">
+    <div class="card-header"><h2>Not on a weekday yet</h2></div>
+    <ul class="list-rows">
+      <% unscheduled.each do |day| %>
+        <li>
+          <%= link_to day.day, workout_day_path(day), class: "row-title" %>
+          <%= link_to "Choose a weekday", edit_workout_day_path(day), class: "btn btn-light btn-sm" %>
+        </li>
+      <% end %>
+    </ul>
   </div>
 <% end %>

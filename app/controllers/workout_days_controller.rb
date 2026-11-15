@@ -4,20 +4,24 @@ class WorkoutDaysController < ApplicationController
 
   def show
     @workout_exercises = @workout_day.workout_exercises.includes(:exercise).order(:id)
-    @exercises = Exercise.order(:name)
-    @workout_exercise = @workout_day.workout_exercises.new
+    @sets_today = WorkoutSet.joins(workout_log_exercise: :workout_log)
+                            .where(workout_logs: { workout_day_id: @workout_day.id, date: Date.current })
+                            .group("workout_log_exercises.workout_exercise_id").count
+    @picker_exercises = Exercise.visible_to(current_user).order(:name)
     @logs = @workout_day.workout_logs.includes(workout_log_exercises: :workout_sets).order(date: :desc, id: :desc)
   end
 
   def new
-    next_index = (@split.workout_days.maximum(:order_index) || 0) + 1
-    @workout_day = @split.workout_days.new(order_index: next_index)
+    # Coming from an empty circle of the week, the weekday is already chosen.
+    free = (0..6).to_a - @split.workout_days.pluck(:weekday)
+    weekday = params[:weekday].presence&.to_i
+    @workout_day = @split.workout_days.new(weekday: free.include?(weekday) ? weekday : free.first)
   end
 
   def create
     @workout_day = @split.workout_days.new(workout_day_params)
     if @workout_day.save
-      redirect_to @workout_day, notice: "Workout day created. Add the exercises you plan to do."
+      redirect_to @workout_day, notice: "Workout day created. Add its exercises."
     else
       render :new, status: :unprocessable_entity
     end
@@ -52,6 +56,6 @@ class WorkoutDaysController < ApplicationController
   end
 
   def workout_day_params
-    params.require(:workout_day).permit(:day, :order_index)
+    params.require(:workout_day).permit(:day, :weekday)
   end
 end

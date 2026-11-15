@@ -10,16 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_15_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_15_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "exercises", force: :cascade do |t|
     t.string "name", null: false
     t.string "muscle_group"
-    t.string "equipment"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["user_id"], name: "index_exercises_on_user_id"
   end
 
   create_table "splits", force: :cascade do |t|
@@ -46,30 +47,36 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_15_130000) do
   create_table "workout_days", force: :cascade do |t|
     t.bigint "split_id", null: false
     t.string "day", null: false
-    t.integer "order_index", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "weekday"
+    t.index ["split_id", "weekday"], name: "index_workout_days_on_split_id_and_weekday", unique: true
     t.index ["split_id"], name: "index_workout_days_on_split_id"
   end
 
   create_table "workout_exercises", force: :cascade do |t|
     t.bigint "workout_day_id", null: false
-    t.bigint "exercise_id", null: false
-    t.integer "sets", null: false
-    t.integer "reps", null: false
-    t.decimal "target_weight"
+    t.bigint "exercise_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name", null: false
+    t.string "equipment", default: "free_weights", null: false
+    t.string "machine_brand"
     t.index ["exercise_id"], name: "index_workout_exercises_on_exercise_id"
     t.index ["workout_day_id"], name: "index_workout_exercises_on_workout_day_id"
   end
 
   create_table "workout_log_exercises", force: :cascade do |t|
     t.bigint "workout_log_id", null: false
-    t.bigint "workout_exercise_id", null: false
+    t.bigint "workout_exercise_id"
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name", null: false
+    t.string "equipment", default: "free_weights", null: false
+    t.string "machine_brand"
+    t.bigint "exercise_id"
+    t.index ["exercise_id"], name: "index_workout_log_exercises_on_exercise_id"
     t.index ["workout_exercise_id"], name: "index_workout_log_exercises_on_workout_exercise_id"
     t.index ["workout_log_id"], name: "index_workout_log_exercises_on_workout_log_id"
   end
@@ -95,10 +102,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_15_130000) do
     t.index ["workout_log_exercise_id"], name: "index_workout_sets_on_workout_log_exercise_id"
   end
 
+  add_foreign_key "exercises", "users"
   add_foreign_key "splits", "users"
   add_foreign_key "workout_days", "splits"
   add_foreign_key "workout_exercises", "exercises"
   add_foreign_key "workout_exercises", "workout_days"
+  add_foreign_key "workout_log_exercises", "exercises"
   add_foreign_key "workout_log_exercises", "workout_exercises"
   add_foreign_key "workout_log_exercises", "workout_logs"
   add_foreign_key "workout_logs", "workout_days"

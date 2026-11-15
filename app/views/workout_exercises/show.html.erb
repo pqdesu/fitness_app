@@ -1,0 +1,71 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow"><%= link_to @workout_day.split.name, @workout_day.split %> / <%= link_to @workout_day.day, workout_day_path(@workout_day) %></p>
+    <h1><%= @workout_exercise.name %></h1>
+    <p class="text-muted mb-0"><%= @workout_exercise.equipment_label %></p>
+  </div>
+  <div class="header-actions">
+    <%= button_to "Remove", workout_exercise_path(@workout_exercise), method: :delete, class: "btn btn-outline-danger",
+          form: { data: { turbo_confirm: "Remove #{@workout_exercise.name} from #{@workout_day.day}? Workouts already logged keep it." } } %>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <h2>Today</h2>
+        <span class="text-muted small"><%= l Date.current, format: :long %></span>
+      </div>
+
+      <% if @sets.empty? %>
+        <div class="empty-state compact"><p>No sets yet today. Add your first set below.</p></div>
+      <% else %>
+        <table class="table app-table set-table">
+          <thead><tr><th>Set</th><th>Reps</th><th>Weight</th><th></th></tr></thead>
+          <tbody>
+            <% @sets.each do |set| %>
+              <tr>
+                <td><span class="order-badge"><%= set.set_number %></span></td>
+                <td><%= set.reps_completed %></td>
+                <td><%= format_weight(set.weight_used) %></td>
+                <td class="text-end">
+                  <%= button_to workout_set_path(set), method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Delete set #{set.set_number}" do %><i class="fa-solid fa-trash"></i><% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+
+      <div class="card-footer">
+        <%= form_with model: [@workout_exercise, WorkoutSet.new], class: "row g-2 align-items-end inline-form" do |f| %>
+          <div class="col-4">
+            <%= f.label :reps_completed, "Reps", class: "form-label" %>
+            <%= f.number_field :reps_completed, value: @last_set&.reps_completed, min: 0, required: true, inputmode: "numeric", class: "form-control" %>
+          </div>
+          <div class="col-4">
+            <%= f.label :weight_used, "Weight kg", class: "form-label" %>
+            <%= f.number_field :weight_used, step: "any", min: 0, placeholder: "–", inputmode: "decimal", class: "form-control",
+                  value: number_with_precision(@last_set&.weight_used, precision: 2, strip_insignificant_zeros: true) %>
+          </div>
+          <div class="col-4 d-grid">
+            <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add set<% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header"><h2>Equipment</h2></div>
+      <div class="card-body">
+        <%= form_with model: @workout_exercise, class: "inline-form" do |f| %>
+          <%= render "shared/equipment_fields", f: f %>
+          <%= f.submit "Save equipment", class: "btn btn-light w-100 mt-3" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

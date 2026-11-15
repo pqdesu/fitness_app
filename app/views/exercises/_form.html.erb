@@ -3,7 +3,6 @@
     <%= simple_form_for exercise do |f| %>
       <%= f.input :name, placeholder: "Bench press", autofocus: true %>
       <%= f.input :muscle_group, placeholder: "Chest" %>
-      <%= f.input :equipment, placeholder: "Barbell" %>
       <div class="form-actions">
         <%= f.button :submit, class: "btn-primary" %>
         <%= link_to "Cancel", exercises_path, class: "btn btn-light" %>
