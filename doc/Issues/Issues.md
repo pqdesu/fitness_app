@@ -1,5 +1,10 @@
 # Issues
 
+### Calendar
+
+1. Should only have the day highlighted if workout was resgistered that day
+2. The highlighted day should be interactive. I can click on it to see the recorded exercises and workout
+
 ---
 
 # Issues Resolved
