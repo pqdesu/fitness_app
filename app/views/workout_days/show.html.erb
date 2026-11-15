@@ -1,6 +1,6 @@
+<% back_to @workout_day.split.name, @workout_day.split %>
 <div class="page-header">
   <div>
-    <p class="eyebrow"><%= link_to "Splits", splits_path %> / <%= link_to @workout_day.split.name, @workout_day.split %></p>
     <h1><%= @workout_day.day %></h1>
     <% if @workout_day.weekday_name %><p class="text-muted mb-0"><%= @workout_day.weekday_name %></p><% end %>
   </div>
