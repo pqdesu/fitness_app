@@ -1,0 +1,34 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow">History</p>
+    <h1>Logged workouts</h1>
+  </div>
+</div>
+
+<div class="card">
+  <% if @workout_logs.empty? %>
+    <div class="empty-state">
+      <i class="fa-solid fa-clipboard-list"></i>
+      <p>No workouts logged yet. Open a workout day in one of your splits and press “Start workout”.</p>
+      <%= link_to "Go to splits", splits_path, class: "btn btn-primary" %>
+    </div>
+  <% else %>
+    <div class="table-responsive">
+      <table class="table app-table">
+        <thead><tr><th>Date</th><th>Workout day</th><th>Split</th><th>Exercises</th><th>Sets</th><th></th></tr></thead>
+        <tbody>
+          <% @workout_logs.each do |log| %>
+            <tr>
+              <td class="fw-semibold"><%= link_to l(log.date, format: :long), workout_log_path(log) %></td>
+              <td><%= log.workout_day.day %></td>
+              <td><span class="chip"><%= log.workout_day.split.name %></span></td>
+              <td><%= log.workout_log_exercises.size %></td>
+              <td><%= log.workout_log_exercises.sum { |e| e.workout_sets.size } %></td>
+              <td class="text-end"><%= link_to "Open", workout_log_path(log), class: "btn btn-light btn-sm" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

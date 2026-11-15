@@ -1,14 +1,11 @@
-// This is where you override default Bootstrap variables
-// 1. Find all Bootstrap variables that you can override at the end of each component's documentation under the `Sass variables` anchor
-// e.g. here are the ones you can override for the navbar https://getbootstrap.com/docs/5.3/components/navbar/#sass-variables
-// 2. These variables are defined with default value (see https://robots.thoughtbot.com/sass-default)
-// 3. You can override them below!
+// Bootstrap variable overrides (see the `Sass variables` section of each Bootstrap component's docs)
 
 // General style
 $font-family-sans-serif: $body-font;
 $headings-font-family:   $headers-font;
+$headings-font-weight:   700;
 $body-bg:                $light-gray;
-$font-size-base:         1rem;
+$font-size-base:         .9375rem;
 
 // Colors
 $body-color: $gray;
@@ -17,12 +14,22 @@ $success:    $green;
 $info:       $yellow;
 $danger:     $red;
 $warning:    $orange;
+$text-muted: $muted;
+$border-color: $line;
 
-// Buttons & inputs' radius
-$border-radius-sm:            .0625rem;
-$border-radius:               .125rem;
-$border-radius-lg:            .25rem;
-$border-radius-xl:            .5rem;
-$border-radius-xxl:           1rem;
+// Radius
+$border-radius-sm:            .5rem;
+$border-radius:               .625rem;
+$border-radius-lg:            .875rem;
+$border-radius-xl:            1rem;
+$border-radius-xxl:           1.5rem;
 
-// Override other variables below!
+// Components
+$card-border-color:   $line;
+$card-border-radius:  1rem;
+$card-cap-bg:         transparent;
+$card-spacer-x:       1.25rem;
+$btn-font-weight:     600;
+$input-border-color:  #D5D9E0;
+$table-border-color:  $line;
+$dropdown-border-color: $line;

@@ -5,4 +5,6 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :splits, dependent: :destroy
+  has_many :workout_days, through: :splits
+  has_many :workout_logs, through: :workout_days
 end

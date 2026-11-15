@@ -10,12 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_12_015710) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_15_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "exercises", force: :cascade do |t|
-    t.string "name"
+    t.string "name", null: false
     t.string "muscle_group"
     t.string "equipment"
     t.datetime "created_at", null: false
@@ -24,7 +24,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_12_015710) do
 
   create_table "splits", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.string "name"
+    t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_splits_on_user_id"
@@ -38,14 +38,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_12_015710) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "admin", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   create_table "workout_days", force: :cascade do |t|
     t.bigint "split_id", null: false
-    t.string "day"
-    t.integer "order_index"
+    t.string "day", null: false
+    t.integer "order_index", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["split_id"], name: "index_workout_days_on_split_id"
@@ -54,8 +55,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_12_015710) do
   create_table "workout_exercises", force: :cascade do |t|
     t.bigint "workout_day_id", null: false
     t.bigint "exercise_id", null: false
-    t.integer "sets"
-    t.integer "reps"
+    t.integer "sets", null: false
+    t.integer "reps", null: false
     t.decimal "target_weight"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -75,7 +76,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_12_015710) do
 
   create_table "workout_logs", force: :cascade do |t|
     t.bigint "workout_day_id", null: false
-    t.date "date"
+    t.date "date", null: false
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -84,12 +85,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_12_015710) do
 
   create_table "workout_sets", force: :cascade do |t|
     t.bigint "workout_log_exercise_id", null: false
-    t.integer "set_number"
-    t.integer "reps_completed"
+    t.integer "set_number", null: false
+    t.integer "reps_completed", null: false
     t.decimal "weight_used"
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["workout_log_exercise_id", "set_number"], name: "index_workout_sets_on_workout_log_exercise_id_and_set_number", unique: true
     t.index ["workout_log_exercise_id"], name: "index_workout_sets_on_workout_log_exercise_id"
   end
 

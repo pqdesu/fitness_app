@@ -1,0 +1,115 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow"><%= link_to @workout_day.split.name, @workout_day.split %> / <%= link_to @workout_day.day, workout_day_path(@workout_day) %></p>
+    <h1><%= @workout_day.day %> workout</h1>
+    <p class="text-muted mb-0"><%= l @workout_log.date, format: :long %></p>
+  </div>
+  <div class="header-actions">
+    <%= button_to "Delete workout", workout_log_path(@workout_log), method: :delete, class: "btn btn-outline-danger",
+          form: { data: { turbo_confirm: "Delete this workout and all its sets?" } } %>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <% if @log_exercises.empty? %>
+      <div class="card">
+        <div class="empty-state">
+          <i class="fa-solid fa-dumbbell"></i>
+          <p>This workout has no exercises. Plan exercises on the workout day, then add them here.</p>
+          <%= link_to "Open #{@workout_day.day}", workout_day_path(@workout_day), class: "btn btn-primary" %>
+        </div>
+      </div>
+    <% end %>
+
+    <% @log_exercises.each do |entry| %>
+      <% planned = entry.workout_exercise %>
+      <% sets = entry.workout_sets.sort_by(&:set_number) %>
+      <div class="card entry-card" id="entry-<%= entry.id %>">
+        <div class="card-header">
+          <div>
+            <h2><%= planned.exercise.name %></h2>
+            <p class="text-muted small mb-0">Plan: <%= planned.sets %> × <%= planned.reps %> at <%= format_weight(planned.target_weight) %></p>
+          </div>
+          <div class="entry-meta">
+            <span class="chip <%= "chip-done" if sets.size >= planned.sets %>"><%= sets.size %> / <%= planned.sets %> sets</span>
+            <%= button_to workout_log_exercise_path(entry), method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{planned.exercise.name} from this workout",
+                  form: { data: { turbo_confirm: "Remove #{planned.exercise.name} and its sets from this workout?" } } do %><i class="fa-solid fa-xmark"></i><% end %>
+          </div>
+        </div>
+
+        <% if sets.any? %>
+          <table class="table app-table set-table">
+            <thead><tr><th>Set</th><th>Reps</th><th>Weight</th><th></th></tr></thead>
+            <tbody>
+              <% sets.each do |set| %>
+                <tr>
+                  <td><span class="order-badge"><%= set.set_number %></span></td>
+                  <td><%= set.reps_completed %></td>
+                  <td><%= format_weight(set.weight_used) %></td>
+                  <td class="text-end">
+                    <%= button_to workout_set_path(set), method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Delete set #{set.set_number}" do %><i class="fa-solid fa-trash"></i><% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+
+        <div class="card-footer">
+          <%= form_with model: [entry, WorkoutSet.new], class: "row g-2 align-items-end inline-form" do |f| %>
+            <div class="col-3">
+              <%= f.label :set_number, "Set", class: "form-label", for: "set_number_#{entry.id}" %>
+              <%= f.number_field :set_number, value: (sets.last&.set_number || 0) + 1, class: "form-control", id: "set_number_#{entry.id}" %>
+            </div>
+            <div class="col-3">
+              <%= f.label :reps_completed, "Reps", class: "form-label", for: "reps_#{entry.id}" %>
+              <%= f.number_field :reps_completed, value: planned.reps, class: "form-control", id: "reps_#{entry.id}" %>
+            </div>
+            <div class="col-3">
+              <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{entry.id}" %>
+              <%= f.number_field :weight_used, step: "any", placeholder: "–", class: "form-control", id: "weight_#{entry.id}",
+                    value: number_with_precision(sets.last ? sets.last.weight_used : planned.target_weight, precision: 2, strip_insignificant_zeros: true) %>
+            </div>
+            <div class="col-3 d-grid">
+              <%= f.submit "Log set", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @unlogged_exercises.any? %>
+      <div class="card">
+        <div class="card-header"><h2>Planned but not in this workout</h2></div>
+        <ul class="list-rows">
+          <% @unlogged_exercises.each do |we| %>
+            <li>
+              <span class="row-title"><%= we.exercise.name %></span>
+              <%= button_to "Add", workout_log_workout_log_exercises_path(@workout_log), params: { workout_exercise_id: we.id }, class: "btn btn-light btn-sm" %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header"><h2>Details</h2></div>
+      <div class="card-body">
+        <%= form_with model: @workout_log do |f| %>
+          <div class="mb-3">
+            <%= f.label :date, class: "form-label" %>
+            <%= f.date_field :date, class: "form-control" %>
+          </div>
+          <div class="mb-3">
+            <%= f.label :notes, class: "form-label" %>
+            <%= f.text_area :notes, rows: 4, placeholder: "How did it go?", class: "form-control" %>
+          </div>
+          <%= f.submit "Save details", class: "btn btn-light w-100" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
