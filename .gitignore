@@ -40,5 +40,9 @@
 *.swp
 .DS_Store
 
+# Ignore Claude Code's local files; the shared skills in .claude/skills are tracked.
+/.claude/worktrees/
+/.claude/settings.local.json
+
 # Ignore Doc folder and it's files
 # /doc
