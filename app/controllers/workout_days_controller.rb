@@ -8,7 +8,6 @@ class WorkoutDaysController < ApplicationController
                             .where(workout_logs: { workout_day_id: @workout_day.id, date: Date.current })
                             .group("workout_log_exercises.workout_exercise_id").count
     @picker_exercises = Exercise.visible_to(current_user).order(:name)
-    @logs = @workout_day.workout_logs.includes(workout_log_exercises: :workout_sets).order(date: :desc, id: :desc)
   end
 
   def new

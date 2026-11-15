@@ -23,10 +23,11 @@ class WorkoutExercisesController < ApplicationController
     if error
       redirect_to workout_day, alert: "Nothing added: #{error}."
     else
-      WorkoutExercise.transaction do
-        exercises.each { |exercise| workout_day.workout_exercises.create!(exercise: exercise) }
+      added = WorkoutExercise.transaction do
+        exercises.map { |exercise| workout_day.workout_exercises.create!(exercise: exercise) }
       end
-      redirect_to workout_day, notice: "#{exercises.map(&:name).to_sentence} added."
+      # A single new exercise opens straight away, ready for its first set; several go back to the day.
+      redirect_to (added.one? ? added.first : workout_day), notice: "#{exercises.map(&:name).to_sentence} added."
     end
   end
 
