@@ -10,6 +10,11 @@
 6. Add a function to edit the number on the already registered reps or weight, need to be able to edit it if I make a mistake but don't want to delete the whole exercise.
 7. Also create a mock data with exercises for each split already recorded now from last week. I want to compare and see how does the app handle it.
 
+### Calendar
+
+1. Should only have the day highlighted if workout was resgistered that day
+2. The highlighted day should be interactive. I can click on it to see the recorded exercises and workout
+
 ---
 
 # Issues Resolved
