@@ -26,7 +26,7 @@ Rails.application.routes.draw do
   resources :workout_log_exercises, only: [:edit, :update, :destroy] do
     resources :workout_sets, only: [:create]
   end
-  resources :workout_sets, only: [:destroy]
+  resources :workout_sets, only: [:update, :destroy]
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.

@@ -353,6 +353,8 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_equal ["Cable fly", "Chest"], [own.name, own.muscle_group]
     assert_equal own, day.workout_exercises.order(:id).last.exercise
     assert_equal 0, Exercise.shared.where(name: "Cable fly").count
+    # a single added exercise opens straight away, ready for its first set
+    assert_redirected_to workout_exercise_path(day.workout_exercises.order(:id).last)
 
     # the day lists its exercises; the modal marks them as added and shows the user's own exercise
     get workout_day_path(day)
@@ -360,6 +362,9 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_select ".empty-state", text: /No exercises for this day/, count: 0
     assert_select "#exercise-picker label.is-taken", 3
     assert_select "#exercise-picker label", text: /Cable fly.*Yours/m
+    # the day is only the program: each exercise can be removed on the spot, and no logged workouts are listed
+    assert_select ".list-rows li form[action='#{workout_exercise_path(day.workout_exercises.first)}'] button[aria-label='Remove Bench press']"
+    assert_select "h2", text: "Logged workouts", count: 0
 
     # other users do not see it, the owner can delete it once it is out of every plan
     get exercises_path
@@ -413,7 +418,23 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_select "input[name='workout_set[reps_completed]'][value='6']"
     assert_select "input[name='workout_set[weight_used]'][value='82.5']"
 
-    delete workout_set_path(entry.workout_sets.find_by!(set_number: 2))
+    # weight comes before reps, in the table and in the form
+    assert_equal %w[Set Weight Reps], css_select("table.set-table th").map(&:text).reject(&:empty?)
+    assert_operator response.body.index("workout_set[weight_used]"), :<, response.body.index("workout_set[reps_completed]")
+
+    # a recorded set can be corrected in place
+    second = entry.workout_sets.find_by!(set_number: 2)
+    assert_select "form#edit_set_#{second.id}[action='#{workout_set_path(second)}']"
+    assert_select "input[form='edit_set_#{second.id}']", 2
+    patch workout_set_path(second), params: { workout_set: { reps_completed: 5, weight_used: 85 } },
+                                    headers: { "HTTP_REFERER" => workout_exercise_url(planned) }
+    assert_redirected_to workout_exercise_url(planned)
+    assert_equal [2, 5, 85], second.reload.then { |s| [s.set_number, s.reps_completed, s.weight_used] }
+    patch workout_set_path(second), params: { workout_set: { reps_completed: "", weight_used: 85 } }
+    assert_match "Set not updated: Reps completed can't be blank", flash[:alert]
+    assert_equal 5, second.reload.reps_completed
+
+    delete workout_set_path(second)
     assert_equal 1, entry.workout_sets.count
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 7 } }
     assert_equal [1, 2], entry.workout_sets.order(:set_number).pluck(:set_number)
@@ -428,7 +449,9 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_nil planned.reload.machine_brand
 
     get workout_day_path(day)
-    assert_select ".chip", text: "2 sets today"
+    assert_select ".chip", text: "2 sets"
+    # removing an exercise that has sets asks first
+    assert_select "form[action='#{workout_exercise_path(planned)}'][data-turbo-confirm]"
 
     # removing the exercise from the day keeps what was logged
     delete workout_exercise_path(planned)

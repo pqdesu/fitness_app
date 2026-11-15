@@ -258,6 +258,10 @@ div.card-link {
 .entry-card { scroll-margin-top: 5rem; }
 .entry-meta { display: flex; align-items: center; gap: .25rem; }
 .set-table td:first-child, .set-table th:first-child { width: 80px; }
+.set-table td { vertical-align: middle; }
+// A set being edited in place (see workout_sets/_set)
+.set-field { max-width: 7rem; }
+.set-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: .25rem; }
 
 // Empty states
 .empty-state {

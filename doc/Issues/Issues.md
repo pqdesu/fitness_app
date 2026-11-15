@@ -1,5 +1,9 @@
 # Issues
 
+---
+
+# Issues Resolved
+
 ### Split Page
 
 1. Each split should not have the exercises recorded. It should only be a page of the splis programmed
@@ -9,10 +13,6 @@
 5. Change the position of reps - weight to be weight - reps
 6. Add a function to edit the number on the already registered reps or weight, need to be able to edit it if I make a mistake but don't want to delete the whole exercise.
 7. Also create a mock data with exercises for each split already recorded now from last week. I want to compare and see how does the app handle it.
-
----
-
-# Issues Resolved
 
 ### Split creation
 

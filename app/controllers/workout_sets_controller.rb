@@ -29,16 +29,34 @@ class WorkoutSetsController < ApplicationController
     end
   end
 
+  # Corrects the weight or reps of a set that is already recorded.
+  def update
+    workout_set = own_set
+    message = if workout_set.update(params.require(:workout_set).permit(:reps_completed, :weight_used))
+      { notice: "Set #{workout_set.set_number} updated." }
+    else
+      { alert: "Set not updated: #{workout_set.errors.full_messages.to_sentence}." }
+    end
+    redirect_back fallback_location: entry_path(workout_set), status: :see_other, **message
+  end
+
   def destroy
-    workout_set = WorkoutSet.joins(workout_log_exercise: :workout_log)
-                            .where(workout_logs: { user_id: current_user.id }).find(params[:id])
+    workout_set = own_set
     workout_set.destroy
-    entry = workout_set.workout_log_exercise
-    redirect_back fallback_location: workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}"),
-                  notice: "Set deleted.", status: :see_other
+    redirect_back fallback_location: entry_path(workout_set), notice: "Set deleted.", status: :see_other
   end
 
   private
+
+  def own_set
+    WorkoutSet.joins(workout_log_exercise: :workout_log)
+              .where(workout_logs: { user_id: current_user.id }).find(params[:id])
+  end
+
+  def entry_path(workout_set)
+    entry = workout_set.workout_log_exercise
+    workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
+  end
 
   def todays_entry_for(planned)
     workout_log = planned.workout_day.workout_logs.where(date: Date.current).order(:id).first_or_create!
