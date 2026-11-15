@@ -334,6 +334,50 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_not Exercise.exists?(@bench.id)
   end
 
+  test "every sub-page has one back button to its parent, top-level pages have none" do
+    sign_in @user
+    mine = Exercise.create!(name: "Cable fly", muscle_group: "Chest", user: @user)
+    split = @user.splits.create!(name: "PPL")
+    day = split.workout_days.create!(day: "Push", weekday: 1)
+    planned = day.workout_exercises.create!(exercise: @bench)
+    post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
+    log = @user.workout_logs.sole
+    entry = log.workout_log_exercises.sole
+
+    {
+      edit_exercise_path(mine) => ["Exercises", exercises_path],
+      new_split_path => ["Splits", splits_path],
+      split_path(split) => ["Splits", splits_path],
+      edit_split_path(split) => ["PPL", split_path(split)],
+      new_split_workout_day_path(split) => ["PPL", split_path(split)],
+      workout_day_path(day) => ["PPL", split_path(split)],
+      edit_workout_day_path(day) => ["Push", workout_day_path(day)],
+      workout_exercise_path(planned) => ["Push", workout_day_path(day)],
+      workout_log_path(log) => ["Push", workout_day_path(day)],
+      edit_workout_log_exercise_path(entry) => ["Push workout", workout_log_path(log)]
+    }.each do |path, (label, parent)|
+      get path
+      assert_response :success, "#{path} failed"
+      assert_select "a.back-link", { count: 1, text: label }, "#{path} back button"
+      assert_select "a.back-link[href=?]", parent, { count: 1 }, "#{path} back target"
+    end
+
+    [root_path, splits_path, workout_logs_path, exercises_path].each do |path|
+      get path
+      assert_select "a.back-link", false, "#{path} should have no back button"
+    end
+
+    # a rejected form keeps pointing at the saved name, not the one being typed
+    patch split_path(split), params: { split: { name: "" } }
+    assert_response :unprocessable_entity
+    assert_select "a.back-link", text: "PPL"
+
+    # only an admin reaches the catalogue form
+    sign_in @admin
+    get new_exercise_path
+    assert_select "a.back-link[href=?]", exercises_path, text: "Exercises", count: 1
+  end
+
   test "signing up cannot grant admin" do
     post user_registration_path, params: { user: { email: "new@example.com", password: "secret123", password_confirmation: "secret123", admin: true } }
     assert_not User.find_by!(email: "new@example.com").admin?

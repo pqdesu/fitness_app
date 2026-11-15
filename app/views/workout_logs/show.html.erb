@@ -1,6 +1,6 @@
+<% back_to @workout_day.day, workout_day_path(@workout_day) %>
 <div class="page-header">
   <div>
-    <p class="eyebrow"><%= link_to @workout_day.split.name, @workout_day.split %> / <%= link_to @workout_day.day, workout_day_path(@workout_day) %></p>
     <h1><%= @workout_day.day %> workout</h1>
     <p class="text-muted mb-0"><%= l @workout_log.date, format: :long %></p>
   </div>
