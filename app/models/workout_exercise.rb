@@ -1,10 +1,9 @@
+# An exercise on a workout day. The plan only says which exercise;
+# sets, reps and weight are recorded when the user trains (see WorkoutSet).
 class WorkoutExercise < ApplicationRecord
-  belongs_to :workout_day
-  belongs_to :exercise
-  has_many :workout_log_exercises, dependent: :destroy
+  include Lift
 
-  validates :sets, :reps, presence: true,
-                          numericality: { only_integer: true, greater_than: 0 }
-  # Optional: bodyweight exercises have no target weight.
-  validates :target_weight, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  belongs_to :workout_day
+  # Removing an exercise from the plan keeps what was already logged for it.
+  has_many :workout_log_exercises, dependent: :nullify
 end

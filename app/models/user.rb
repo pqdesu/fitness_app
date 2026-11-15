@@ -7,4 +7,6 @@ class User < ApplicationRecord
   has_many :splits, dependent: :destroy
   has_many :workout_days, through: :splits
   has_many :workout_logs, through: :workout_days
+  # Exercises this user created for themselves (not part of the shared catalogue).
+  has_many :exercises, dependent: :destroy
 end

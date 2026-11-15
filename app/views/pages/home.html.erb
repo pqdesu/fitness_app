@@ -30,7 +30,7 @@
                 <div>
                   <%= link_to split.name, split, class: "row-title" %>
                   <div class="chip-row">
-                    <% split.workout_days.sort_by { |d| [d.order_index, d.id] }.each do |day| %>
+                    <% split.workout_days.sort_by { |d| [d.weekday || 7, d.id] }.each do |day| %>
                       <%= link_to day.day, day, class: "chip" %>
                     <% end %>
                     <% if split.workout_days.empty? %><span class="text-muted small">No workout days yet</span><% end %>
@@ -50,7 +50,7 @@
         <% if @recent_logs.empty? %>
           <div class="empty-state">
             <i class="fa-solid fa-clipboard-list"></i>
-            <p>No workouts logged yet. Open a workout day and press “Start workout”.</p>
+            <p>No workouts logged yet. Open a workout day, open an exercise and add your first set.</p>
           </div>
         <% else %>
           <ul class="list-rows">
@@ -72,7 +72,7 @@
   <section class="hero">
     <span class="brand-mark brand-mark-lg"><i class="fa-solid fa-dumbbell"></i></span>
     <h1>Plan your training.<br>Record every set.</h1>
-    <p>Build your own splits, plan the exercises for each workout day, and log the reps and weight of every set you do.</p>
+    <p>Build your own splits, choose the exercises for each day of your week, and log the reps and weight of every set you do.</p>
     <div class="hero-actions">
       <%= link_to "Create an account", new_user_registration_path, class: "btn btn-primary btn-lg" %>
       <%= link_to "Log in", new_user_session_path, class: "btn btn-light btn-lg" %>

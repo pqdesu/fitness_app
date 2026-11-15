@@ -1,0 +1,16 @@
+<%#
+  The week of a split, Sunday to Saturday. A weekday with a workout day is coloured and opens it;
+  an empty weekday is blank and starts a new workout day on it. Locals: split, workout_days.
+%>
+<% days_by_weekday = workout_days.index_by(&:weekday) %>
+<div class="week">
+  <% Date::DAYNAMES.each_with_index do |weekday_name, weekday| %>
+    <% day = days_by_weekday[weekday] %>
+    <%= link_to (day ? workout_day_path(day) : new_split_workout_day_path(split, weekday: weekday)),
+          class: class_names("week-day", "is-set": day),
+          "aria-label": (day ? "#{weekday_name}: #{day.day}" : "#{weekday_name}: add a workout day") do %>
+      <span class="week-circle"><%= weekday_name.first %></span>
+      <span class="week-label"><%= day&.day %></span>
+    <% end %>
+  <% end %>
+</div>

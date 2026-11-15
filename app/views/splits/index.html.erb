@@ -23,7 +23,7 @@
             <h2><%= split.name %></h2>
             <p class="text-muted small"><%= pluralize(split.workout_days.size, "workout day") %></p>
             <div class="chip-row">
-              <% split.workout_days.sort_by { |d| [d.order_index, d.id] }.each do |day| %>
+              <% split.workout_days.sort_by { |d| [d.weekday || 7, d.id] }.each do |day| %>
                 <span class="chip"><%= day.day %></span>
               <% end %>
             </div>

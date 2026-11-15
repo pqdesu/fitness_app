@@ -1,30 +1,47 @@
 class WorkoutExercisesController < ApplicationController
-  before_action :set_workout_exercise, only: [:edit, :update, :destroy]
+  include ExercisePicker
 
+  before_action :set_workout_exercise, only: [:show, :update, :destroy]
+
+  # Opening an exercise: today's sets, and the form to add the next one.
+  def show
+    @workout_day = @workout_exercise.workout_day
+    @entry = @workout_exercise.workout_log_exercises.joins(:workout_log)
+                              .where(workout_logs: { date: Date.current }).order(:id).first
+    @sets = @entry ? @entry.workout_sets.order(:set_number).to_a : []
+    # Pre-fills the form, so repeating the last set is a single tap.
+    @last_set = @sets.last || WorkoutSet.joins(:workout_log_exercise)
+                                        .where(workout_log_exercises: { workout_exercise_id: @workout_exercise.id })
+                                        .order(created_at: :desc, id: :desc).first
+  end
+
+  # Adds the exercises chosen (or the one created) in the "Add exercises" modal to the day.
   def create
     workout_day = current_user.workout_days.find(params[:workout_day_id])
-    workout_exercise = workout_day.workout_exercises.new(workout_exercise_params)
-    if workout_exercise.save
-      redirect_to workout_day, notice: "#{workout_exercise.exercise.name} added to the plan."
+    exercises, error = picked_exercises
+
+    if error
+      redirect_to workout_day, alert: "Nothing added: #{error}."
     else
-      redirect_to workout_day, alert: "Exercise not added: #{workout_exercise.errors.full_messages.to_sentence}."
+      WorkoutExercise.transaction do
+        exercises.each { |exercise| workout_day.workout_exercises.create!(exercise: exercise) }
+      end
+      redirect_to workout_day, notice: "#{exercises.map(&:name).to_sentence} added."
     end
   end
 
-  def edit
-  end
-
+  # Changes the equipment used for this exercise.
   def update
-    if @workout_exercise.update(workout_exercise_params)
-      redirect_to @workout_exercise.workout_day, notice: "Planned exercise updated."
+    if @workout_exercise.update(equipment_params)
+      redirect_to @workout_exercise, notice: "Equipment saved."
     else
-      render :edit, status: :unprocessable_entity
+      redirect_to @workout_exercise, alert: "Equipment not saved: #{@workout_exercise.errors.full_messages.to_sentence}."
     end
   end
 
   def destroy
     @workout_exercise.destroy
-    redirect_to @workout_exercise.workout_day, notice: "Exercise removed from the plan.", status: :see_other
+    redirect_to @workout_exercise.workout_day, notice: "#{@workout_exercise.name} removed from this day.", status: :see_other
   end
 
   private
@@ -35,7 +52,7 @@ class WorkoutExercisesController < ApplicationController
                                        .find(params[:id])
   end
 
-  def workout_exercise_params
-    params.require(:workout_exercise).permit(:exercise_id, :sets, :reps, :target_weight)
+  def equipment_params
+    params.require(:workout_exercise).permit(:equipment, :machine_brand)
   end
 end

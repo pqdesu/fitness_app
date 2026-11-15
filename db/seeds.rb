@@ -14,26 +14,25 @@ admin.admin = true
 admin.save!
 puts "Admin user: #{admin.email}"
 
-# Starter exercise catalogue
+# Starter exercise catalogue: what users can select instead of typing a name
 [
-  ["Bench press", "Chest", "Barbell"],
-  ["Incline dumbbell press", "Chest", "Dumbbell"],
-  ["Overhead press", "Shoulders", "Barbell"],
-  ["Lateral raise", "Shoulders", "Dumbbell"],
-  ["Triceps pushdown", "Triceps", "Cable"],
-  ["Pull-up", "Back", "Bodyweight"],
-  ["Barbell row", "Back", "Barbell"],
-  ["Lat pulldown", "Back", "Cable"],
-  ["Barbell curl", "Biceps", "Barbell"],
-  ["Squat", "Legs", "Barbell"],
-  ["Romanian deadlift", "Legs", "Barbell"],
-  ["Leg press", "Legs", "Machine"],
-  ["Calf raise", "Calves", "Machine"],
-  ["Plank", "Core", "Bodyweight"]
-].each do |name, muscle_group, equipment|
+  ["Bench press", "Chest"],
+  ["Incline dumbbell press", "Chest"],
+  ["Overhead press", "Shoulders"],
+  ["Lateral raise", "Shoulders"],
+  ["Triceps pushdown", "Triceps"],
+  ["Pull-up", "Back"],
+  ["Barbell row", "Back"],
+  ["Lat pulldown", "Back"],
+  ["Barbell curl", "Biceps"],
+  ["Squat", "Legs"],
+  ["Romanian deadlift", "Legs"],
+  ["Leg press", "Legs"],
+  ["Calf raise", "Calves"],
+  ["Plank", "Core"]
+].each do |name, muscle_group|
   Exercise.find_or_create_by!(name: name) do |exercise|
     exercise.muscle_group = muscle_group
-    exercise.equipment = equipment
   end
 end
 puts "Exercises in catalogue: #{Exercise.count}"

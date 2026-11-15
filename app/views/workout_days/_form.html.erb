@@ -1,8 +1,8 @@
 <div class="card form-card">
   <div class="card-body">
     <%= simple_form_for workout_day, url: (workout_day.persisted? ? workout_day_path(workout_day) : split_workout_days_path(split)) do |f| %>
-      <%= f.input :day, label: "Name", placeholder: "Push, or Monday", autofocus: true %>
-      <%= f.input :order_index, label: "Position in the split", hint: "Days are shown in this order." %>
+      <%= f.input :day, label: "Name", placeholder: "Push", autofocus: true %>
+      <%= f.input :weekday, label: "Day of the week", collection: Date::DAYNAMES.each_with_index.to_a, include_blank: false %>
       <div class="form-actions">
         <%= f.button :submit, class: "btn-primary" %>
         <%= link_to "Cancel", (workout_day.persisted? ? workout_day_path(workout_day) : split), class: "btn btn-light" %>

@@ -1,9 +1,11 @@
 class ExercisesController < ApplicationController
-  before_action :require_admin!, except: [:index]
+  # Only an admin adds to the shared catalogue here.
+  # Users create their own exercises from the "Add exercises" modal.
+  before_action :require_admin!, only: [:new, :create]
   before_action :set_exercise, only: [:edit, :update, :destroy]
 
   def index
-    @exercises = Exercise.order(:muscle_group, :name)
+    @exercises = Exercise.visible_to(current_user).order(:muscle_group, :name)
     @usage = WorkoutExercise.group(:exercise_id).count
   end
 
@@ -41,12 +43,14 @@ class ExercisesController < ApplicationController
 
   private
 
+  # An admin manages the shared catalogue; everyone else manages only the exercises they created.
   def set_exercise
-    @exercise = Exercise.find(params[:id])
+    manageable = current_user.admin? ? Exercise.shared : current_user.exercises
+    @exercise = manageable.find(params[:id])
   end
 
   def exercise_params
-    params.require(:exercise).permit(:name, :muscle_group, :equipment)
+    params.require(:exercise).permit(:name, :muscle_group)
   end
 
   def errors_for(record)

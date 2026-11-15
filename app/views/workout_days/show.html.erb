@@ -2,77 +2,45 @@
   <div>
     <p class="eyebrow"><%= link_to "Splits", splits_path %> / <%= link_to @workout_day.split.name, @workout_day.split %></p>
     <h1><%= @workout_day.day %></h1>
+    <% if @workout_day.weekday_name %><p class="text-muted mb-0"><%= @workout_day.weekday_name %></p><% end %>
   </div>
   <div class="header-actions">
-    <%= button_to workout_day_workout_logs_path(@workout_day), class: "btn btn-primary" do %><i class="fa-solid fa-play"></i> Start workout<% end %>
     <%= link_to "Edit", edit_workout_day_path(@workout_day), class: "btn btn-light" %>
     <%= button_to "Delete", workout_day_path(@workout_day), method: :delete, class: "btn btn-outline-danger",
-          form: { data: { turbo_confirm: "Delete this day with its plan and logged workouts?" } } %>
+          form: { data: { turbo_confirm: "Delete this day with its exercises and logged workouts?" } } %>
   </div>
 </div>
 
 <div class="row g-4">
   <div class="col-lg-8">
     <div class="card">
-      <div class="card-header"><h2>Planned exercises</h2></div>
-      <% if @workout_exercises.empty? %>
-        <div class="empty-state compact">
-          <p>Nothing planned yet. Add the first exercise below.</p>
-        </div>
-      <% else %>
-        <div class="table-responsive">
-          <table class="table app-table">
-            <thead><tr><th>Exercise</th><th>Sets × reps</th><th>Target weight</th><th></th></tr></thead>
-            <tbody>
-              <% @workout_exercises.each do |we| %>
-                <tr>
-                  <td>
-                    <span class="fw-semibold"><%= we.exercise.name %></span>
-                    <% if we.exercise.muscle_group.present? %><span class="chip ms-1"><%= we.exercise.muscle_group %></span><% end %>
-                  </td>
-                  <td><%= we.sets %> × <%= we.reps %></td>
-                  <td><%= format_weight(we.target_weight) %></td>
-                  <td class="text-end">
-                    <div class="row-actions">
-                      <%= link_to "Edit", edit_workout_exercise_path(we), class: "btn btn-light btn-sm" %>
-                      <%= button_to "Remove", workout_exercise_path(we), method: :delete, class: "btn btn-outline-danger btn-sm",
-                            form: { data: { turbo_confirm: "Remove #{we.exercise.name}? Sets logged for it are deleted too." } } %>
-                    </div>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-      <% end %>
-
-      <div class="card-footer">
-        <% if @exercises.empty? %>
-          <p class="text-muted mb-0">The exercise catalogue is empty. <%= link_to "Open the catalogue", exercises_path %>.</p>
-        <% else %>
-          <%= form_with model: [@workout_day, @workout_exercise], class: "row g-2 align-items-end inline-form" do |f| %>
-            <div class="col-12 col-md-5">
-              <%= f.label :exercise_id, "Exercise", class: "form-label" %>
-              <%= f.collection_select :exercise_id, @exercises, :id, :name, {}, class: "form-select" %>
-            </div>
-            <div class="col-4 col-md-2">
-              <%= f.label :sets, class: "form-label" %>
-              <%= f.number_field :sets, value: 3, class: "form-control" %>
-            </div>
-            <div class="col-4 col-md-2">
-              <%= f.label :reps, class: "form-label" %>
-              <%= f.number_field :reps, value: 10, class: "form-control" %>
-            </div>
-            <div class="col-4 col-md-2">
-              <%= f.label :target_weight, "Target kg", class: "form-label" %>
-              <%= f.number_field :target_weight, step: "any", placeholder: "–", class: "form-control" %>
-            </div>
-            <div class="col-12 col-md-1 d-grid">
-              <%= f.submit "Add", class: "btn btn-primary" %>
-            </div>
-          <% end %>
+      <div class="card-header">
+        <h2>Exercises</h2>
+        <% if @workout_exercises.any? %>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exercise-picker"><i class="fa-solid fa-plus"></i> Add exercise</button>
         <% end %>
       </div>
+      <% if @workout_exercises.empty? %>
+        <div class="empty-state">
+          <i class="fa-solid fa-dumbbell"></i>
+          <p>No exercises for this day yet.</p>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exercise-picker"><i class="fa-solid fa-plus"></i> Add exercise</button>
+        </div>
+      <% else %>
+        <ul class="list-rows">
+          <% @workout_exercises.each do |we| %>
+            <% sets_today = @sets_today.fetch(we.id, 0) %>
+            <li>
+              <%= link_to workout_exercise_path(we), class: "row-link" do %>
+                <span class="row-title"><%= we.name %></span>
+                <span class="text-muted small"><%= we.equipment_label %><% if we.exercise&.muscle_group.present? %> · <%= we.exercise.muscle_group %><% end %></span>
+              <% end %>
+              <% if sets_today.positive? %><span class="chip chip-done"><%= pluralize(sets_today, "set") %> today</span><% end %>
+              <%= link_to workout_exercise_path(we), class: "btn btn-light btn-sm", "aria-label": "Open #{we.name}" do %><i class="fa-solid fa-chevron-right"></i><% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
     </div>
   </div>
 
@@ -97,3 +65,6 @@
     </div>
   </div>
 </div>
+
+<%= render "shared/exercise_picker", url: workout_day_workout_exercises_path(@workout_day),
+      exercises: @picker_exercises, taken_ids: @workout_exercises.filter_map(&:exercise_id) %>
