@@ -7,7 +7,7 @@
   <div class="header-actions">
     <%= link_to "Edit", edit_workout_day_path(@workout_day), class: "btn btn-light" %>
     <%= button_to "Delete", workout_day_path(@workout_day), method: :delete, class: "btn btn-outline-danger",
-          form: { data: { turbo_confirm: "Delete this day with its exercises and logged workouts?" } } %>
+          form: { data: { turbo_confirm: "Delete this day and its exercises? Your logged workouts are kept." } } %>
   </div>
 </div>
 

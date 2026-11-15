@@ -44,8 +44,8 @@ class WorkoutLogExercisesController < ApplicationController
   private
 
   def set_entry
-    @entry = WorkoutLogExercise.joins(workout_log: { workout_day: :split })
-                               .where(splits: { user_id: current_user.id })
+    @entry = WorkoutLogExercise.joins(:workout_log)
+                               .where(workout_logs: { user_id: current_user.id })
                                .find(params[:id])
   end
 

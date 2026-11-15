@@ -7,11 +7,13 @@ class WorkoutSetsController < ApplicationController
 
     WorkoutSet.transaction do
       if params[:workout_exercise_id]
-        planned = owned(WorkoutExercise.joins(workout_day: :split)).find(params[:workout_exercise_id])
+        planned = WorkoutExercise.joins(workout_day: :split).where(splits: { user_id: current_user.id })
+                                 .find(params[:workout_exercise_id])
         entry = todays_entry_for(planned)
         back = workout_exercise_path(planned)
       else
-        entry = owned(WorkoutLogExercise.joins(workout_log: { workout_day: :split })).find(params[:workout_log_exercise_id])
+        entry = WorkoutLogExercise.joins(:workout_log).where(workout_logs: { user_id: current_user.id })
+                                  .find(params[:workout_log_exercise_id])
         back = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
       end
 
@@ -28,7 +30,8 @@ class WorkoutSetsController < ApplicationController
   end
 
   def destroy
-    workout_set = owned(WorkoutSet.joins(workout_log_exercise: { workout_log: { workout_day: :split } })).find(params[:id])
+    workout_set = WorkoutSet.joins(workout_log_exercise: :workout_log)
+                            .where(workout_logs: { user_id: current_user.id }).find(params[:id])
     workout_set.destroy
     entry = workout_set.workout_log_exercise
     redirect_back fallback_location: workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}"),
@@ -36,10 +39,6 @@ class WorkoutSetsController < ApplicationController
   end
 
   private
-
-  def owned(scope)
-    scope.where(splits: { user_id: current_user.id })
-  end
 
   def todays_entry_for(planned)
     workout_log = planned.workout_day.workout_logs.where(date: Date.current).order(:id).first_or_create!

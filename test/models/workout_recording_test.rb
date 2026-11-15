@@ -148,7 +148,7 @@ class WorkoutRecordingTest < ActiveSupport::TestCase
 
   test "required columns are not null in the database" do
     assert_raises(ActiveRecord::NotNullViolation) do
-      WorkoutLog.new(workout_day: @day).save!(validate: false)
+      WorkoutLog.new(workout_day: @day, user: @user, workout: "Push").save!(validate: false)
     end
   end
 

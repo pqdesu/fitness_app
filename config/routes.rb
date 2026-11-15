@@ -7,6 +7,8 @@ Rails.application.routes.draw do
 
   # Program: split -> workout days (one per weekday) -> exercises
   resources :splits do
+    # Makes this the split the dashboard follows
+    patch :activate, on: :member
     resources :workout_days, only: [:new, :create]
   end
   resources :workout_days, only: [:show, :edit, :update, :destroy] do
