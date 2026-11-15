@@ -1,0 +1,46 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Catalogue</p>
+    <h1>Exercises</h1>
+    <p class="text-muted mb-0">Shared by everyone. <%= current_user.admin? ? "As an admin you can add, edit and delete them." : "Only an admin can change the catalogue." %></p>
+  </div>
+  <% if current_user.admin? %>
+    <%= link_to new_exercise_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> New exercise<% end %>
+  <% end %>
+</div>
+
+<div class="card">
+  <% if @exercises.empty? %>
+    <div class="empty-state">
+      <i class="fa-solid fa-dumbbell"></i>
+      <p>The catalogue is empty.</p>
+    </div>
+  <% else %>
+    <div class="table-responsive">
+      <table class="table app-table">
+        <thead>
+          <tr><th>Name</th><th>Muscle group</th><th>Equipment</th><th>Used in plans</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% @exercises.each do |exercise| %>
+            <tr>
+              <td class="fw-semibold"><%= exercise.name %></td>
+              <td><% if exercise.muscle_group.present? %><span class="chip"><%= exercise.muscle_group %></span><% else %>–<% end %></td>
+              <td><%= exercise.equipment.presence || "–" %></td>
+              <td><%= @usage.fetch(exercise.id, 0) %></td>
+              <td class="text-end">
+                <% if current_user.admin? %>
+                  <div class="row-actions">
+                    <%= link_to "Edit", edit_exercise_path(exercise), class: "btn btn-light btn-sm" %>
+                    <%= button_to "Delete", exercise, method: :delete, class: "btn btn-outline-danger btn-sm",
+                          form: { data: { turbo_confirm: "Delete #{exercise.name}?" } } %>
+                  </div>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

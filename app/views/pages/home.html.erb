@@ -1,2 +1,81 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<% if user_signed_in? %>
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Dashboard</p>
+      <h1>Ready to train?</h1>
+    </div>
+    <%= link_to new_split_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> New split<% end %>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="stat-tile"><span class="stat-value"><%= @splits.size %></span><span class="stat-label">Splits</span></div></div>
+    <div class="col-md-4"><div class="stat-tile"><span class="stat-value"><%= @logs_count %></span><span class="stat-label">Workouts logged</span></div></div>
+    <div class="col-md-4"><div class="stat-tile"><span class="stat-value"><%= @sets_count %></span><span class="stat-label">Sets recorded</span></div></div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header"><h2>Your splits</h2><%= link_to "View all", splits_path, class: "link-quiet" %></div>
+        <% if @splits.empty? %>
+          <div class="empty-state">
+            <i class="fa-solid fa-layer-group"></i>
+            <p>You have no splits yet. A split is your training program, made of workout days.</p>
+            <%= link_to "Create your first split", new_split_path, class: "btn btn-primary" %>
+          </div>
+        <% else %>
+          <ul class="list-rows">
+            <% @splits.each do |split| %>
+              <li>
+                <div>
+                  <%= link_to split.name, split, class: "row-title" %>
+                  <div class="chip-row">
+                    <% split.workout_days.sort_by { |d| [d.order_index, d.id] }.each do |day| %>
+                      <%= link_to day.day, day, class: "chip" %>
+                    <% end %>
+                    <% if split.workout_days.empty? %><span class="text-muted small">No workout days yet</span><% end %>
+                  </div>
+                </div>
+                <%= link_to split, class: "btn btn-light btn-sm", "aria-label": "Open #{split.name}" do %><i class="fa-solid fa-chevron-right"></i><% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header"><h2>Recent workouts</h2><%= link_to "History", workout_logs_path, class: "link-quiet" %></div>
+        <% if @recent_logs.empty? %>
+          <div class="empty-state">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <p>No workouts logged yet. Open a workout day and press “Start workout”.</p>
+          </div>
+        <% else %>
+          <ul class="list-rows">
+            <% @recent_logs.each do |log| %>
+              <li>
+                <div>
+                  <%= link_to log.workout_day.day, workout_log_path(log), class: "row-title" %>
+                  <div class="text-muted small"><%= l log.date, format: :long %> · <%= pluralize(log.workout_log_exercises.sum { |e| e.workout_sets.size }, "set") %></div>
+                </div>
+                <span class="chip"><%= log.workout_day.split.name %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <section class="hero">
+    <span class="brand-mark brand-mark-lg"><i class="fa-solid fa-dumbbell"></i></span>
+    <h1>Plan your training.<br>Record every set.</h1>
+    <p>Build your own splits, plan the exercises for each workout day, and log the reps and weight of every set you do.</p>
+    <div class="hero-actions">
+      <%= link_to "Create an account", new_user_registration_path, class: "btn btn-primary btn-lg" %>
+      <%= link_to "Log in", new_user_session_path, class: "btn btn-light btn-lg" %>
+    </div>
+  </section>
+<% end %>

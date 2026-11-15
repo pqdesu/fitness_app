@@ -1,0 +1,19 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow"><%= link_to @workout_exercise.workout_day.day, workout_day_path(@workout_exercise.workout_day) %></p>
+    <h1>Edit <%= @workout_exercise.exercise.name %></h1>
+  </div>
+</div>
+<div class="card form-card">
+  <div class="card-body">
+    <%= simple_form_for @workout_exercise do |f| %>
+      <%= f.input :sets %>
+      <%= f.input :reps %>
+      <%= f.input :target_weight, label: "Target weight (kg)", hint: "Leave blank for bodyweight.", input_html: { step: "any" } %>
+      <div class="form-actions">
+        <%= f.button :submit, "Save", class: "btn-primary" %>
+        <%= link_to "Cancel", workout_day_path(@workout_exercise.workout_day), class: "btn btn-light" %>
+      </div>
+    <% end %>
+  </div>
+</div>

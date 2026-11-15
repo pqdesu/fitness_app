@@ -1,0 +1,11 @@
+<div class="card form-card">
+  <div class="card-body">
+    <%= simple_form_for split do |f| %>
+      <%= f.input :name, placeholder: "Push / Pull / Legs", autofocus: true %>
+      <div class="form-actions">
+        <%= f.button :submit, class: "btn-primary" %>
+        <%= link_to "Cancel", (split.persisted? ? split : splits_path), class: "btn btn-light" %>
+      </div>
+    <% end %>
+  </div>
+</div>
