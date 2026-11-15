@@ -202,6 +202,27 @@ a.chip:hover { background: $primary-soft; color: $blue; }
 }
 .card-link .order-badge { float: right; }
 
+// A split card; the active split gets a ring around it
+.split-card {
+  position: relative;
+  height: 100%;
+
+  &.is-active {
+    border-color: $blue;
+    box-shadow: 0 0 0 2px $blue;
+  }
+
+  h2 a { color: inherit; text-decoration: none; }
+  // Above the card's stretched link, so the button stays clickable
+  .split-activate { position: relative; z-index: 2; margin-top: .875rem; }
+}
+div.card-link {
+  transition: border-color .15s, box-shadow .15s;
+  &:hover { border-color: $blue; }
+}
+.split-active-badge { float: right; }
+.header-actions .split-active-badge { float: none; padding: .5rem .75rem; }
+
 // Tables
 .app-table {
   margin: 0;

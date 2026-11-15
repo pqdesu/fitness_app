@@ -89,6 +89,62 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_equal 0, @user.splits.count
   end
 
+  test "one split is active, is ringed on the splits page and shown on the dashboard" do
+    sign_in @user
+    get root_path
+    assert_select ".split-card .empty-state a[href=?]", new_split_path
+
+    ppl = @user.splits.create!(name: "PPL")
+    upper_lower = @user.splits.create!(name: "Upper lower")
+    upper_lower.workout_days.create!(day: "Upper", weekday: 2)
+
+    # until one is chosen, the oldest split is the active one
+    get splits_path
+    assert_select ".split-card", 2
+    assert_select ".split-card.is-active", 1
+    assert_select ".split-card.is-active h2", "PPL"
+    assert_select ".split-card.is-active .split-active-badge", /Active/
+    assert_select ".split-card.is-active form", 0
+    assert_select ".split-card:not(.is-active) form[action=?]", activate_split_path(upper_lower)
+
+    # changed on the splits page: the user stays there
+    patch activate_split_path(upper_lower), headers: { "HTTP_REFERER" => splits_url }
+    assert_redirected_to splits_url
+    assert_equal upper_lower, @user.reload.active_split
+    follow_redirect!
+    assert_select ".split-card.is-active h2", "Upper lower"
+    assert_select ".back-link", 0
+    assert_select ".split-card:not(.is-active) form[action=?]", activate_split_path(ppl)
+
+    # the split page says whether it is active, and offers the change if not
+    get split_path(upper_lower)
+    assert_select ".header-actions .split-active-badge", /Active split/
+    get split_path(ppl)
+    assert_select ".header-actions form[action=?]", activate_split_path(ppl)
+
+    # the dashboard shows the active split and its week
+    get root_path
+    assert_select ".split-card.is-active h2", "Upper lower"
+    assert_select ".split-card.is-active .week a.is-set .week-label", "Upper"
+    assert_select ".split-card.is-active a[href=?]", splits_path(from: "dashboard"), text: "Change"
+
+    # changed from the dashboard: "Change" opens the splits, and choosing one returns to the dashboard
+    get splits_path(from: "dashboard")
+    assert_select ".back-link[href=?]", root_path
+    assert_select ".split-card:not(.is-active) form[action=?]", activate_split_path(ppl, from: "dashboard")
+    patch activate_split_path(ppl, from: "dashboard"), headers: { "HTTP_REFERER" => splits_url(from: "dashboard") }
+    assert_redirected_to root_path
+    follow_redirect!
+    assert_select ".split-card.is-active h2", "PPL"
+    patch activate_split_path(upper_lower)
+
+    # someone else's split cannot be activated
+    others = @admin.splits.create!(name: "Not mine")
+    patch activate_split_path(others)
+    assert_response :not_found
+    assert_equal upper_lower, @user.reload.active_split
+  end
+
   test "adding exercises to a day from the catalogue or by creating one" do
     sign_in @user
     day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)

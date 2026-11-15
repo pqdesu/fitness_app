@@ -4,7 +4,9 @@ class PagesController < ApplicationController
   def home
     return unless user_signed_in?
 
-    @splits = current_user.splits.includes(:workout_days).order(:name)
+    @splits_count = current_user.splits.count
+    @active_split = current_user.current_split
+    @active_days = @active_split ? @active_split.workout_days.order(:weekday, :id) : []
     @recent_logs = current_user.workout_logs
                                .includes(workout_day: :split, workout_log_exercises: :workout_sets)
                                .order(date: :desc, id: :desc).limit(5)
