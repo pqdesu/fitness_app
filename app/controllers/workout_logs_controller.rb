@@ -13,8 +13,12 @@ class WorkoutLogsController < ApplicationController
     @workout_day = @workout_log.workout_day
     @log_exercises = @workout_log.workout_log_exercises
                                  .includes(:workout_sets, :workout_exercise).order(:id)
-    @unlogged_exercises = @workout_day.workout_exercises
-                                      .where.not(id: @log_exercises.filter_map(&:workout_exercise_id)).order(:id)
+    # Nothing is planned any more once the day (or its split) has been deleted.
+    @unlogged_exercises = if @workout_day
+      @workout_day.workout_exercises.where.not(id: @log_exercises.filter_map(&:workout_exercise_id)).order(:id)
+    else
+      WorkoutExercise.none
+    end
     @picker_exercises = Exercise.visible_to(current_user).order(:name)
   end
 

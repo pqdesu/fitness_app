@@ -51,6 +51,10 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
 
     get new_split_workout_day_path(split, weekday: 1)
     assert_select "select[name='workout_day[weekday]'] option[selected]", text: "Monday"
+    # the workout is chosen from the list, not typed
+    assert_equal ["Choose a workout", *WorkoutDay::NAMES], css_select("select[name='workout_day[day]'] option").map(&:text)
+    post split_workout_days_path(split), params: { workout_day: { day: "Chest day", weekday: 1 } }
+    assert_response :unprocessable_entity
     post split_workout_days_path(split), params: { workout_day: { day: "Push", weekday: 1 } }
     day = split.workout_days.last
     assert_redirected_to day
@@ -143,6 +147,176 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     patch activate_split_path(others)
     assert_response :not_found
     assert_equal upper_lower, @user.reload.active_split
+  end
+
+  test "the dashboard shows the month, this week, today's workout and last time's heaviest sets" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+    split.workout_days.create!(day: "Pull", weekday: 3)
+
+    # Monday 16 November 2026
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      get root_path
+      assert_select "a[href=?]", new_split_path, count: 0
+
+      # the month, Sunday first, with this week's row and today marked
+      assert_select ".calendar-card h2", "November 2026"
+      assert_select ".calendar-week:not(.calendar-head)", 5
+      assert_select ".calendar-week.is-current-week", 1
+      assert_equal %w[15 16 17 18 19 20 21], css_select(".is-current-week .calendar-day").map(&:text)
+      assert_select ".calendar-day.is-today", text: "16", count: 1
+      assert_select ".calendar-day.is-outside", 5
+      assert_select ".is-current-week .calendar-day.has-workout", 2
+
+      # the active split's week, with today ringed
+      assert_select ".week .week-day.is-today", 1
+      assert_select ".week .week-day.is-today.is-set .week-label", "Push"
+
+      # today's workout, nothing logged before
+      assert_select ".today .eyebrow", /Today · Monday, November 16/
+      assert_select ".today-title", "Push day"
+      assert_select ".today a[href=?]", workout_day_path(push), text: "Open workout"
+      assert_select ".today", /not logged a Push session before today/
+      assert_select ".last-lifts", 0
+
+      # last week's session: the heaviest set of each exercise, most reps between equal weights
+      last = push.workout_logs.create!(date: Date.new(2026, 11, 9))
+      bench = last.workout_log_exercises.create!(exercise: @bench, name: "Bench press")
+      bench.workout_sets.create!(reps_completed: 10, weight_used: 60)
+      bench.workout_sets.create!(reps_completed: 5, weight_used: 80)
+      bench.workout_sets.create!(reps_completed: 6, weight_used: 80)
+      dips = last.workout_log_exercises.create!(name: "Dips")
+      dips.workout_sets.create!(reps_completed: 12)
+      dips.workout_sets.create!(reps_completed: 15)
+      older = push.workout_logs.create!(date: Date.new(2026, 11, 2))
+      older.workout_log_exercises.create!(name: "Old lift").workout_sets.create!(reps_completed: 1, weight_used: 200)
+      # today's own sets are not "last time"
+      push.workout_logs.create!(date: Date.current).workout_log_exercises.create!(name: "Today lift")
+
+      get root_path
+      assert_select ".today-last a[href=?]", workout_log_path(last, from: "dashboard"), text: "Monday, November 9"
+      assert_equal ["Bench press", "Dips"], css_select(".last-lifts .row-title").map(&:text)
+      assert_equal ["80 kg × 6 reps", "Bodyweight × 15 reps"], css_select(".last-lifts .top-set").map { |n| n.text.squish }
+
+      # the ring is around the split only; today's exercises are in their own box below it
+      assert_select ".split-card.is-active .week", 1
+      assert_select ".split-card.is-active .today, .split-card.is-active .last-lifts", 0
+      assert_select ".split-card.is-active + .card.today .last-lifts", 1
+
+      # opened from the dashboard, last time's workout goes back to the dashboard
+      get workout_log_path(last, from: "dashboard")
+      assert_select ".back-link[href=?]", root_path, text: "Dashboard"
+      get workout_log_path(last)
+      assert_select ".back-link[href=?]", workout_day_path(push), text: "Push"
+    end
+
+    # after changing split, last time is still found: Lower is the same workout as Legs,
+    # and the latest session counts whichever split it was done in
+    travel_to Time.zone.local(2026, 11, 20, 12) do
+      legs = split.workout_days.create!(day: "Legs", weekday: 4)
+      legs_log = legs.workout_logs.create!(date: Date.new(2026, 11, 19))
+      legs_log.workout_log_exercises.create!(exercise: @squat, name: "Squat").workout_sets.create!(reps_completed: 5, weight_used: 100)
+      upper_lower = @user.splits.create!(name: "Upper lower")
+      upper_lower.workout_days.create!(day: "Lower", weekday: 5)
+      someone_else = @admin.splits.create!(name: "Theirs").workout_days.create!(day: "Lower", weekday: 4)
+      someone_else.workout_logs.create!(date: Date.new(2026, 11, 19)).workout_log_exercises.create!(name: "Not mine")
+      patch activate_split_path(upper_lower)
+
+      get root_path
+      assert_select ".today-title", "Lower day"
+      assert_select ".today-last a[href=?]", workout_log_path(legs_log, from: "dashboard"), text: "Thursday, November 19"
+      assert_select ".today-last .last-source", /Legs in PPL/
+      assert_equal ["Squat"], css_select(".last-lifts .row-title").map(&:text)
+      assert_equal ["100 kg × 5 reps"], css_select(".last-lifts .top-set").map { |n| n.text.squish }
+    end
+
+    # Tuesday: nothing planned
+    travel_to Time.zone.local(2026, 11, 17, 12) do
+      get root_path
+      assert_select ".today-title", "Rest day"
+      assert_select ".today", /No workout is planned for Tuesday/
+      assert_select ".week .week-day.is-today.is-set", 0
+      assert_select ".week .week-day.is-today", 1
+    end
+  end
+
+  test "a workout logged in a split that was deleted is still last time's workout" do
+    sign_in @user
+    old_split = @user.splits.create!(name: "Old split")
+    push = old_split.workout_days.create!(day: "Push", weekday: 1)
+    planned = push.workout_exercises.create!(exercise: @bench)
+
+    # Monday 16 November 2026: train Push
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
+    end
+    log = @user.workout_logs.sole
+
+    # change split and delete the old one: the record stays
+    new_split = @user.splits.create!(name: "New split")
+    new_split.workout_days.create!(day: "Push", weekday: 2)
+    delete split_path(old_split)
+    assert_equal [log], @user.workout_logs.to_a
+
+    # Tuesday: Push again, in the new split
+    travel_to Time.zone.local(2026, 11, 17, 12) do
+      get root_path
+      assert_select ".today-title", "Push day"
+      assert_select ".today-last a[href=?]", workout_log_path(log, from: "dashboard"), text: "Monday, November 16"
+      assert_select ".today-last .last-source", /from a deleted split/
+      assert_equal ["Bench press"], css_select(".last-lifts .row-title").map(&:text)
+      assert_equal ["60 kg × 8 reps"], css_select(".last-lifts .top-set").map { |n| n.text.squish }
+
+      # the old workout still opens, can still be edited, and is listed in the history
+      get workout_log_path(log)
+      assert_select "h1", "Push workout"
+      assert_select ".back-link[href=?]", workout_logs_path
+      entry = log.workout_log_exercises.sole
+      post workout_log_exercise_workout_sets_path(entry), params: { workout_set: { reps_completed: 6, weight_used: 65 } }
+      assert_equal 2, entry.workout_sets.count
+      get edit_workout_log_exercise_path(entry)
+      assert_response :success
+      get workout_logs_path
+      assert_select "td", text: "Push"
+    end
+  end
+
+  test "today follows the time zone the browser reports" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    split.workout_days.create!(day: "Push", weekday: 1)
+    planned = split.workout_days.first.workout_exercises.create!(exercise: @bench, name: "Bench press")
+
+    # 01:00 UTC on Tuesday 1 December is still Monday 30 November in São Paulo and already Tuesday in Tokyo
+    travel_to Time.utc(2026, 12, 1, 1) do
+      get root_path
+      assert_select "body[data-time-zone=?]", "Etc/UTC"
+      assert_select ".calendar-card h2", "December 2026"
+      assert_select ".today-title", "Rest day"
+
+      cookies[:time_zone] = "America/Sao_Paulo"
+      get root_path
+      assert_select "body[data-time-zone=?][data-reloadable=true]", "America/Sao_Paulo"
+      assert_select ".calendar-card h2", "November 2026"
+      assert_select ".calendar-day.is-today", text: "30"
+      assert_select ".today .eyebrow", /Monday, November 30/
+      assert_select ".today-title", "Push day"
+
+      # sets are logged under the user's own date too
+      post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
+      assert_equal Date.new(2026, 11, 30), @user.workout_logs.last.date
+
+      cookies[:time_zone] = "Asia/Tokyo"
+      get root_path
+      assert_select ".calendar-card h2", "December 2026"
+      assert_select ".today-title", "Rest day"
+
+      # a zone the server does not know falls back to the default
+      cookies[:time_zone] = "Not/AZone"
+      get root_path
+      assert_select "body[data-time-zone=?]", "Etc/UTC"
+    end
   end
 
   test "adding exercises to a day from the catalogue or by creating one" do

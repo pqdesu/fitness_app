@@ -4,18 +4,21 @@
       <p class="eyebrow">Dashboard</p>
       <h1>Ready to train?</h1>
     </div>
-    <%= link_to new_split_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> New split<% end %>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-md-4"><div class="stat-tile"><span class="stat-value"><%= @splits_count %></span><span class="stat-label">Splits</span></div></div>
-    <div class="col-md-4"><div class="stat-tile"><span class="stat-value"><%= @logs_count %></span><span class="stat-label">Workouts logged</span></div></div>
-    <div class="col-md-4"><div class="stat-tile"><span class="stat-value"><%= @sets_count %></span><span class="stat-label">Sets recorded</span></div></div>
   </div>
 
   <div class="row g-4">
+    <div class="col-lg-5">
+      <%= render "calendar", today: @today, workout_weekdays: @active_days.filter_map(&:weekday) %>
+
+      <div class="row g-3">
+        <div class="col-4"><div class="stat-tile"><span class="stat-value"><%= @splits_count %></span><span class="stat-label">Splits</span></div></div>
+        <div class="col-4"><div class="stat-tile"><span class="stat-value"><%= @logs_count %></span><span class="stat-label">Workouts logged</span></div></div>
+        <div class="col-4"><div class="stat-tile"><span class="stat-value"><%= @sets_count %></span><span class="stat-label">Sets recorded</span></div></div>
+      </div>
+    </div>
+
     <div class="col-lg-7">
-      <div class="card split-card is-active">
+      <div class="card split-card is-active h-auto">
         <% if @active_split %>
           <div class="card-header">
             <div>
@@ -25,7 +28,7 @@
             <% if @splits_count > 1 %><%= link_to "Change", splits_path(from: "dashboard"), class: "link-quiet" %><% end %>
           </div>
           <div class="card-body">
-            <%= render "splits/week", split: @active_split, workout_days: @active_days %>
+            <%= render "splits/week", split: @active_split, workout_days: @active_days, today: @today.wday %>
           </div>
         <% else %>
           <div class="card-header"><h2>Active split</h2></div>
@@ -36,9 +39,52 @@
           </div>
         <% end %>
       </div>
-    </div>
 
-    <div class="col-lg-5">
+      <% if @active_split %>
+        <%# Today's workout and what was lifted last time, in its own box below the active split %>
+        <div class="card today">
+          <div class="today-header">
+            <div>
+              <p class="eyebrow">Today · <%= l @today, format: "%A, %B %-d" %></p>
+              <% if @today_workout %>
+                <h3 class="today-title"><%= @today_workout.day %> day</h3>
+              <% else %>
+                <h3 class="today-title">Rest day</h3>
+              <% end %>
+            </div>
+            <% if @today_workout %>
+              <%= link_to "Open workout", workout_day_path(@today_workout), class: "btn btn-primary btn-sm" %>
+            <% end %>
+          </div>
+
+          <% if @today_workout.nil? %>
+            <p class="text-muted small mb-0">No workout is planned for <%= l @today, format: "%A" %> in this split.</p>
+          <% elsif @last_log.nil? %>
+            <p class="text-muted small mb-0">You have not logged a <%= @today_workout.day %> session before today. Your heaviest sets will show here next time.</p>
+          <% else %>
+            <p class="today-last">
+              Last time · <%= link_to l(@last_log.date, format: "%A, %B %-d"), workout_log_path(@last_log, from: "dashboard") %>
+              <% if @last_log.workout_day.nil? %>
+                <span class="last-source">· <%= @last_log.workout %>, from a deleted split</span>
+              <% elsif @last_log.workout_day != @today_workout %>
+                <span class="last-source">· <%= @last_log.workout %> in <%= @last_log.workout_day.split.name %></span>
+              <% end %>
+            </p>
+            <ul class="list-rows last-lifts">
+              <% @last_log.workout_log_exercises.sort_by(&:id).each do |lift| %>
+                <% top = lift.top_set %>
+                <li>
+                  <span class="row-title"><%= lift.name %></span>
+                  <span class="top-set">
+                    <% if top %><%= format_weight(top.weight_used) %> × <%= pluralize(top.reps_completed, "rep") %><% else %><span class="text-muted">No sets</span><% end %>
+                  </span>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      <% end %>
+
       <div class="card">
         <div class="card-header"><h2>Recent workouts</h2><%= link_to "History", workout_logs_path, class: "link-quiet" %></div>
         <% if @recent_logs.empty? %>
@@ -51,10 +97,10 @@
             <% @recent_logs.each do |log| %>
               <li>
                 <div>
-                  <%= link_to log.workout_day.day, workout_log_path(log), class: "row-title" %>
+                  <%= link_to log.workout, workout_log_path(log), class: "row-title" %>
                   <div class="text-muted small"><%= l log.date, format: :long %> · <%= pluralize(log.workout_log_exercises.sum { |e| e.workout_sets.size }, "set") %></div>
                 </div>
-                <span class="chip"><%= log.workout_day.split.name %></span>
+                <% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% end %>
               </li>
             <% end %>
           </ul>

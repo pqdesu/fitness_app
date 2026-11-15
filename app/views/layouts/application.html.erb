@@ -10,7 +10,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-time-zone="<%= Time.zone.tzinfo.name %>" data-reloadable="<%= request.get? %>">
     <%= render "shared/navbar" %>
     <%= render "shared/flashes" %>
 

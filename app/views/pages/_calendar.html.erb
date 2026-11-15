@@ -1,0 +1,24 @@
+<%#
+  The month of `today`, with this week's row and today marked. Weekdays that have a workout
+  in the active split get a dot. Locals: today, workout_weekdays (weekday numbers).
+%>
+<div class="card calendar-card">
+  <div class="card-header"><h2><%= l today, format: "%B %Y" %></h2></div>
+  <div class="card-body">
+    <div class="calendar" role="grid" aria-label="<%= l today, format: "%B %Y" %>">
+      <div class="calendar-week calendar-head" role="row">
+        <% Date::DAYNAMES.each do |name| %><span role="columnheader" aria-label="<%= name %>"><%= name.first %></span><% end %>
+      </div>
+      <% month_weeks(today).each do |week| %>
+        <div class="<%= class_names("calendar-week", "is-current-week": week.include?(today)) %>" role="row">
+          <% week.each do |date| %>
+            <span role="gridcell"
+                  class="<%= class_names("calendar-day", "is-today": date == today, "is-outside": date.month != today.month,
+                                         "has-workout": workout_weekdays.include?(date.wday)) %>"
+                  <%= 'aria-current="date"'.html_safe if date == today %>><%= date.day %></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

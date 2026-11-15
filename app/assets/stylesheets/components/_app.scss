@@ -356,9 +356,90 @@ div.card-link {
 .week-day.is-set { color: $gray; }
 .week-day.is-set .week-circle { border-color: $blue; background: $blue; color: white; }
 
+// Today: a ring around the circle, whether or not the day has a workout
+.week-day.is-today {
+  color: $gray;
+  .week-circle { box-shadow: 0 0 0 2px white, 0 0 0 4px $blue; }
+  .week-label { font-weight: 700; }
+}
+
 @media (max-width: 420px) {
   .week-circle { width: 2.25rem; height: 2.25rem; }
 }
+
+// Dashboard: month calendar
+.calendar-card { margin-bottom: 1rem; }
+
+.calendar { display: grid; gap: .125rem; font-variant-numeric: tabular-nums; }
+
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding: .125rem;
+  border-radius: 999px;
+
+  &.is-current-week { background: $primary-soft; }
+}
+
+.calendar-head {
+  font-size: .75rem;
+  font-weight: 700;
+  color: $muted;
+  text-align: center;
+  span { padding: .25rem 0; }
+}
+
+.calendar-day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  max-width: 100%;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  font-size: .875rem;
+  font-weight: 500;
+
+  &.is-outside { color: #A9AFB9; }
+  &.is-today { background: $blue; color: white; font-weight: 700; }
+
+  // A day with a workout in the active split
+  &.has-workout::after {
+    content: "";
+    position: absolute;
+    bottom: .2rem;
+    width: .25rem;
+    height: .25rem;
+    border-radius: 50%;
+    background: $blue;
+  }
+  &.is-outside.has-workout::after { background: #C9CDD4; }
+  &.is-today.has-workout::after { background: white; }
+}
+
+// Dashboard: today's workout and what was lifted last time
+
+.today-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.125rem 1.25rem .5rem;
+}
+
+.today-title { margin: 0; font-size: 1.25rem; }
+
+.today > p { padding: 0 1.25rem 1.25rem; }
+.today > .today-last {
+  margin: 0;
+  padding-bottom: .25rem;
+  font-size: .8rem;
+  font-weight: 600;
+  color: $muted;
+}
+
+.top-set { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 // Rows that open something (an exercise of a workout day)
 .row-link {

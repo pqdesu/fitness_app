@@ -15,13 +15,13 @@
   <% else %>
     <div class="table-responsive">
       <table class="table app-table">
-        <thead><tr><th>Date</th><th>Workout day</th><th>Split</th><th>Exercises</th><th>Sets</th><th></th></tr></thead>
+        <thead><tr><th>Date</th><th>Workout</th><th>Split</th><th>Exercises</th><th>Sets</th><th></th></tr></thead>
         <tbody>
           <% @workout_logs.each do |log| %>
             <tr>
               <td class="fw-semibold"><%= link_to l(log.date, format: :long), workout_log_path(log) %></td>
-              <td><%= log.workout_day.day %></td>
-              <td><span class="chip"><%= log.workout_day.split.name %></span></td>
+              <td><%= log.workout %></td>
+              <td><% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% else %><span class="text-muted small">Deleted</span><% end %></td>
               <td><%= log.workout_log_exercises.size %></td>
               <td><%= log.workout_log_exercises.sum { |e| e.workout_sets.size } %></td>
               <td class="text-end"><%= link_to "Open", workout_log_path(log), class: "btn btn-light btn-sm" %></td>

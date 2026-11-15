@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_16_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_16_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -84,11 +84,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_16_120000) do
   end
 
   create_table "workout_logs", force: :cascade do |t|
-    t.bigint "workout_day_id", null: false
+    t.bigint "workout_day_id"
     t.date "date", null: false
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.string "workout", null: false
+    t.index ["user_id", "workout", "date"], name: "index_workout_logs_on_user_id_and_workout_and_date"
+    t.index ["user_id"], name: "index_workout_logs_on_user_id"
     t.index ["workout_day_id"], name: "index_workout_logs_on_workout_day_id"
   end
 
@@ -113,6 +117,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_16_120000) do
   add_foreign_key "workout_log_exercises", "exercises"
   add_foreign_key "workout_log_exercises", "workout_exercises"
   add_foreign_key "workout_log_exercises", "workout_logs"
-  add_foreign_key "workout_logs", "workout_days"
+  add_foreign_key "workout_logs", "users"
+  add_foreign_key "workout_logs", "workout_days", on_delete: :nullify
   add_foreign_key "workout_sets", "workout_log_exercises"
 end

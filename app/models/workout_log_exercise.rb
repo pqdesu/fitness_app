@@ -11,6 +11,11 @@ class WorkoutLogExercise < ApplicationRecord
 
   validate :workout_exercise_belongs_to_logged_day
 
+  # The heaviest set of this exercise; between equal weights (or bodyweight sets), the most reps.
+  def top_set
+    workout_sets.max_by { |set| [set.weight_used || 0, set.reps_completed] }
+  end
+
   private
 
   # An entry started from the plan takes the plan's exercise and equipment,

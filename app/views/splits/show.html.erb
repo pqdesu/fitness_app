@@ -11,7 +11,7 @@
     <% end %>
     <%= link_to "Rename", edit_split_path(@split), class: "btn btn-light" %>
     <%= button_to "Delete", @split, method: :delete, class: "btn btn-outline-danger",
-          form: { data: { turbo_confirm: "Delete this split with all its days and logged workouts?" } } %>
+          form: { data: { turbo_confirm: "Delete this split and its days? Your logged workouts are kept." } } %>
   </div>
 </div>
 

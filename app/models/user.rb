@@ -8,7 +8,8 @@ class User < ApplicationRecord
   # The split the user chose to train right now. See #current_split.
   belongs_to :active_split, class_name: "Split", optional: true
   has_many :workout_days, through: :splits
-  has_many :workout_logs, through: :workout_days
+  # Kept when a split is deleted: the history is the user's, not the split's.
+  has_many :workout_logs, dependent: :destroy
   # Exercises this user created for themselves (not part of the shared catalogue).
   has_many :exercises, dependent: :destroy
 

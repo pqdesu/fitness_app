@@ -1,7 +1,13 @@
-<% back_to @workout_day.day, workout_day_path(@workout_day) %>
+<% if params[:from] == "dashboard" %>
+  <% back_to "Dashboard", root_path %>
+<% elsif @workout_day %>
+  <% back_to @workout_day.day, workout_day_path(@workout_day) %>
+<% else %>
+  <% back_to "History", workout_logs_path %>
+<% end %>
 <div class="page-header">
   <div>
-    <h1><%= @workout_day.day %> workout</h1>
+    <h1><%= @workout_log.workout %> workout</h1>
     <p class="text-muted mb-0"><%= l @workout_log.date, format: :long %></p>
   </div>
   <div class="header-actions">
