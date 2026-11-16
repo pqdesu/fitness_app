@@ -5,9 +5,15 @@ class WorkoutLogsController < ApplicationController
 
   # A workout is created by adding the first set of the day (see WorkoutSetsController#create).
 
+  # The history, or with ?date=YYYY-MM-DD the workouts of that one day (a calendar day that
+  # has several workouts links here).
   def index
-    @workout_logs = paginate(current_user.workout_logs.order(date: :desc, id: :desc), per: 20)
-                    .includes(workout_day: :split, workout_log_exercises: :workout_sets)
+    @date = Date.iso8601(params[:date]) if params[:date].present?
+    logs = current_user.workout_logs.order(date: :desc, id: :desc)
+    logs = logs.where(date: @date) if @date
+    @workout_logs = paginate(logs, per: 20).includes(workout_day: :split, workout_log_exercises: :workout_sets)
+  rescue Date::Error
+    redirect_to workout_logs_path
   end
 
   def show

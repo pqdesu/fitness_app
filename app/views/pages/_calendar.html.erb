@@ -1,6 +1,7 @@
 <%#
-  The month of `today`, with this week's row and today marked. Weekdays that have a workout
-  in the active split get a dot. Locals: today, workout_weekdays (weekday numbers).
+  The month of `today`, with this week's row and today marked. A day is highlighted only when a
+  workout was logged on it, and then it is a link to what was recorded: the workout itself, or the
+  day's list in History when there were several. Locals: today, logs_by_date (date => workout logs).
 %>
 <div class="card calendar-card">
   <div class="card-header"><h2><%= l today, format: "%B %Y" %></h2></div>
@@ -12,10 +13,18 @@
       <% month_weeks(today).each do |week| %>
         <div class="<%= class_names("calendar-week", "is-current-week": week.include?(today)) %>" role="row">
           <% week.each do |date| %>
-            <span role="gridcell"
-                  class="<%= class_names("calendar-day", "is-today": date == today, "is-outside": date.month != today.month,
-                                         "has-workout": workout_weekdays.include?(date.wday)) %>"
-                  <%= 'aria-current="date"'.html_safe if date == today %>><%= date.day %></span>
+            <% logs = logs_by_date.fetch(date, []) %>
+            <% classes = class_names("calendar-day", "is-today": date == today, "is-outside": date.month != today.month, "has-workout": logs.any?) %>
+            <% current = ("date" if date == today) %>
+            <% if logs.any? %>
+              <% workouts = "#{logs.map(&:workout).to_sentence} #{'workout'.pluralize(logs.size)}" %>
+              <%= link_to date.day,
+                    (logs.one? ? workout_log_path(logs.first, from: "dashboard") : workout_logs_path(date: date.iso8601, from: "dashboard")),
+                    role: "gridcell", class: classes, "aria-current": current,
+                    title: workouts, "aria-label": "#{l date, format: '%A, %B %-d'}: #{workouts}" %>
+            <% else %>
+              <%= tag.span date.day, role: "gridcell", class: classes, "aria-current": current %>
+            <% end %>
           <% end %>
         </div>
       <% end %>

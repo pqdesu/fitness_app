@@ -11,6 +11,10 @@ class PagesController < ApplicationController
     @today = Date.current
     @today_workout = @active_days.find { |day| day.weekday == @today.wday }
     @last_log = last_session_of(@today_workout) if @today_workout
+    # The calendar marks the days a workout was logged on, and each opens what was recorded.
+    calendar_dates = helpers.month_weeks(@today).flatten
+    @logs_by_date = current_user.workout_logs.where(date: calendar_dates.first..calendar_dates.last)
+                                .order(:id).group_by(&:date)
     @recent_logs = current_user.workout_logs
                                .includes(workout_day: :split, workout_log_exercises: :workout_sets)
                                .order(date: :desc, id: :desc).limit(5)

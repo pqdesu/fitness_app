@@ -167,7 +167,9 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
       assert_equal %w[15 16 17 18 19 20 21], css_select(".is-current-week .calendar-day").map(&:text)
       assert_select ".calendar-day.is-today", text: "16", count: 1
       assert_select ".calendar-day.is-outside", 5
-      assert_select ".is-current-week .calendar-day.has-workout", 2
+      # nothing is logged yet, so no day is highlighted, whatever the split plans
+      assert_select ".calendar-day.has-workout", 0
+      assert_select ".calendar a", 0
 
       # the active split's week, with today ringed
       assert_select ".week .week-day.is-today", 1
@@ -198,6 +200,46 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
       assert_select ".today-last a[href=?]", workout_log_path(last, from: "dashboard"), text: "Monday, November 9"
       assert_equal ["Bench press", "Dips"], css_select(".last-lifts .row-title").map(&:text)
       assert_equal ["80 kg × 6 reps", "Bodyweight × 15 reps"], css_select(".last-lifts .top-set").map { |n| n.text.squish }
+
+      # the calendar highlights exactly the days a workout was logged on (the 2nd, the 9th and today),
+      # and each is a link to what was recorded that day
+      assert_equal %w[2 9 16], css_select(".calendar-day.has-workout").map(&:text)
+      assert_select "a.calendar-day.has-workout[href=?]", workout_log_path(last, from: "dashboard"), text: "9"
+      assert_select "a.calendar-day.has-workout[href=?]", workout_log_path(older, from: "dashboard"), text: "2"
+      assert_select "a.calendar-day.has-workout.is-today[aria-current=date]", text: "16"
+      assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push workout"
+      # a planned day with nothing logged (Wednesday the 18th is a Pull day) is plain text
+      assert_select "span.calendar-day:not(.has-workout)", text: "18"
+      # opening one shows the workout and its exercises, and goes back to the dashboard
+      get workout_log_path(last, from: "dashboard")
+      assert_select "h1", "Push workout"
+      assert_equal ["Bench press", "Dips"], css_select(".entry-card h2").map(&:text)
+      assert_select ".back-link[href=?]", root_path, text: "Dashboard"
+
+      # a day with two workouts opens that day's list, which leads to each of them
+      pull_day = split.workout_days.find_by!(day: "Pull")
+      pull_log = pull_day.workout_logs.create!(date: Date.new(2026, 11, 9))
+      someone_else = @admin.splits.create!(name: "Theirs").workout_days.create!(day: "Legs", weekday: 1)
+      someone_else.workout_logs.create!(date: Date.new(2026, 11, 10))
+      get root_path
+      assert_equal %w[2 9 16], css_select(".calendar-day.has-workout").map(&:text)
+      assert_select "a.calendar-day[href=?]", workout_logs_path(date: "2026-11-09", from: "dashboard"), text: "9"
+      assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push and Pull workouts"
+      get workout_logs_path(date: "2026-11-09", from: "dashboard")
+      assert_select "h1", "Workouts on November 09, 2026"
+      assert_select ".back-link[href=?]", root_path, text: "Dashboard"
+      assert_select "table.app-table tbody tr", 2
+      assert_select "a[href=?]", workout_log_path(pull_log, from: "dashboard")
+      assert_select "a[href=?]", workout_log_path(last, from: "dashboard")
+      # reached without the dashboard it goes back to the history; a day with nothing, or a bad date, is handled
+      get workout_logs_path(date: "2026-11-09")
+      assert_select ".back-link[href=?]", workout_logs_path, text: "History"
+      get workout_logs_path(date: "2026-11-10")
+      assert_select ".empty-state", /No workouts were logged on this day/
+      get workout_logs_path(date: "not-a-date")
+      assert_redirected_to workout_logs_path
+      pull_log.destroy!
+      get root_path
 
       # the ring is around the split only; today's exercises are in their own box below it
       assert_select ".split-card.is-active .week", 1

@@ -56,6 +56,7 @@ bin/rails mock:clear      # deletes the mock workouts and the plans the mock tas
 - `ExercisePicker` (controller concern) reads the "Add exercises" modal and decides whether a new exercise is private or shared. `Paginated` (controller concern) with `shared/_pagination` pages History, the catalogue and the users list.
 - `Admin::UsersController` (`/admin/users`) is the admin's users page, linked from the user menu.
 - A set is a `<tbody>` of its own in a set table (`workout_sets/_set`): the row of numbers, then its note, or the note field with Save and Cancel while editing (`row_edit_controller.js`).
+- The dashboard calendar (`pages/_calendar`) rings only the days a workout was logged on. A ringed day links to that workout, or to `/workout_logs?date=YYYY-MM-DD` when the day has several.
 - Sub-pages declare their back button with `<% back_to "Label", path %>` at the top of the view; the layout draws it.
 - Dates follow the browser's time zone, sent in a cookie by `app/javascript/time_zone.js` and remembered in `users.time_zone` for sessions that have not reported one yet.
 - Most behaviour is covered by `test/integration/workout_flow_test.rb`; the mock task by `test/tasks/mock_task_test.rb`.
