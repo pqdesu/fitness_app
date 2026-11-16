@@ -470,6 +470,9 @@ div.card-link {
   color: $muted;
 }
 
+// "Last time" as a closing line, under the sets logged today
+.today > .today-previous { padding: .75rem 1.25rem 1rem; border-top: 1px solid $line; }
+
 .top-set { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 // Rows that open something (an exercise of a workout day)

@@ -1,3 +1,3 @@
-<% back_to "Exercises", exercises_path %>
+<% @return_day ? back_to(@return_day.day, workout_day_path(@return_day)) : back_to("Exercises", exercises_path) %>
 <div class="page-header"><div><h1>Edit exercise</h1></div></div>
 <%= render "form", exercise: @exercise %>

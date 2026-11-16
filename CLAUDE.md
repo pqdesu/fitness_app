@@ -14,6 +14,7 @@ The full project context (product brief, every decision, data model, page flows,
 - Equipment is chosen per lift: free weights, or a machine whose brand the user types.
 - A workout day lists only exercises. Sets (weight, then reps) are added when the user opens an exercise.
 - There is one logged workout per workout per day. Sets added from any split join it, and Legs and Lower count as the same workout.
+- A split has one logged workout per day. A second workout on the same day only comes from another split.
 - An exercise is on a workout day once and in a logged workout once.
 - Weights keep three decimals (1.125 kg).
 
@@ -57,6 +58,8 @@ bin/rails mock:clear      # deletes the mock workouts and the plans the mock tas
 - `Admin::UsersController` (`/admin/users`) is the admin's users page, linked from the user menu.
 - A set is a `<tbody>` of its own in a set table (`workout_sets/_set`): the row of numbers, then its note, or the note field with Save and Cancel while editing (`row_edit_controller.js`).
 - The dashboard calendar (`pages/_calendar`) rings only the days a workout was logged on. A ringed day links to that workout, or to `/workout_logs?date=YYYY-MM-DD` when the day has several.
+- The dashboard's Today box (`pages/home`, `pages/_lifts`) shows today's sets once there are any, with "last time" as a link; before that it shows last time's heaviest sets.
+- An admin renames an exercise from a workout day: the pencil opens `exercises#edit` with `workout_day_id`, which is where saving or cancelling returns.
 - Sub-pages declare their back button with `<% back_to "Label", path %>` at the top of the view; the layout draws it.
 - Dates follow the browser's time zone, sent in a cookie by `app/javascript/time_zone.js` and remembered in `users.time_zone` for sessions that have not reported one yet.
 - Most behaviour is covered by `test/integration/workout_flow_test.rb`; the mock task by `test/tasks/mock_task_test.rb`.
