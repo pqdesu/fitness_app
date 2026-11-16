@@ -14,6 +14,9 @@ class WorkoutLog < ApplicationRecord
   # One session per workout per day: sets added from any split go into the same log.
   validate :only_session_of_workout_that_day, if: -> { new_record? || date_changed? || workout_changed? }
 
+  # A second workout on the same day only comes from another split: a split has one workout a day.
+  validate :only_workout_of_its_split_that_day, if: -> { new_record? || date_changed? }
+
   # Sessions of this same workout, whichever split they were done in.
   scope :of_workout, ->(name) { where(workout: WorkoutDay.names_for(name)) }
 
@@ -24,6 +27,18 @@ class WorkoutLog < ApplicationRecord
     return unless user.workout_logs.of_workout(workout).where(date: date).where.not(id: id).exists?
 
     errors.add(:date, "already has a #{workout} workout logged")
+  end
+
+  def only_workout_of_its_split_that_day
+    # The same workout twice is already reported by the rule above.
+    return if user.nil? || date.nil? || workout_day.nil? || errors[:date].any?
+
+    other = user.workout_logs.joins(:workout_day).where(date: date).where.not(id: id)
+                .find_by(workout_days: { split_id: workout_day.split_id })
+    return if other.nil?
+
+    errors.add(:base, "#{other.workout} is already logged on #{I18n.l(date, format: :long)} in #{workout_day.split.name}. " \
+                      "A second workout that day has to come from another split")
   end
 
   def copy_from_workout_day

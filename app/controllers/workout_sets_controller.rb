@@ -9,9 +9,9 @@ class WorkoutSetsController < ApplicationController
       if params[:workout_exercise_id]
         planned = WorkoutExercise.joins(workout_day: :split).where(splits: { user_id: current_user.id })
                                  .find(params[:workout_exercise_id])
+        back = workout_exercise_path(planned)
         # One session per workout per day: this joins today's log of the workout if there is one.
         entry = planned.entry_on!(Date.current)
-        back = workout_exercise_path(planned)
       else
         entry = WorkoutLogExercise.joins(:workout_log).where(workout_logs: { user_id: current_user.id })
                                   .find(params[:workout_log_exercise_id])
@@ -28,6 +28,9 @@ class WorkoutSetsController < ApplicationController
     else
       redirect_to back, alert: "Set not added: #{workout_set.errors.full_messages.to_sentence}."
     end
+  rescue ActiveRecord::RecordInvalid => e
+    # Today's workout could not be started: this split already has another workout logged today.
+    redirect_to back, alert: "Set not added: #{e.record.errors.full_messages.to_sentence}."
   end
 
   # Corrects the weight, reps or note of a set that is already recorded.

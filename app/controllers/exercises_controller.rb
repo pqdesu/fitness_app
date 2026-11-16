@@ -6,6 +6,7 @@ class ExercisesController < ApplicationController
   # exercises. Everyone else creates their own exercises from the "Add exercises" modal.
   before_action :require_catalogue_admin!, only: [:new, :create]
   before_action :set_exercise, only: [:edit, :update, :destroy]
+  before_action :set_return_day, only: [:edit, :update]
 
   def index
     @exercises = paginate(Exercise.visible_to(current_user).order(:muscle_group, :name, :id), per: 30)
@@ -34,7 +35,7 @@ class ExercisesController < ApplicationController
 
   def update
     if @exercise.update(exercise_params)
-      redirect_to exercises_path, notice: "#{@exercise.name} updated."
+      redirect_to (@return_day || exercises_path), notice: "#{@exercise.name} updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -60,6 +61,11 @@ class ExercisesController < ApplicationController
   def set_exercise
     manageable = current_user.admin? ? Exercise.visible_to(current_user) : current_user.exercises
     @exercise = manageable.find(params[:id])
+  end
+
+  # The workout day the edit was opened from (an admin renames an exercise there), to go back to.
+  def set_return_day
+    @return_day = current_user.workout_days.find_by(id: params[:workout_day_id]) if params[:workout_day_id].present?
   end
 
   def exercise_params
