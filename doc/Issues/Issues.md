@@ -1,5 +1,7 @@
 # Issues
 
+# Issues resolved
+
 ## Home page
 
 ### Split override

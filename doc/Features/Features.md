@@ -29,7 +29,7 @@
 
 ---
 
-# Issues Resolved
+# Features added (DONE)
 
 ### Calendar
 
