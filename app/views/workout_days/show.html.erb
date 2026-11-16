@@ -34,6 +34,11 @@
             <span class="text-muted small"><%= we.equipment_label %><% if we.exercise&.muscle_group.present? %> · <%= we.exercise.muscle_group %><% end %></span>
           <% end %>
           <% if sets_today.positive? %><span class="chip chip-done"><%= pluralize(sets_today, "set") %></span><% end %>
+          <%# An admin renames the exercise from here. The name is the exercise's own, so it changes everywhere. %>
+          <% if current_user.admin? && we.exercise %>
+            <%= link_to edit_exercise_path(we.exercise, workout_day_id: @workout_day.id), class: "btn btn-link btn-sm",
+                  "aria-label": "Edit #{we.name}", title: "Edit #{we.name}" do %><i class="fa-solid fa-pen"></i><% end %>
+          <% end %>
           <%# Quick removal for an exercise added by mistake; it only asks first when sets were already recorded. %>
           <%= button_to workout_exercise_path(we), method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{we.name}", title: "Remove #{we.name}",
                 form: { data: ({ turbo_confirm: "Remove #{we.name} from #{@workout_day.day}? The sets you recorded stay in your history." } if sets_today.positive?) } do %><i class="fa-solid fa-trash"></i><% end %>

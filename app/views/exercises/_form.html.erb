@@ -1,6 +1,8 @@
 <div class="card form-card">
   <div class="card-body">
     <%= simple_form_for exercise do |f| %>
+      <%# Opened from a workout day: saving or cancelling goes back to it. %>
+      <% if @return_day %><%= hidden_field_tag :workout_day_id, @return_day.id, id: nil %><% end %>
       <%= f.input :name, placeholder: "Bench press", autofocus: true %>
       <%= f.input :muscle_group, placeholder: "Chest" %>
       <% if exercise.new_record? %>
@@ -14,7 +16,7 @@
       <% end %>
       <div class="form-actions">
         <%= f.button :submit, class: "btn-primary" %>
-        <%= link_to "Cancel", exercises_path, class: "btn btn-light" %>
+        <%= link_to "Cancel", (@return_day ? workout_day_path(@return_day) : exercises_path), class: "btn btn-light" %>
       </div>
     <% end %>
   </div>

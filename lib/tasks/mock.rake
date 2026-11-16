@@ -58,6 +58,10 @@ namespace :mock do
         if user.workout_logs.of_workout(day.day).exists?(date: date)
           next puts("skipped  #{label} (#{day.day} already logged that day)")
         end
+        # A split has one workout a day (see WorkoutLog).
+        if user.workout_logs.joins(:workout_day).exists?(date: date, workout_days: { split_id: day.split_id })
+          next puts("skipped  #{label} (#{day.split.name} already has a workout logged that day)")
+        end
 
         WorkoutLog.transaction do
           plan_added = day.workout_exercises.empty?

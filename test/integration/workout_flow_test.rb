@@ -216,8 +216,8 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
       assert_equal ["Bench press", "Dips"], css_select(".entry-card h2").map(&:text)
       assert_select ".back-link[href=?]", root_path, text: "Dashboard"
 
-      # a day with two workouts opens that day's list, which leads to each of them
-      pull_day = split.workout_days.find_by!(day: "Pull")
+      # a day with two workouts (the second from another split) opens that day's list, which leads to each of them
+      pull_day = @user.splits.create!(name: "Other").workout_days.create!(day: "Pull", weekday: 1)
       pull_log = pull_day.workout_logs.create!(date: Date.new(2026, 11, 9))
       someone_else = @admin.splits.create!(name: "Theirs").workout_days.create!(day: "Legs", weekday: 1)
       someone_else.workout_logs.create!(date: Date.new(2026, 11, 10))
@@ -876,5 +876,116 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
   test "signing up cannot grant admin" do
     post user_registration_path, params: { user: { email: "new@example.com", password: "secret123", password_confirmation: "secret123", admin: true } }
     assert_not User.find_by!(email: "new@example.com").admin?
+  end
+
+  test "once today's workout has sets the dashboard shows them, with last time as a link" do
+    sign_in @user
+    split = @user.splits.create!(name: "Upper lower")
+    upper = split.workout_days.create!(day: "Upper", weekday: 1)
+    planned = upper.workout_exercises.create!(exercise: @bench)
+
+    # Monday 16 November 2026
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      last = upper.workout_logs.create!(date: Date.new(2026, 11, 15))
+      last.workout_log_exercises.create!(name: "Old lift").workout_sets.create!(reps_completed: 6, weight_used: 80)
+
+      get root_path
+      assert_equal ["Old lift"], css_select(".last-lifts .row-title").map(&:text)
+      assert_select ".today-lifts", 0
+
+      post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
+      post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 5, weight_used: 70 } }
+      today = @user.workout_logs.find_by!(date: Date.current)
+      # an exercise opened today without a set yet is not listed
+      today.workout_log_exercises.create!(name: "No sets yet")
+
+      get root_path
+      assert_select ".today-done a[href=?]", workout_log_path(today, from: "dashboard"), text: "2 sets"
+      assert_equal ["Bench press"], css_select(".today-lifts .row-title").map(&:text)
+      assert_equal ["70 kg × 5 reps"], css_select(".today-lifts .top-set").map { |n| n.text.squish }
+      # last time is still one tap away, but its sets no longer stand in for today's
+      assert_select ".last-lifts", 0
+      assert_select ".today-previous a[href=?]", workout_log_path(last, from: "dashboard"), text: "Sunday, November 15"
+    end
+  end
+
+  test "a second workout on the same day only comes from another split" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+    pull = split.workout_days.create!(day: "Pull", weekday: 3)
+    bench = push.workout_exercises.create!(exercise: @bench)
+    row = pull.workout_exercises.create!(exercise: Exercise.create!(name: "Barbell row"))
+    other_split = @user.splits.create!(name: "Upper lower")
+    lower = other_split.workout_days.create!(day: "Lower", weekday: 1)
+    squat = lower.workout_exercises.create!(exercise: @squat)
+
+    post workout_exercise_workout_sets_path(bench), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
+    assert_equal ["Push"], @user.workout_logs.pluck(:workout)
+
+    # the same split already has today's workout: nothing is logged, and the page says why
+    assert_no_difference ["WorkoutLog.count", "WorkoutLogExercise.count", "WorkoutSet.count"] do
+      post workout_exercise_workout_sets_path(row), params: { workout_set: { reps_completed: 10, weight_used: 50 } }
+    end
+    assert_redirected_to workout_exercise_path(row)
+    assert_match(/Set not added: Push is already logged on .* in PPL/, flash[:alert])
+    # more sets of today's workout are still fine
+    post workout_exercise_workout_sets_path(bench), params: { workout_set: { reps_completed: 7, weight_used: 60 } }
+    assert_equal 2, WorkoutSet.count
+
+    # another split's workout is a second workout of the day
+    post workout_exercise_workout_sets_path(squat), params: { workout_set: { reps_completed: 5, weight_used: 100 } }
+    assert_match "Set 1 added", flash[:notice]
+    assert_equal %w[Lower Push], @user.workout_logs.where(date: Date.current).pluck(:workout).sort
+
+    # a workout cannot be moved onto a day its split already has a workout on
+    earlier = pull.workout_logs.create!(date: Date.current - 7)
+    patch workout_log_path(earlier), params: { workout_log: { date: Date.current } }
+    assert_match "Push is already logged", flash[:alert]
+    assert_equal Date.current - 7, earlier.reload.date
+    # its notes can still be edited, and a workout whose split was deleted is not held back
+    patch workout_log_path(earlier), params: { workout_log: { notes: "Felt good" } }
+    assert_equal "Felt good", earlier.reload.notes
+    orphan = @user.workout_logs.create!(workout: "Pull", date: Date.current)
+    assert orphan.persisted?
+  end
+
+  test "an admin renames an exercise from the workout day" do
+    day = @admin.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    planned = day.workout_exercises.create!(exercise: @bench)
+    own = Exercise.create!(name: "Cable fly", user: @user)
+    users_day = @user.splits.create!(name: "Mine").workout_days.create!(day: "Push", weekday: 1)
+    users_day.workout_exercises.create!(exercise: @bench)
+    users_day.workout_exercises.create!(exercise: own)
+
+    # a normal user has no edit button on the day, not even for their own exercise
+    sign_in @user
+    get workout_day_path(users_day)
+    assert_select "a[href^=?]", "/exercises/", count: 0
+    patch exercise_path(@bench), params: { exercise: { name: "Hacked" }, workout_day_id: users_day.id }
+    assert_response :not_found
+    assert_equal "Bench press", @bench.reload.name
+
+    sign_in @admin
+    get workout_day_path(day)
+    edit = edit_exercise_path(@bench, workout_day_id: day.id)
+    assert_select "a[href=?][aria-label=?]", edit, "Edit Bench press"
+    # the edit page belongs to the day it was opened from
+    get edit
+    assert_select ".back-link[href=?]", workout_day_path(day), text: "Push"
+    assert_select "input[type=hidden][name=workout_day_id][value=?]", day.id.to_s
+    assert_select ".form-actions a[href=?]", workout_day_path(day), text: "Cancel"
+    patch exercise_path(@bench), params: { exercise: { name: "" }, workout_day_id: day.id }
+    assert_response :unprocessable_entity
+    assert_select ".back-link[href=?]", workout_day_path(day)
+
+    patch exercise_path(@bench), params: { exercise: { name: "Barbell bench press" }, workout_day_id: day.id }
+    assert_redirected_to workout_day_path(day)
+    assert_equal "Barbell bench press", planned.reload.name
+    follow_redirect!
+    assert_select ".row-title", "Barbell bench press"
+    # someone else's day is not a place to go back to
+    patch exercise_path(@bench), params: { exercise: { name: "Bench press" }, workout_day_id: users_day.id }
+    assert_redirected_to exercises_path
   end
 end

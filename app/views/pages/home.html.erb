@@ -57,30 +57,31 @@
             <% end %>
           </div>
 
-          <% if @today_workout.nil? %>
-            <p class="text-muted small mb-0">No workout is planned for <%= l @today, format: "%A" %> in this split.</p>
-          <% elsif @last_log.nil? %>
-            <p class="text-muted small mb-0">You have not logged a <%= @today_workout.day %> session before today. Your heaviest sets will show here next time.</p>
-          <% else %>
-            <p class="today-last">
+          <%# What was lifted today once there are sets; until then, what was lifted last time. %>
+          <% today_lifts = @today_log ? @today_log.workout_log_exercises.select { |lift| lift.workout_sets.any? } : [] %>
+          <% last_time = capture do %>
+            <% if @last_log %>
               Last time · <%= link_to l(@last_log.date, format: "%A, %B %-d"), workout_log_path(@last_log, from: "dashboard") %>
               <% if @last_log.workout_day.nil? %>
                 <span class="last-source">· <%= @last_log.workout %>, from a deleted split</span>
               <% elsif @last_log.workout_day != @today_workout %>
                 <span class="last-source">· <%= @last_log.workout %> in <%= @last_log.workout_day.split.name %></span>
               <% end %>
+            <% end %>
+          <% end %>
+          <% if @today_workout.nil? %>
+            <p class="text-muted small mb-0">No workout is planned for <%= l @today, format: "%A" %> in this split.</p>
+          <% elsif today_lifts.any? %>
+            <p class="today-last today-done">
+              Logged today · <%= link_to pluralize(today_lifts.sum { |lift| lift.workout_sets.size }, "set"), workout_log_path(@today_log, from: "dashboard") %>
             </p>
-            <ul class="list-rows last-lifts">
-              <% @last_log.workout_log_exercises.sort_by(&:id).each do |lift| %>
-                <% top = lift.top_set %>
-                <li>
-                  <span class="row-title"><%= lift.name %></span>
-                  <span class="top-set">
-                    <% if top %><%= format_weight(top.weight_used) %> × <%= pluralize(top.reps_completed, "rep") %><% else %><span class="text-muted">No sets</span><% end %>
-                  </span>
-                </li>
-              <% end %>
-            </ul>
+            <%= render "lifts", lifts: today_lifts, list_class: "today-lifts" %>
+            <% if @last_log %><p class="today-last today-previous"><%= last_time %></p><% end %>
+          <% elsif @last_log.nil? %>
+            <p class="text-muted small mb-0">You have not logged a <%= @today_workout.day %> session before today. Your heaviest sets will show here next time.</p>
+          <% else %>
+            <p class="today-last"><%= last_time %></p>
+            <%= render "lifts", lifts: @last_log.workout_log_exercises, list_class: "last-lifts" %>
           <% end %>
         </div>
       <% end %>
