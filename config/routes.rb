@@ -28,6 +28,11 @@ Rails.application.routes.draw do
   end
   resources :workout_sets, only: [:update, :destroy]
 
+  # Admin only: the accounts (make or unmake an admin, delete a user)
+  namespace :admin do
+    resources :users, only: [:index, :update, :destroy]
+  end
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check

@@ -34,6 +34,7 @@
           <div>
             <h2><%= entry.name %></h2>
             <p class="text-muted small mb-0"><%= entry.equipment_label %></p>
+            <% if entry.notes.present? %><p class="entry-note small mb-0"><i class="fa-regular fa-note-sticky"></i> <%= entry.notes %></p><% end %>
           </div>
           <div class="entry-meta">
             <span class="chip"><%= pluralize(sets.size, "set") %></span>
@@ -46,9 +47,7 @@
         <% if sets.any? %>
           <table class="table app-table set-table">
             <thead><tr><th>Set</th><th>Weight</th><th>Reps</th><th></th></tr></thead>
-            <tbody>
-              <%= render partial: "workout_sets/set", collection: sets, as: :set %>
-            </tbody>
+            <%= render partial: "workout_sets/set", collection: sets, as: :set %>
           </table>
         <% end %>
 
@@ -57,7 +56,7 @@
             <div class="col-4">
               <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{entry.id}" %>
               <%= f.number_field :weight_used, step: "any", placeholder: "–", class: "form-control", id: "weight_#{entry.id}",
-                    value: number_with_precision(sets.last&.weight_used, precision: 2, strip_insignificant_zeros: true) %>
+                    value: weight_number(sets.last&.weight_used) %>
             </div>
             <div class="col-4">
               <%= f.label :reps_completed, "Reps", class: "form-label", for: "reps_#{entry.id}" %>

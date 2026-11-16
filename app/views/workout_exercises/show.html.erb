@@ -23,9 +23,7 @@
       <% else %>
         <table class="table app-table set-table">
           <thead><tr><th>Set</th><th>Weight</th><th>Reps</th><th></th></tr></thead>
-          <tbody>
-            <%= render partial: "workout_sets/set", collection: @sets, as: :set %>
-          </tbody>
+          <%= render partial: "workout_sets/set", collection: @sets, as: :set, locals: { workout_exercise: @workout_exercise } %>
         </table>
       <% end %>
 
@@ -34,7 +32,7 @@
           <div class="col-4">
             <%= f.label :weight_used, "Weight kg", class: "form-label" %>
             <%= f.number_field :weight_used, step: "any", min: 0, placeholder: "–", inputmode: "decimal", class: "form-control",
-                  value: number_with_precision(@last_set&.weight_used, precision: 2, strip_insignificant_zeros: true) %>
+                  value: weight_number(@last_set&.weight_used) %>
           </div>
           <div class="col-4">
             <%= f.label :reps_completed, "Reps", class: "form-label" %>

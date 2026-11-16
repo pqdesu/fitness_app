@@ -3,6 +3,15 @@
     <%= simple_form_for exercise do |f| %>
       <%= f.input :name, placeholder: "Bench press", autofocus: true %>
       <%= f.input :muscle_group, placeholder: "Chest" %>
+      <% if exercise.new_record? %>
+        <%# Only an admin reaches this form: the exercise goes to the catalogue, or stays the admin's own. %>
+        <div class="form-check mb-3">
+          <%= hidden_field_tag "exercise[shared]", "0", id: nil %>
+          <%= check_box_tag "exercise[shared]", "1", @shared, id: "exercise_shared", class: "form-check-input" %>
+          <%= label_tag "exercise_shared", "Add to the shared catalogue", class: "form-check-label" %>
+          <div class="form-text">Unticked, the exercise is only yours.</div>
+        </div>
+      <% end %>
       <div class="form-actions">
         <%= f.button :submit, class: "btn-primary" %>
         <%= link_to "Cancel", exercises_path, class: "btn btn-light" %>

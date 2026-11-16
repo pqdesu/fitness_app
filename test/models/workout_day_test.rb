@@ -25,7 +25,9 @@ class WorkoutDayTest < ActiveSupport::TestCase
     legs = @split.workout_days.create!(day: "Legs", weekday: 1)
     push = @split.workout_days.create!(day: "Push", weekday: 2)
     lower = @user.splits.create!(name: "Upper lower").workout_days.create!(day: "Lower", weekday: 1)
-    logs = [legs, push, lower].map { |day| day.workout_logs.create!(date: Date.current) }
+    # Legs and Lower on the same date would be one session, so the Lower one is a day earlier
+    logs = [legs, push].map { |day| day.workout_logs.create!(date: Date.current) }
+    logs << lower.workout_logs.create!(date: Date.current - 1)
     assert_equal [logs[0], logs[2]], @user.workout_logs.of_workout("Lower").order(:id).to_a
     assert_equal [logs[1]], @user.workout_logs.of_workout("Push").to_a
   end

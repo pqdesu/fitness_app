@@ -11,7 +11,10 @@ class WorkoutSet < ApplicationRecord
   validates :reps_completed, presence: true,
                              numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   # Optional: bodyweight sets have no weight.
-  validates :weight_used, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+  # The column keeps three decimals (1.125 kg) and goes up to 99,999.999.
+  validates :weight_used, numericality: { greater_than_or_equal_to: 0, less_than: 100_000 }, allow_nil: true
+
+  before_validation { self.notes = notes.to_s.squish.presence }
 
   private
 

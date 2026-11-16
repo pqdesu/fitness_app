@@ -1,33 +1,53 @@
 <%#
-  One recorded set, as a row of a set table. The pen turns its weight and reps into fields,
-  so a mistake is corrected in place instead of deleting the set. Locals: set.
+  One recorded set, as a group of rows (a tbody) of a set table. The pen turns its weight and reps
+  into fields and shows a field for a note, so a mistake is corrected in place instead of deleting
+  the set. Locals: set, and optionally workout_exercise when the table is on an exercise's page,
+  so saving or deleting returns there.
 %>
 <% form_id = "edit_set_#{set.id}" %>
-<tr data-controller="row-edit" data-action="keydown.esc->row-edit#cancel">
-  <td><span class="order-badge"><%= set.set_number %></span></td>
-  <td>
-    <span data-row-edit-target="view"><%= format_weight(set.weight_used) %></span>
-    <%= number_field_tag "workout_set[weight_used]", number_with_precision(set.weight_used, precision: 2, strip_insignificant_zeros: true),
-          id: "weight_set_#{set.id}", form: form_id, step: "any", min: 0, placeholder: "–", inputmode: "decimal",
-          class: "form-control form-control-sm set-field", "aria-label": "Weight in kg of set #{set.set_number}",
-          hidden: true, data: { row_edit_target: "field" } %>
-  </td>
-  <td>
-    <span data-row-edit-target="view"><%= set.reps_completed %></span>
-    <%= number_field_tag "workout_set[reps_completed]", set.reps_completed,
-          id: "reps_set_#{set.id}", form: form_id, min: 0, required: true, inputmode: "numeric",
-          class: "form-control form-control-sm set-field", "aria-label": "Reps of set #{set.set_number}",
-          hidden: true, data: { row_edit_target: "field" } %>
-  </td>
-  <td class="text-end">
-    <div class="set-actions" data-row-edit-target="view">
-      <button type="button" class="btn btn-link btn-sm" data-action="row-edit#edit" aria-label="Edit set <%= set.set_number %>"><i class="fa-solid fa-pen"></i></button>
-      <%= button_to workout_set_path(set), method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Delete set #{set.set_number}" do %><i class="fa-solid fa-trash"></i><% end %>
-    </div>
-    <%= form_with url: workout_set_path(set), method: :patch, id: form_id, class: "set-actions",
-          html: { hidden: true }, data: { row_edit_target: "field form" } do %>
-      <button type="submit" class="btn btn-primary btn-sm">Save</button>
-      <button type="button" class="btn btn-light btn-sm" data-action="row-edit#cancel">Cancel</button>
-    <% end %>
-  </td>
-</tr>
+<% set_path = workout_set_path(set, workout_exercise_id: local_assigns[:workout_exercise]&.id) %>
+<tbody data-controller="row-edit" data-action="keydown.esc->row-edit#cancel">
+  <tr>
+    <td><span class="order-badge"><%= set.set_number %></span></td>
+    <td>
+      <span data-row-edit-target="view"><%= format_weight(set.weight_used) %></span>
+      <%= number_field_tag "workout_set[weight_used]", weight_number(set.weight_used),
+            id: "weight_set_#{set.id}", form: form_id, step: "any", min: 0, placeholder: "–", inputmode: "decimal",
+            class: "form-control form-control-sm set-field", "aria-label": "Weight in kg of set #{set.set_number}",
+            hidden: true, data: { row_edit_target: "field" } %>
+    </td>
+    <td>
+      <span data-row-edit-target="view"><%= set.reps_completed %></span>
+      <%= number_field_tag "workout_set[reps_completed]", set.reps_completed,
+            id: "reps_set_#{set.id}", form: form_id, min: 0, required: true, inputmode: "numeric",
+            class: "form-control form-control-sm set-field", "aria-label": "Reps of set #{set.set_number}",
+            hidden: true, data: { row_edit_target: "field" } %>
+    </td>
+    <td class="text-end">
+      <div class="set-actions" data-row-edit-target="view">
+        <button type="button" class="btn btn-link btn-sm" data-action="row-edit#edit" aria-label="Edit set <%= set.set_number %>"><i class="fa-solid fa-pen"></i></button>
+        <%= button_to set_path, method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Delete set #{set.set_number}" do %><i class="fa-solid fa-trash"></i><% end %>
+      </div>
+      <%# The fields and buttons of the edit sit in other cells and belong to this form by its id. %>
+      <%= form_with url: set_path, method: :patch, id: form_id, html: { hidden: true }, data: { row_edit_target: "form" } do %><% end %>
+    </td>
+  </tr>
+  <% if set.notes.present? %>
+    <tr class="set-note" data-row-edit-target="view">
+      <td></td>
+      <td colspan="3" class="text-muted small"><i class="fa-regular fa-note-sticky"></i> <%= set.notes %></td>
+    </tr>
+  <% end %>
+  <%# While editing: the note, then Save and Cancel, on a row of their own so the number fields keep their width on a phone. %>
+  <tr class="set-note" hidden data-row-edit-target="field">
+    <td colspan="4">
+      <div class="set-edit-bar">
+        <%= text_field_tag "workout_set[notes]", set.notes, id: "notes_set_#{set.id}", form: form_id, maxlength: 200,
+              placeholder: "Note (optional)", autocomplete: "off", class: "form-control form-control-sm",
+              "aria-label": "Note on set #{set.set_number}" %>
+        <button type="submit" form="<%= form_id %>" class="btn btn-primary btn-sm">Save</button>
+        <button type="button" class="btn btn-light btn-sm" data-action="row-edit#cancel">Cancel</button>
+      </div>
+    </td>
+  </tr>
+</tbody>

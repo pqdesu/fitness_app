@@ -10,13 +10,20 @@ The full project context (product brief, every decision, data model, page flows,
 - Plain POST and GET: record entries, read them back. Do not add features beyond what is asked.
 - Keep the planning layer (splits, workout days, planned exercises), the shared exercise catalogue and the admin role. Do not propose removing them.
 - Users pick an exercise from the catalogue or create their own; only an admin changes the shared catalogue.
+- An admin is a normal user with two extras: managing the shared catalogue, and managing users (make or unmake an admin, delete a user). An admin can also create private exercises; one goes to the catalogue only when they tick "Add to the shared catalogue".
 - Equipment is chosen per lift: free weights, or a machine whose brand the user types.
 - A workout day lists only exercises. Sets (weight, then reps) are added when the user opens an exercise.
+- There is one logged workout per workout per day. Sets added from any split join it, and Legs and Lower count as the same workout.
+- An exercise is on a workout day once and in a logged workout once.
+- Weights keep three decimals (1.125 kg).
 
 ## How to work in this repo
 
-- Work in the main checkout on a normal branch. Do not create or suggest git worktrees. The owner usually creates the branch, so check the current branch before making one.
-- The owner tests by running `rails s` from the main folder before merging. Do not finalize work unprompted.
+- Work in a git worktree under `.claude/worktrees/<branch>`, on a branch named for the work (`git worktree add .claude/worktrees/<branch> -b <branch> master`). The owner asked for this on 2026-11-16, replacing the earlier "no worktrees" rule. Leave the main checkout alone: it is the owner's.
+- A server started from the main folder serves the main folder's branch, not the worktree. To let the owner see the work before merging, run a server from the worktree on another port and say which, or give them the command to check the branch out. Do not finalize work unprompted.
+- The worktree and the main folder share one development database. Say so before running a migration that drops or renames something `master` still reads.
+- If Ruby or PostgreSQL is not installed on the machine, run the tests in Docker (a `ruby:3.3.5` container with `libpq-dev` and `nodejs`, and a `postgres` container, with `DATABASE_URL` pointing at it) rather than skipping them.
+- Look at changed pages in a real browser at phone width before calling UI work done. The tests do not run the JavaScript or show the layout.
 - When asked to finalize, finish or wrap up a branch, use the `finalize-branch` skill (in `.claude/skills/`). It writes a detailed change doc to `doc/<branch>.md`, pushes, and opens a pull request.
 - Never merge a pull request, enable auto-merge, or run `git pull` / `git merge` for the owner. Give them the commands instead; they decide what goes into `master` and what comes into their folder.
 - Branch names are a few plain lowercase words joined by dashes, with no digits and no `claude/` prefix.
@@ -32,16 +39,23 @@ bin/setup                 # gems and database
 bin/rails db:seed         # admin user and starter catalogue (idempotent)
 bin/rails server
 bin/rails test
+bundle exec rubocop       # linter; must report no offenses
 bin/rails mock:last_week  # logs last week's sessions for every split, as mock data
-bin/rails mock:clear      # deletes the workouts the mock task logged
+bin/rails mock:clear      # deletes the mock workouts and the plans the mock task added
 ```
+
+`MAILER_SENDER` sets the address password-reset emails come from. `json` is pinned below 3 in the Gemfile because json 3 breaks asset compilation (execjs) and rack-test.
 
 ## Code map
 
 - Program: `Split` has many `WorkoutDay` (one per weekday, name from a fixed list) has many `WorkoutExercise`.
 - Record: `WorkoutLog` (belongs to the user, survives split deletion) has many `WorkoutLogExercise` has many `WorkoutSet`.
 - `Lift` concern (`app/models/concerns/lift.rb`) is shared by planned and logged exercises: name copy, equipment, machine brand.
-- `Exercise` without a user is in the shared catalogue; with a user it is that user's own.
+- `Exercise` without a user is in the shared catalogue; with a user it is that user's own. A name is unique within the catalogue and within one user's own exercises.
+- `WorkoutExercise#entry_on!(date)` is the one way sets reach a log: it finds or creates the user's session of that workout on that date, and the entry of that exercise in it.
+- `ExercisePicker` (controller concern) reads the "Add exercises" modal and decides whether a new exercise is private or shared. `Paginated` (controller concern) with `shared/_pagination` pages History, the catalogue and the users list.
+- `Admin::UsersController` (`/admin/users`) is the admin's users page, linked from the user menu.
+- A set is a `<tbody>` of its own in a set table (`workout_sets/_set`): the row of numbers, then its note, or the note field with Save and Cancel while editing (`row_edit_controller.js`).
 - Sub-pages declare their back button with `<% back_to "Label", path %>` at the top of the view; the layout draws it.
-- Dates follow the browser's time zone, sent in a cookie by `app/javascript/time_zone.js`.
-- Most behaviour is covered by `test/integration/workout_flow_test.rb`.
+- Dates follow the browser's time zone, sent in a cookie by `app/javascript/time_zone.js` and remembered in `users.time_zone` for sessions that have not reported one yet.
+- Most behaviour is covered by `test/integration/workout_flow_test.rb`; the mock task by `test/tasks/mock_task_test.rb`.

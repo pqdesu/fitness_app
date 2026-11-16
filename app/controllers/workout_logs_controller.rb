@@ -1,12 +1,13 @@
 class WorkoutLogsController < ApplicationController
+  include Paginated
+
   before_action :set_workout_log, only: [:show, :update, :destroy]
 
   # A workout is created by adding the first set of the day (see WorkoutSetsController#create).
 
   def index
-    @workout_logs = current_user.workout_logs
-                                .includes(workout_day: :split, workout_log_exercises: :workout_sets)
-                                .order(date: :desc, id: :desc)
+    @workout_logs = paginate(current_user.workout_logs.order(date: :desc, id: :desc), per: 20)
+                    .includes(workout_day: :split, workout_log_exercises: :workout_sets)
   end
 
   def show
@@ -14,10 +15,11 @@ class WorkoutLogsController < ApplicationController
     @log_exercises = @workout_log.workout_log_exercises
                                  .includes(:workout_sets, :workout_exercise).order(:id)
     # Nothing is planned any more once the day (or its split) has been deleted.
+    # An exercise already in the workout is not offered again, whichever way it got there.
     @unlogged_exercises = if @workout_day
-      @workout_day.workout_exercises.where.not(id: @log_exercises.filter_map(&:workout_exercise_id)).order(:id)
+      @workout_day.workout_exercises.order(:id).reject { |planned| planned.entry_in(@workout_log) }
     else
-      WorkoutExercise.none
+      []
     end
     @picker_exercises = Exercise.visible_to(current_user).order(:name)
   end

@@ -1,5 +1,6 @@
 AllCops:
   NewCops: enable
+  SuggestExtensions: false
   Exclude:
     - 'bin/**/*'
     - 'db/**/*'
@@ -35,7 +36,19 @@ Lint/MissingSuper:
 Style/FrozenStringLiteralComment:
   Enabled: false
 Layout/LineLength:
-  Max: 120
+  Max: 130
+# The app writes `message = if ... end` with the branches indented from the start of the line.
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: variable
+# The app writes symbol lists as [:show, :edit].
+Style/SymbolArray:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
 Style/EmptyMethod:
   Enabled: false
 Bundler/OrderedGems:

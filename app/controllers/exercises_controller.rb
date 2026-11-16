@@ -1,22 +1,29 @@
 class ExercisesController < ApplicationController
-  # Only an admin adds to the shared catalogue here.
-  # Users create their own exercises from the "Add exercises" modal.
-  before_action :require_admin!, only: [:new, :create]
+  include ExercisePicker
+  include Paginated
+
+  # The form on this page is the admin's: it adds to the shared catalogue, or to the admin's own
+  # exercises. Everyone else creates their own exercises from the "Add exercises" modal.
+  before_action :require_catalogue_admin!, only: [:new, :create]
   before_action :set_exercise, only: [:edit, :update, :destroy]
 
   def index
-    @exercises = Exercise.visible_to(current_user).order(:muscle_group, :name)
-    @usage = WorkoutExercise.group(:exercise_id).count
+    @exercises = paginate(Exercise.visible_to(current_user).order(:muscle_group, :name, :id), per: 30)
+    @usage = WorkoutExercise.where(exercise_id: @exercises.map(&:id)).group(:exercise_id).count
   end
 
   def new
     @exercise = Exercise.new
+    @shared = true
   end
 
   def create
     @exercise = Exercise.new(exercise_params)
+    @shared = shared_exercise_requested?
+    @exercise.user = current_user unless @shared
+
     if @exercise.save
-      redirect_to exercises_path, notice: "#{@exercise.name} added to the catalogue."
+      redirect_to exercises_path, notice: "#{@exercise.name} added to #{@shared ? 'the catalogue' : 'your own exercises'}."
     else
       render :new, status: :unprocessable_entity
     end
@@ -43,9 +50,15 @@ class ExercisesController < ApplicationController
 
   private
 
-  # An admin manages the shared catalogue; everyone else manages only the exercises they created.
+  def require_catalogue_admin!
+    return if current_user.admin?
+
+    redirect_to exercises_path, alert: "Only an admin can manage the exercise catalogue."
+  end
+
+  # Everyone manages the exercises they created; an admin also manages the shared catalogue.
   def set_exercise
-    manageable = current_user.admin? ? Exercise.shared : current_user.exercises
+    manageable = current_user.admin? ? Exercise.visible_to(current_user) : current_user.exercises
     @exercise = manageable.find(params[:id])
   end
 
