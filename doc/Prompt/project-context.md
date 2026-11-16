@@ -126,7 +126,7 @@ Rules worth knowing:
 
 Navbar: Dashboard, Splits, History, Exercises.
 
-- **Dashboard (`/`, `pages#home`).** Signed out: landing page. Signed in: month calendar with this week's row and today marked, this week from the active split with today ringed, today's workout, "last time" (the most recent earlier session of the same workout, heaviest set per exercise), recent logs, and counts of splits, workouts logged and sets recorded.
+- **Dashboard (`/`, `pages#home`).** Signed out: landing page. Signed in: month calendar with this week's row and today marked and each day with a logged workout ringed and linked to it, this week from the active split with today ringed, today's workout, "last time" (the most recent earlier session of the same workout, heaviest set per exercise), recent logs, and counts of splits, workouts logged and sets recorded.
 - **Splits (`/splits`).** List of splits as week strips; the active one is ringed and badged. "Set as active" sends `PATCH /splits/:id/activate`.
 - **Split page.** The week of circles. A coloured day opens its workout day; a blank day adds one (choose the workout from the fixed list and the weekday).
 - **Workout day page.** Only the exercises of the day. "Add exercise" opens the catalogue modal. Adding one exercise opens that exercise's page; adding several returns to the day. Each row has a trash button, and shows "N sets" once sets were recorded today.
@@ -159,8 +159,9 @@ Each merged branch has a detailed doc in `doc/`. Read the relevant one before ch
 | 4 | `dashboard-calendar-and-active-split` | Active split, new dashboard, logs that outlive splits, browser time zone | `doc/dashboard-calendar-and-active-split.md` |
 | 5 | `split-page-fixes` | Program-only day page, quick remove, weight before reps, set editing, mock data task | `doc/split-page-fixes.md` |
 | 6 | `known-gaps-fixes` | One workout per day, no duplicate exercises, admin private exercises and users page, three-decimal weights, notes, pagination, saved time zone, Rubocop | `doc/known-gaps-fixes.md` |
+| 7 | `calendar-logged-days` | Calendar highlights only days with a logged workout, and each opens what was recorded | `doc/calendar-logged-days.md` |
 
-State on 2026-11-16: `bin/rails test` on `master` passes with 39 runs, 390 assertions, 0 failures. On the branch `known-gaps-fixes` (doc: `doc/known-gaps-fixes.md`): 48 runs, 541 assertions, 0 failures, and `bundle exec rubocop` reports no offenses.
+State on 2026-11-16: on the branch `calendar-logged-days`, `bin/rails test` passes with 48 runs, 563 assertions, 0 failures, and `bundle exec rubocop` reports no offenses.
 
 ---
 
@@ -168,10 +169,7 @@ State on 2026-11-16: `bin/rails test` on `master` passes with 39 runs, 390 asser
 
 ### Open issues (from `doc/Issues/Issues.md`)
 
-**Calendar**
-
-1. A day should only be highlighted if a workout was registered that day. Today the dashboard calendar marks every date whose weekday has a workout in the active split, whether or not anything was logged.
-2. A highlighted day should be interactive: clicking it shows the workout and exercises recorded that day.
+None. The two Calendar issues are fixed on the branch `calendar-logged-days`: a calendar day is highlighted only when a workout was logged on it, and it is then a link to that workout (or, with several workouts on the day, to `/workout_logs?date=YYYY-MM-DD`, which lists them).
 
 ### Known gaps
 
@@ -192,5 +190,5 @@ The gaps this section listed until 2026-11-16 are fixed on the branch `known-gap
 
 1. Read `CLAUDE.md`, then this file.
 2. Check the current branch and `git status`.
-3. Read `doc/Issues/Issues.md` for what the owner wants next. The Calendar section is the next piece of work unless they say otherwise.
+3. Read `doc/Issues/Issues.md` for what the owner wants next. Work on what is listed under "Issues" there; if nothing is, ask.
 4. Run `bin/rails test` before and after changes.
