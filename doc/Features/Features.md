@@ -1,5 +1,9 @@
 # Features
 
+### General
+
+- Add a timer of when workout started and then ended, the timer can be set to start automatically when you start a workout or start when I press the timer start button. Then the data shoould be displayed with the day, show how long it was and from what time to the end time.
+
 ### Home page
 
 - Add a weekly overview under the week of the slipt and remoe the splits, workout logged and sets recorded boxes.
@@ -11,6 +15,7 @@
 ### Calendar
 
 - Make possible to open the Month of the calendar by clicking the name of the month to open a page of the month with the data of the splits, sets, weight, exercises done etc.
+- Have the month be a dropdown as well, expand it when you click the month.
 
 ### Exercise page
 
@@ -22,6 +27,8 @@
 - Also add tags for each set. For example: warm-up, assisted etc. Admin can create and edit tags
 - Add the amount of exercises and sets on the top of the exercises pages of the day. Also with that add this data to the weekly overview with the amount of set and exercises done on the week and when someone opens the weekly overview
 - Make the exercises on the movable, so I can move around the order of the exercises done.
+- Add Cardio as a exercise as well with inputs for incline, speed and time, for now. Also since it is Cardio it has to be a completlye different thing then the weight training exercises.
+- I want a button to add cardio if the day is restday, instead of weight ifiting I will do cardio and that needs to be different, a new button only for Cardio.
 
 ---
 
