@@ -2,7 +2,12 @@ module ApplicationHelper
   def format_weight(weight)
     return "Bodyweight" if weight.nil?
 
-    "#{number_with_precision(weight, precision: 2, strip_insignificant_zeros: true)} kg"
+    "#{weight_number(weight)} kg"
+  end
+
+  # A weight as typed: up to three decimals, without trailing zeros (80, 32.5, 1.125).
+  def weight_number(weight)
+    number_with_precision(weight, precision: 3, strip_insignificant_zeros: true)
   end
 
   # Declares the page a view sits under. The layout draws it as the back button,

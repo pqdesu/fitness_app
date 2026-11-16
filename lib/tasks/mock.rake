@@ -2,13 +2,20 @@
 #
 #   bin/rails mock:last_week                  every user
 #   bin/rails mock:last_week EMAIL=me@x.com   one user
-#   bin/rails mock:clear                      removes the workouts it logged
+#   bin/rails mock:clear                      removes what it added
 #
 # For every workout day of every split it logs that day's session on its weekday of last week:
 # three sets of each exercise. A day that has no exercises yet first gets a typical plan for its
-# workout, taken from the catalogue. Safe to run again: a day already logged that date is skipped.
+# workout, taken from the catalogue. There is one session per workout per day, so when two splits
+# have the same workout on the same weekday only the first is logged. Safe to run again: a workout
+# already logged that date is skipped.
+#
+# mock:clear deletes the mock workouts, and the plans the task gave to empty days, except
+# exercises the user has since recorded real sets on.
 namespace :mock do
   note = "Mock data"
+  # Marks the session of a day that was empty and received its plan from this task.
+  plan_note = "#{note} · plan added"
 
   # Exercise => [muscle group, weight in kg (nil = bodyweight), reps of the first set]
   lifts = {
@@ -48,17 +55,20 @@ namespace :mock do
       user.workout_days.includes(:split).where.not(weekday: nil).order(:split_id, :weekday).each do |day|
         date = last_sunday + day.weekday
         label = "#{user.email} · #{day.split.name} · #{day.day} on #{date.strftime('%a %b %-d')}"
-        next puts("skipped  #{label} (already logged)") if day.workout_logs.exists?(date: date)
+        if user.workout_logs.of_workout(day.day).exists?(date: date)
+          next puts("skipped  #{label} (#{day.day} already logged that day)")
+        end
 
         WorkoutLog.transaction do
-          if day.workout_exercises.empty?
+          plan_added = day.workout_exercises.empty?
+          if plan_added
             plans.fetch(day.day).each do |name|
               exercise = Exercise.shared.find_or_create_by!(name: name) { |e| e.muscle_group = lifts.fetch(name).first }
               day.workout_exercises.create!(exercise: exercise)
             end
           end
 
-          log = day.workout_logs.create!(date: date, notes: note)
+          log = day.workout_logs.create!(date: date, notes: plan_added ? plan_note : note)
           day.workout_exercises.order(:id).each do |planned|
             _, weight, reps = lifts.fetch(planned.name, [nil, 20, 10])
             entry = log.workout_log_exercises.create!(workout_exercise: planned)
@@ -71,11 +81,17 @@ namespace :mock do
     end
   end
 
-  desc "Delete the workouts logged by mock:last_week (EMAIL=... for one user)"
+  desc "Delete the workouts logged by mock:last_week and the plans it added (EMAIL=... for one user)"
   task clear: :environment do
     users.call.each do |user|
-      logs = user.workout_logs.where(notes: note).destroy_all
-      puts "#{user.email}: #{logs.size} mock workouts deleted"
+      mock_logs = user.workout_logs.where(notes: [note, plan_note])
+      # The plans this task gave to empty days, read before their sessions are deleted.
+      added = WorkoutExercise.where(id: WorkoutLogExercise.where(workout_log: mock_logs.where(notes: plan_note))
+                                                          .select(:workout_exercise_id)).to_a
+      logs = mock_logs.destroy_all
+      # An exercise the user has recorded real sets on since is theirs now: it stays in the plan.
+      removed = added.reject { |planned| planned.workout_log_exercises.exists? }.each(&:destroy)
+      puts "#{user.email}: #{logs.size} mock workouts and #{removed.size} planned exercises deleted"
     end
   end
 end

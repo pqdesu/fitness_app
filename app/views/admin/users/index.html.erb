@@ -1,0 +1,40 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>Users</h1>
+    <p class="text-muted mb-0">An admin manages the shared exercise catalogue and the accounts on this page.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table app-table">
+      <%# On a phone only the email and the actions are shown, so the buttons stay on screen. %>
+      <thead><tr><th>Email</th><th class="d-none d-md-table-cell">Joined</th><th class="d-none d-md-table-cell">Workouts</th><th></th></tr></thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td class="fw-semibold">
+              <%= user.email %>
+              <% if user.admin? %> <span class="badge badge-soft ms-1">Admin</span><% end %>
+              <% if user == current_user %> <span class="chip ms-1">You</span><% end %>
+            </td>
+            <td class="d-none d-md-table-cell"><%= l user.created_at.to_date, format: :long %></td>
+            <td class="d-none d-md-table-cell"><%= @logs.fetch(user.id, 0) %></td>
+            <td class="text-end">
+              <% unless user == current_user %>
+                <div class="row-actions">
+                  <%= button_to (user.admin? ? "Remove admin" : "Make admin"), admin_user_path(user), method: :patch,
+                        params: { admin: !user.admin? }, class: "btn btn-light btn-sm" %>
+                  <%= button_to "Delete", admin_user_path(user), method: :delete, class: "btn btn-outline-danger btn-sm",
+                        form: { data: { turbo_confirm: "Delete #{user.email}? Their splits, logged workouts and own exercises are deleted too. This cannot be undone." } } %>
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <%= render "shared/pagination" %>
+</div>

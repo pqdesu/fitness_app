@@ -259,9 +259,33 @@ div.card-link {
 .entry-meta { display: flex; align-items: center; gap: .25rem; }
 .set-table td:first-child, .set-table th:first-child { width: 80px; }
 .set-table td { vertical-align: middle; }
+.set-table td > span { white-space: nowrap; }
 // A set being edited in place (see workout_sets/_set)
-.set-field { max-width: 7rem; }
+.set-field { width: 100%; min-width: 4.75rem; max-width: 7rem; }
+.set-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: .375rem;
+  .form-control { flex: 1; min-width: 0; }
+  .btn { flex-shrink: 0; }
+}
 .set-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: .25rem; }
+// Each set is its own tbody: the row of numbers, then its note (or the note field while editing)
+.set-table tbody { border-top: 1px solid $line; }
+.set-table tr:not(.set-note):has(+ .set-note:not([hidden])) td { border-bottom: 0; padding-bottom: .25rem; }
+.set-note td { padding-top: 0; border-bottom: 0; }
+.set-table .set-note td:first-child { width: auto; }
+.entry-note { color: $muted; margin-top: .125rem; }
+
+// Previous / next under a long list (see shared/_pagination)
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .75rem 1rem;
+  border-top: 1px solid $line;
+}
 
 // Empty states
 .empty-state {

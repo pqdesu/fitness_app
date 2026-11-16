@@ -1,0 +1,16 @@
+<%# Previous / next links of a paginated list (see the Paginated concern). Nothing when there is one page. %>
+<% if @page_count.to_i > 1 %>
+  <nav class="pagination-bar" aria-label="Pages">
+    <% if @page > 1 %>
+      <%= link_to url_for(page: @page - 1), class: "btn btn-light btn-sm", rel: "prev" do %><i class="fa-solid fa-chevron-left"></i> Previous<% end %>
+    <% else %>
+      <span></span>
+    <% end %>
+    <span class="text-muted small">Page <%= @page %> of <%= @page_count %></span>
+    <% if @page < @page_count %>
+      <%= link_to url_for(page: @page + 1), class: "btn btn-light btn-sm", rel: "next" do %>Next <i class="fa-solid fa-chevron-right"></i><% end %>
+    <% else %>
+      <span></span>
+    <% end %>
+  </nav>
+<% end %>

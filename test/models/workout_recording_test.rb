@@ -37,8 +37,8 @@ class WorkoutRecordingTest < ActiveSupport::TestCase
     assert_equal "Hack squat", typed.name
     assert_nil typed.exercise
 
-    picked = @day.workout_exercises.create!(exercise: @exercise, name: "ignored")
-    assert_equal "Bench press", picked.name
+    picked = @day.workout_exercises.create!(exercise: Exercise.create!(name: "Squat"), name: "ignored")
+    assert_equal "Squat", picked.name
 
     assert_not @day.workout_exercises.build.valid?
     assert_not @day.workout_exercises.build(exercise_id: 0, name: "Ghost").valid?
@@ -169,5 +169,69 @@ class WorkoutRecordingTest < ActiveSupport::TestCase
 
     assert_not entry.valid?
     assert entry.errors[:workout_exercise].any?
+  end
+
+  test "a log takes exercises planned for the same workout in another of the user's splits" do
+    squat = Exercise.create!(name: "Squat")
+    same_workout = @user.splits.create!(name: "Other").workout_days.create!(day: "Push", weekday: 3)
+    assert @log.workout_log_exercises.build(workout_exercise: same_workout.workout_exercises.create!(exercise: squat)).valid?
+
+    someone = User.create!(email: "other@example.com", password: "secret123")
+    theirs = someone.splits.create!(name: "Theirs").workout_days.create!(day: "Push", weekday: 1)
+    entry = @log.workout_log_exercises.build(workout_exercise: theirs.workout_exercises.create!(exercise: squat))
+    assert_not entry.valid?
+    assert entry.errors[:workout_exercise].any?
+  end
+
+  test "an exercise is on a day once and in a logged workout once" do
+    again = @day.workout_exercises.build(exercise: @exercise)
+    assert_not again.valid?
+    assert_includes again.errors[:base], "Bench press is already on this day"
+
+    twice = @log.workout_log_exercises.build(exercise: @exercise)
+    assert_not twice.valid?
+    assert_includes twice.errors[:base], "Bench press is already in this workout"
+
+    # rows doubled before the rule existed can still be changed
+    again.save!(validate: false)
+    assert again.update(equipment: "machine", machine_brand: "Acme")
+  end
+
+  test "there is one session per workout per day, shared by every split" do
+    twin = @day.workout_logs.build(date: Date.current)
+    assert_not twin.valid?
+    assert_includes twin.errors[:date], "already has a Push workout logged"
+    assert @day.workout_logs.build(date: Date.current - 1).valid?
+
+    # the same workout in another split joins today's session, and the same exercise its entry
+    other = @user.splits.create!(name: "Other").workout_days.create!(day: "Push", weekday: 3)
+    same_lift = other.workout_exercises.create!(exercise: @exercise)
+    new_lift = other.workout_exercises.create!(exercise: Exercise.create!(name: "Dips"))
+    assert_equal @log, same_lift.log_on(Date.current)
+    assert_equal @log_exercise, same_lift.entry_on!(Date.current)
+    assert_nil new_lift.entry_on(Date.current)
+    entry = new_lift.entry_on!(Date.current)
+    assert_equal [@log, new_lift], [entry.workout_log, entry.workout_exercise]
+    assert_equal 1, @user.workout_logs.count
+
+    # moving a session onto a date that has one is refused; other changes to it are not
+    earlier = @day.workout_logs.create!(date: Date.current - 7)
+    assert_not earlier.update(date: Date.current)
+    assert earlier.reload.update(notes: "Felt strong")
+  end
+
+  test "weights keep three decimals" do
+    set = @log_exercise.workout_sets.create!(reps_completed: 5, weight_used: "1.111")
+    assert_equal BigDecimal("1.111"), set.reload.weight_used
+    set.update!(weight_used: "82.5")
+    assert_equal BigDecimal("82.5"), set.reload.weight_used
+    assert_not set.update(weight_used: 100_000)
+  end
+
+  test "an exercise name is unique in the catalogue and among a user's own" do
+    assert_not Exercise.new(name: " bench  PRESS ").valid?
+    own = Exercise.create!(name: "Bench press", user: @user)
+    assert_not Exercise.new(name: "bench press", user: @user).valid?
+    assert own.update(muscle_group: "Chest")
   end
 end

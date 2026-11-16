@@ -45,6 +45,15 @@
           <div class="col-5 col-sm-3 d-grid">
             <%= f.submit "Create", class: "btn btn-light" %>
           </div>
+          <% if current_user.admin? %>
+            <%# An admin's new exercise is their own unless they share it with everyone. %>
+            <div class="col-12">
+              <div class="form-check">
+                <%= f.check_box :shared, { class: "form-check-input", id: "picker_exercise_shared" }, "1", "0" %>
+                <%= f.label :shared, "Add to the shared catalogue", class: "form-check-label", for: "picker_exercise_shared" %>
+              </div>
+            </div>
+          <% end %>
         <% end %>
       </div>
 

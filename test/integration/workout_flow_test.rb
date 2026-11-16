@@ -312,10 +312,21 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
       assert_select ".calendar-card h2", "December 2026"
       assert_select ".today-title", "Rest day"
 
-      # a zone the server does not know falls back to the default
+      # the reported zone is remembered on the user
+      assert_equal "Asia/Tokyo", @user.reload.time_zone
+
+      # a zone the server does not know falls back to the last one it did know
       cookies[:time_zone] = "Not/AZone"
       get root_path
-      assert_select "body[data-time-zone=?]", "Etc/UTC"
+      assert_select "body[data-time-zone=?]", "Asia/Tokyo"
+      assert_equal "Asia/Tokyo", @user.reload.time_zone
+
+      # a browser that has not reported a zone yet (new session, no JavaScript) starts in the saved one
+      cookies.delete :time_zone
+      @user.update_column(:time_zone, "America/Sao_Paulo")
+      get root_path
+      assert_select "body[data-time-zone=?]", "America/Sao_Paulo"
+      assert_select ".today-title", "Push day"
     end
   end
 
@@ -343,9 +354,25 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_equal ["Bench press", "Squat"], day.workout_exercises.order(:id).pluck(:name)
     assert_equal ["free_weights"], day.workout_exercises.pluck(:equipment).uniq
 
+    # an exercise is on a day once: ticked again, or typed again under any spelling, nothing is added
+    post workout_day_workout_exercises_path(day), params: { exercise_ids: [@bench.id] }
+    assert_match "already on this day", flash[:alert]
+    assert_no_difference "Exercise.count" do
+      post workout_day_workout_exercises_path(day), params: { exercise: { name: " bench  PRESS ", muscle_group: "Chest" } }
+    end
+    assert_match "already on this day", flash[:alert]
+    assert_equal 2, day.workout_exercises.count
+
     # creating an exercise makes it the user's own and adds it to the day
     post workout_day_workout_exercises_path(day), params: { exercise: { name: "", muscle_group: "Chest" } }
     assert_match "Name can't be blank", flash[:alert]
+    # a regular user cannot put it in the shared catalogue, whatever the form sends
+    post workout_day_workout_exercises_path(day), params: { exercise: { name: "Pec deck", muscle_group: "Chest", shared: "1" } }
+    assert_equal @user, Exercise.find_by!(name: "Pec deck").user
+    delete workout_exercise_path(day.workout_exercises.order(:id).last)
+    Exercise.find_by!(name: "Pec deck").destroy!
+    get workout_day_path(day)
+    assert_select "#exercise-picker input[name='exercise[shared]']", 0
     assert_difference "@user.exercises.count", 1 do
       post workout_day_workout_exercises_path(day), params: { exercise: { name: "Cable fly", muscle_group: "Chest" } }
     end
@@ -376,12 +403,17 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     delete exercise_path(own)
     assert_not Exercise.exists?(own.id)
 
-    # an exercise an admin creates in the modal goes to the shared catalogue
+    # an exercise an admin creates in the modal is the admin's own, unless they share it
     sign_out @user
     sign_in @admin
     admin_day = @admin.splits.create!(name: "Admin").workout_days.create!(day: "Legs", weekday: 2)
-    post workout_day_workout_exercises_path(admin_day), params: { exercise: { name: "Leg curl", muscle_group: "Legs" } }
-    assert Exercise.shared.exists?(name: "Leg curl")
+    get workout_day_path(admin_day)
+    assert_select "#exercise-picker input[type=checkbox][name='exercise[shared]']:not([checked])", 1
+    post workout_day_workout_exercises_path(admin_day), params: { exercise: { name: "Leg curl", muscle_group: "Legs", shared: "0" } }
+    assert_equal @admin, Exercise.find_by!(name: "Leg curl").user
+    post workout_day_workout_exercises_path(admin_day), params: { exercise: { name: "Leg extension", muscle_group: "Legs", shared: "1" } }
+    assert Exercise.shared.exists?(name: "Leg extension")
+    assert_equal ["Leg curl", "Leg extension"], admin_day.workout_exercises.order(:id).pluck(:name)
   end
 
   test "opening an exercise and adding sets" do
@@ -414,7 +446,7 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
 
     # the form is pre-filled with the last set
     get workout_exercise_path(planned)
-    assert_select "table.set-table tbody tr", 2
+    assert_select "table.set-table tbody[data-controller='row-edit']", 2
     assert_select "input[name='workout_set[reps_completed]'][value='6']"
     assert_select "input[name='workout_set[weight_used]'][value='82.5']"
 
@@ -424,17 +456,35 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
 
     # a recorded set can be corrected in place
     second = entry.workout_sets.find_by!(set_number: 2)
-    assert_select "form#edit_set_#{second.id}[action='#{workout_set_path(second)}']"
-    assert_select "input[form='edit_set_#{second.id}']", 2
-    patch workout_set_path(second), params: { workout_set: { reps_completed: 5, weight_used: 85 } },
-                                    headers: { "HTTP_REFERER" => workout_exercise_url(planned) }
-    assert_redirected_to workout_exercise_url(planned)
-    assert_equal [2, 5, 85], second.reload.then { |s| [s.set_number, s.reps_completed, s.weight_used] }
-    patch workout_set_path(second), params: { workout_set: { reps_completed: "", weight_used: 85 } }
+    # the forms say which exercise page they are on, so saving returns there without relying on the referer
+    on_exercise_page = workout_set_path(second, workout_exercise_id: planned.id)
+    assert_select "form#edit_set_#{second.id}[action='#{on_exercise_page}']"
+    # weight, reps and a note
+    assert_select "input[form='edit_set_#{second.id}']", 3
+    assert_select "input[form='edit_set_#{second.id}'][name='workout_set[notes]']", 1
+    patch on_exercise_page, params: { workout_set: { reps_completed: 5, weight_used: 85.125, notes: "  Paused   reps " } }
+    assert_redirected_to workout_exercise_path(planned)
+    assert_equal [2, 5, BigDecimal("85.125"), "Paused reps"],
+                 second.reload.then { |s| [s.set_number, s.reps_completed, s.weight_used, s.notes] }
+    follow_redirect!
+    assert_select "tr.set-note td", text: /Paused reps/
+    # three decimals are shown and pre-filled as typed
+    assert_select "td span", text: "85.125 kg"
+    assert_select "input[name='workout_set[weight_used]'][value='85.125']"
+    patch on_exercise_page, params: { workout_set: { reps_completed: "", weight_used: 85 } }
     assert_match "Set not updated: Reps completed can't be blank", flash[:alert]
     assert_equal 5, second.reload.reps_completed
+    # without it (the logged workout page), the set's workout is where the user goes back to
+    patch workout_set_path(second), params: { workout_set: { reps_completed: 5, weight_used: 85, notes: "" } }
+    assert_redirected_to workout_log_path(log, anchor: "entry-#{entry.id}")
+    assert_nil second.reload.notes
+    # someone else's exercise page is not a way back
+    theirs = @admin.splits.create!(name: "Theirs").workout_days.create!(day: "Push", weekday: 1).workout_exercises.create!(exercise: @bench)
+    patch workout_set_path(second, workout_exercise_id: theirs.id), params: { workout_set: { reps_completed: 5 } }
+    assert_redirected_to workout_log_path(log, anchor: "entry-#{entry.id}")
 
-    delete workout_set_path(second)
+    delete on_exercise_page
+    assert_redirected_to workout_exercise_path(planned)
     assert_equal 1, entry.workout_sets.count
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 7 } }
     assert_equal [1, 2], entry.workout_sets.order(:set_number).pluck(:set_number)
@@ -445,8 +495,11 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     patch workout_exercise_path(planned), params: { workout_exercise: { equipment: "machine", machine_brand: "Acme" } }
     assert_redirected_to workout_exercise_path(planned)
     assert_equal "Machine · Acme", planned.reload.equipment_label
+    # the sets already recorded today were done on it, so today's entry follows
+    assert_equal "Machine · Acme", entry.reload.equipment_label
     patch workout_exercise_path(planned), params: { workout_exercise: { equipment: "free_weights" } }
     assert_nil planned.reload.machine_brand
+    assert_equal "Free weights", entry.reload.equipment_label
 
     get workout_day_path(day)
     assert_select ".chip", text: "2 sets"
@@ -487,28 +540,37 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
 
     # adding exercises: one from the day, some from the catalogue, one created on the spot
     post workout_log_workout_log_exercises_path(log), params: { workout_exercise_id: unused.id }
+    # an exercise is in a workout once: Bench press is already there, and so is Squat now
     post workout_log_workout_log_exercises_path(log), params: { exercise_ids: [@bench.id] }
+    assert_match "Nothing added: Bench press is already in this workout", flash[:alert]
+    post workout_log_workout_log_exercises_path(log), params: { exercise_ids: [@squat.id] }
+    assert_match "Squat is already in this workout", flash[:alert]
     post workout_log_workout_log_exercises_path(log), params: { exercise: { name: "Dips", muscle_group: "Triceps" } }
     post workout_log_workout_log_exercises_path(log), params: { exercise_ids: [] }
     assert_match "Choose at least one exercise", flash[:alert]
-    assert_equal ["Bench press", "Squat", "Bench press", "Dips"], log.workout_log_exercises.order(:id).pluck(:name)
+    assert_equal ["Bench press", "Squat", "Dips"], log.workout_log_exercises.order(:id).pluck(:name)
     assert_equal "Dips", @user.exercises.sole.name
+    # every exercise of the day is in the workout, so none is offered again
+    get workout_log_path(log)
+    assert_select "h2", text: "From this day, not in this workout", count: 0
 
-    # the equipment of a logged exercise can be changed without touching the day
+    # the equipment of a logged exercise can be changed without touching the day, and a note added
     get edit_workout_log_exercise_path(entry)
     assert_response :success
+    assert_select "textarea[name='workout_log_exercise[notes]']"
     patch workout_log_exercise_path(entry), params: { workout_log_exercise: { equipment: "machine", machine_brand: "" } }
     assert_response :unprocessable_entity
-    patch workout_log_exercise_path(entry), params: { workout_log_exercise: { equipment: "machine", machine_brand: "Beta" } }
-    assert_equal "Machine · Beta", entry.reload.equipment_label
+    patch workout_log_exercise_path(entry), params: { workout_log_exercise: { equipment: "machine", machine_brand: "Beta", notes: "Left shoulder tight" } }
+    assert_equal ["Machine · Beta", "Left shoulder tight"], entry.reload.then { |e| [e.equipment_label, e.notes] }
     assert_equal "free_weights", planned.reload.equipment
 
     get workout_log_path(log)
     assert_response :success
     assert_select "p", /Machine · Beta/
+    assert_select "p.entry-note", /Left shoulder tight/
 
     delete workout_log_exercise_path(entry)
-    assert_equal 3, log.workout_log_exercises.count
+    assert_equal 2, log.workout_log_exercises.count
     delete workout_log_path(log)
     assert_redirected_to workout_logs_path
     assert_equal 0, @user.workout_logs.count
@@ -566,11 +628,32 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     sign_in @admin
     get new_exercise_path
     assert_response :success
-    post exercises_path, params: { exercise: { name: "" } }
+    post exercises_path, params: { exercise: { name: "", shared: "1" } }
     assert_response :unprocessable_entity
-    post exercises_path, params: { exercise: { name: "Deadlift", muscle_group: "Back" } }
+    # the form offers the shared catalogue, ticked; unticked the exercise is the admin's own
+    assert_select "input[type=checkbox][name='exercise[shared]'][checked]", 1
+    post exercises_path, params: { exercise: { name: "Deadlift", muscle_group: "Back", shared: "1" } }
     deadlift = Exercise.find_by!(name: "Deadlift")
     assert deadlift.shared?
+    assert_match "added to the catalogue", flash[:notice]
+    post exercises_path, params: { exercise: { name: "Deadlift", muscle_group: "Back", shared: "1" } }
+    assert_response :unprocessable_entity
+    post exercises_path, params: { exercise: { name: "Jefferson curl", muscle_group: "Back", shared: "0" } }
+    private_lift = Exercise.find_by!(name: "Jefferson curl")
+    assert_equal @admin, private_lift.user
+    assert_match "added to your own exercises", flash[:notice]
+    # the admin manages both; another user does not see the private one
+    get exercises_path
+    assert_select "td", text: /Jefferson curl.*Yours/m
+    assert_select "a[href=?]", edit_exercise_path(private_lift)
+    assert_select "a[href=?]", edit_exercise_path(deadlift)
+    patch exercise_path(private_lift), params: { exercise: { muscle_group: "Core" } }
+    assert_equal "Core", private_lift.reload.muscle_group
+    sign_in @user
+    get exercises_path
+    assert_select "td", text: /Jefferson curl/, count: 0
+    assert_select "td", text: /Deadlift/
+    sign_in @admin
     get edit_exercise_path(deadlift)
     assert_response :success
     patch exercise_path(deadlift), params: { exercise: { muscle_group: "Legs" } }
@@ -629,6 +712,123 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     sign_in @admin
     get new_exercise_path
     assert_select "a.back-link[href=?]", exercises_path, text: "Exercises", count: 1
+  end
+
+  test "the same workout from two splits on one day is one logged workout" do
+    sign_in @user
+    ppl = @user.splits.create!(name: "PPL").workout_days.create!(day: "Legs", weekday: 1)
+    upper_lower = @user.splits.create!(name: "Upper lower").workout_days.create!(day: "Lower", weekday: 1)
+    squat_a = ppl.workout_exercises.create!(exercise: @squat)
+    squat_b = upper_lower.workout_exercises.create!(exercise: @squat)
+    bench_b = upper_lower.workout_exercises.create!(exercise: @bench)
+
+    post workout_exercise_workout_sets_path(squat_a), params: { workout_set: { reps_completed: 5, weight_used: 100 } }
+    # Lower is the same workout as Legs: the other split's sets join the same session and the same entry
+    post workout_exercise_workout_sets_path(squat_b), params: { workout_set: { reps_completed: 4, weight_used: 105 } }
+    post workout_exercise_workout_sets_path(bench_b), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
+
+    log = @user.workout_logs.sole
+    assert_equal %w[Squat Bench\ press], log.workout_log_exercises.order(:id).pluck(:name)
+    assert_equal [1, 2], log.workout_log_exercises.order(:id).first.workout_sets.order(:set_number).pluck(:set_number)
+
+    # both exercise pages and both day pages show the day's sets
+    [squat_a, squat_b].each do |planned|
+      get workout_exercise_path(planned)
+      assert_select "table.set-table tbody[data-controller='row-edit']", 2
+    end
+    get workout_day_path(ppl)
+    assert_select ".chip", text: "2 sets"
+    get workout_day_path(upper_lower)
+    assert_equal ["2 sets", "1 set"], css_select(".chip-done").map(&:text)
+
+    # a workout cannot be moved onto a date that already has that workout
+    earlier = ppl.workout_logs.create!(date: Date.current - 7)
+    patch workout_log_path(earlier), params: { workout_log: { date: Date.current } }
+    assert_match "Date already has a Legs workout logged", flash[:alert]
+    assert_equal Date.current - 7, earlier.reload.date
+  end
+
+  test "long lists are split into pages" do
+    sign_in @user
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    25.times { |i| day.workout_logs.create!(date: Date.new(2026, 1, 1) + i) }
+
+    get workout_logs_path
+    assert_select "table.app-table tbody tr", 20
+    assert_select "td a", text: "January 25, 2026"
+    assert_select ".pagination-bar", text: /Page 1 of 2/
+    assert_select ".pagination-bar a[rel=next][href=?]", workout_logs_path(page: 2)
+    assert_select ".pagination-bar a[rel=prev]", 0
+
+    get workout_logs_path(page: 2)
+    assert_select "table.app-table tbody tr", 5
+    assert_select "td a", text: "January 01, 2026"
+    assert_select ".pagination-bar a[rel=prev][href=?]", workout_logs_path(page: 1)
+    # a page that does not exist shows the nearest one
+    get workout_logs_path(page: 99)
+    assert_select ".pagination-bar", text: /Page 2 of 2/
+    get workout_logs_path(page: "x")
+    assert_select ".pagination-bar", text: /Page 1 of 2/
+
+    # the catalogue too; a short list has no page links
+    get exercises_path
+    assert_select ".pagination-bar", 0
+    35.times { |i| Exercise.create!(name: "Lift #{i}", muscle_group: "Chest") }
+    get exercises_path
+    assert_select "table.app-table tbody tr", 30
+    assert_select ".pagination-bar", text: /Page 1 of 2/
+  end
+
+  test "an admin manages the users" do
+    # only an admin reaches the page or its actions
+    sign_in @user
+    get root_path
+    assert_select "a[href=?]", admin_users_path, count: 0
+    get admin_users_path
+    assert_redirected_to root_path
+    assert_match "Only an admin can do that", flash[:alert]
+    patch admin_user_path(@user), params: { admin: "true" }
+    assert_not @user.reload.admin?
+    delete admin_user_path(@admin)
+    assert User.exists?(@admin.id)
+
+    sign_in @admin
+    get root_path
+    assert_select ".dropdown-menu a[href=?]", admin_users_path, text: "Users"
+    get admin_users_path
+    assert_response :success
+    assert_select "a.back-link", false
+    assert_select "td", text: /lifter@example.com/
+    assert_select "td", text: /admin@example.com.*Admin.*You/m
+    # the admin's own row has no actions
+    assert_select "form[action=?]", admin_user_path(@admin), count: 0
+    assert_select "form[action=?]", admin_user_path(@user), count: 2
+
+    patch admin_user_path(@user), params: { admin: "true" }
+    assert_redirected_to admin_users_path
+    assert @user.reload.admin?
+    patch admin_user_path(@user), params: { admin: "false" }
+    assert_not @user.reload.admin?
+
+    # an admin cannot demote or delete themselves, so one admin always remains
+    patch admin_user_path(@admin), params: { admin: "false" }
+    assert_match "cannot change your own account", flash[:alert]
+    assert @admin.reload.admin?
+    delete admin_user_path(@admin)
+    assert User.exists?(@admin.id)
+
+    # deleting a user removes everything they recorded, and nothing of the shared catalogue
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    @user.update!(active_split: day.split)
+    own = Exercise.create!(name: "Cable fly", user: @user)
+    [@bench, own].each do |exercise|
+      day.workout_exercises.create!(exercise: exercise).entry_on!(Date.current).workout_sets.create!(reps_completed: 8)
+    end
+    delete admin_user_path(@user)
+    assert_redirected_to admin_users_path
+    assert_not User.exists?(@user.id)
+    assert_equal [0, 0, 0, 0], [Split.count, WorkoutLog.count, WorkoutSet.count, Exercise.where(name: "Cable fly").count]
+    assert Exercise.exists?(@bench.id)
   end
 
   test "signing up cannot grant admin" do

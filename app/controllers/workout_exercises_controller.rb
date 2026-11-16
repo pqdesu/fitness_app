@@ -6,8 +6,7 @@ class WorkoutExercisesController < ApplicationController
   # Opening an exercise: today's sets, and the form to add the next one.
   def show
     @workout_day = @workout_exercise.workout_day
-    @entry = @workout_exercise.workout_log_exercises.joins(:workout_log)
-                              .where(workout_logs: { date: Date.current }).order(:id).first
+    @entry = @workout_exercise.entry_on(Date.current)
     @sets = @entry ? @entry.workout_sets.order(:set_number).to_a : []
     # Pre-fills the form, so repeating the last set is a single tap.
     @last_set = @sets.last || WorkoutSet.joins(:workout_log_exercise)
@@ -20,8 +19,12 @@ class WorkoutExercisesController < ApplicationController
     workout_day = current_user.workout_days.find(params[:workout_day_id])
     exercises, error = picked_exercises
 
+    # An exercise is on a day once: the ones already there are left out.
+    on_day = workout_day.workout_exercises.where(exercise_id: exercises.map(&:id)).pluck(:exercise_id) unless error
     if error
       redirect_to workout_day, alert: "Nothing added: #{error}."
+    elsif (exercises = exercises.reject { |exercise| on_day.include?(exercise.id) }).empty?
+      redirect_to workout_day, alert: "Nothing added: already on this day."
     else
       added = WorkoutExercise.transaction do
         exercises.map { |exercise| workout_day.workout_exercises.create!(exercise: exercise) }
@@ -31,9 +34,11 @@ class WorkoutExercisesController < ApplicationController
     end
   end
 
-  # Changes the equipment used for this exercise.
+  # Changes the equipment used for this exercise. Sets already recorded today were done on the
+  # equipment being chosen now, so today's entry follows; earlier workouts keep theirs.
   def update
     if @workout_exercise.update(equipment_params)
+      @workout_exercise.entry_on(Date.current)&.update(equipment_params)
       redirect_to @workout_exercise, notice: "Equipment saved."
     else
       redirect_to @workout_exercise, alert: "Equipment not saved: #{@workout_exercise.errors.full_messages.to_sentence}."

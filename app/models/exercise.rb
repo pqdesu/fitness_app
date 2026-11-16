@@ -15,7 +15,10 @@ class Exercise < ApplicationRecord
   scope :shared, -> { where(user_id: nil) }
   scope :visible_to, ->(user) { where(user_id: [nil, user.id]) }
 
-  validates :name, presence: true
+  before_validation { self.name = name.to_s.squish.presence }
+
+  # No twins in the same list: one of each name in the catalogue, and one among a user's own.
+  validates :name, presence: true, uniqueness: { scope: :user_id, case_sensitive: false }
 
   after_update :rename_linked_lifts, if: :saved_change_to_name?
 

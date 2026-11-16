@@ -27,9 +27,9 @@ class WorkoutLogExercisesController < ApplicationController
   def edit
   end
 
-  # Changes the equipment used for this exercise in this workout.
+  # Changes the equipment used for this exercise in this workout, and its note.
   def update
-    if @entry.update(equipment_params)
+    if @entry.update(entry_params)
       redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), notice: "#{@entry.name} updated."
     else
       render :edit, status: :unprocessable_entity
@@ -49,7 +49,7 @@ class WorkoutLogExercisesController < ApplicationController
                                .find(params[:id])
   end
 
-  def equipment_params
-    params.require(:workout_log_exercise).permit(:equipment, :machine_brand)
+  def entry_params
+    params.require(:workout_log_exercise).permit(:equipment, :machine_brand, :notes)
   end
 end

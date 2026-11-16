@@ -9,7 +9,8 @@ class WorkoutSetsController < ApplicationController
       if params[:workout_exercise_id]
         planned = WorkoutExercise.joins(workout_day: :split).where(splits: { user_id: current_user.id })
                                  .find(params[:workout_exercise_id])
-        entry = todays_entry_for(planned)
+        # One session per workout per day: this joins today's log of the workout if there is one.
+        entry = planned.entry_on!(Date.current)
         back = workout_exercise_path(planned)
       else
         entry = WorkoutLogExercise.joins(:workout_log).where(workout_logs: { user_id: current_user.id })
@@ -29,21 +30,21 @@ class WorkoutSetsController < ApplicationController
     end
   end
 
-  # Corrects the weight or reps of a set that is already recorded.
+  # Corrects the weight, reps or note of a set that is already recorded.
   def update
     workout_set = own_set
-    message = if workout_set.update(params.require(:workout_set).permit(:reps_completed, :weight_used))
+    message = if workout_set.update(params.require(:workout_set).permit(:reps_completed, :weight_used, :notes))
       { notice: "Set #{workout_set.set_number} updated." }
     else
       { alert: "Set not updated: #{workout_set.errors.full_messages.to_sentence}." }
     end
-    redirect_back fallback_location: entry_path(workout_set), status: :see_other, **message
+    redirect_to page_of(workout_set), status: :see_other, **message
   end
 
   def destroy
     workout_set = own_set
     workout_set.destroy
-    redirect_back fallback_location: entry_path(workout_set), notice: "Set deleted.", status: :see_other
+    redirect_to page_of(workout_set), notice: "Set deleted.", status: :see_other
   end
 
   private
@@ -53,14 +54,17 @@ class WorkoutSetsController < ApplicationController
               .where(workout_logs: { user_id: current_user.id }).find(params[:id])
   end
 
-  def entry_path(workout_set)
+  # Where the set was edited or deleted from. The exercise page says so itself by sending its
+  # workout_exercise_id (see workout_sets/_set); otherwise it was the logged workout page.
+  def page_of(workout_set)
+    planned = if params[:workout_exercise_id].present?
+      WorkoutExercise.joins(workout_day: :split).where(splits: { user_id: current_user.id })
+                     .find_by(id: params[:workout_exercise_id])
+    end
+    return workout_exercise_path(planned) if planned
+
     entry = workout_set.workout_log_exercise
     workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
-  end
-
-  def todays_entry_for(planned)
-    workout_log = planned.workout_day.workout_logs.where(date: Date.current).order(:id).first_or_create!
-    workout_log.workout_log_exercises.where(workout_exercise: planned).order(:id).first_or_create!
   end
 
   def workout_set_params

@@ -4,9 +4,11 @@ class WorkoutDaysController < ApplicationController
 
   def show
     @workout_exercises = @workout_day.workout_exercises.includes(:exercise).order(:id)
-    @sets_today = WorkoutSet.joins(workout_log_exercise: :workout_log)
-                            .where(workout_logs: { workout_day_id: @workout_day.id, date: Date.current })
-                            .group("workout_log_exercises.workout_exercise_id").count
+    # Sets recorded today per exercise, read from today's session of this workout.
+    log = @workout_exercises.first&.log_on(Date.current)
+    @sets_today = @workout_exercises.to_h do |planned|
+      [planned.id, (log && planned.entry_in(log))&.workout_sets&.count.to_i]
+    end
     @picker_exercises = Exercise.visible_to(current_user).order(:name)
   end
 

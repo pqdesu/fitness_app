@@ -1,6 +1,6 @@
 # Fitness app: full project context
 
-Written 2026-11-16, from `master` at `466ce00` (after pull request 6, `split-page-fixes`).
+Written 2026-11-16, from `master` at `466ce00` (after pull request 6, `split-page-fixes`). Updated the same day on the branch `known-gaps-fixes`, which fixes the "Known gaps" this file used to list; sections 2, 3, 5, 6 and 8 describe the app as it is on that branch.
 
 This file is a handoff prompt. Paste it into a new Claude Code session, or ask Claude to read it, to continue the project on another machine or user with everything that was decided so far. Nothing in it depends on earlier conversations.
 
@@ -39,20 +39,26 @@ Do not reopen these unless the owner brings them up.
 11. **One split is the active split.** The dashboard follows it. If the user has not chosen one, the oldest split is used.
 12. **Every sub-page has one back button to its parent page,** not to the browser's previous page. Top-level pages (Dashboard, Splits, History, Exercises) have none.
 13. **Splits have their own page.** The dashboard shows the month calendar, this week, today's workout from the active split, and last time's session of that workout with the heaviest set per exercise.
+14. **An admin is a normal user with extras.** The owner's words: "Admin can create catalogue exercises but it can also create private exercises. Only difference of the admin is to create catalogue exercises and other admin stuff like delete user, manage stuff etc". An exercise an admin creates is private unless they tick "Add to the shared catalogue" (ticked by default on the catalogue's own "New exercise" page, unticked in the modal).
+15. **Weights keep three decimals,** for example 1.111 kg.
+16. **One logged workout per workout per day.** Sets added from two splits on the same date go into the same log, and the same exercise into the same entry. (Decided while fixing the known gaps; the owner asked for the gap to be fixed, not for this exact rule.)
+17. **An exercise is on a day once and in a logged workout once.** Typing the name of an exercise the user can already pick uses that exercise.
 
 ---
 
 ## 3. How the owner wants you to work
 
-- **Branches, not worktrees.** Work in the main checkout on a normal branch. Do not create or suggest git worktrees: a worktree once left a hidden second copy of the repository and confused the owner. They usually create the branch themselves, so check the current branch first.
-- **The owner tests before merging,** by running `rails s` from their main folder. Do not finalize a branch unprompted.
+- **Work in a worktree.** On 2026-11-16 the owner asked for worktrees again ("Please work in a worktree like the other times"), replacing the earlier "branches, not worktrees" rule. Create it under `.claude/worktrees/<branch>` on a branch named for the work, and leave the main checkout alone. The earlier confusion came from a server in the main folder not showing the worktree's changes, so always say where the work can be seen.
+- **The owner tests before merging.** Do not finalize a branch unprompted. A server started from the main folder shows the main folder's branch; run one from the worktree on another port, or give the command to check the branch out.
+- **Look at UI changes in a browser.** The first real browser check (on `known-gaps-fixes`, headless Chromium at phone and desktop widths) found that the in-place set editing was unusable on a phone, which no test had shown.
 - **Finalizing uses the `finalize-branch` skill** (`.claude/skills/finalize-branch/SKILL.md`). When the owner says to finalize, finish or wrap up the branch: run the tests, write `doc/<branch>.md`, commit, push, open a pull request.
 - **Never merge or pull for the owner.** Do not merge a pull request, enable auto-merge, or run `git pull` or `git merge`. Give the commands instead. In their words: "I will also do the git pull myself I want to be in control of what comes and goes."
 - **Branch names** are two to five plain lowercase words joined by dashes, with no digits, dates or `claude/` prefix, for example `split-page-fixes`.
 - **Change docs are very detailed.** The owner asked for "every step, decision, files changed, reason behind, how it is working now. Everything". The nine-section layout is in the skill.
 - **Issues live in `doc/Issues/Issues.md`,** with screenshots in `doc/Issues/Pics/`. The owner writes issues there and asks for a section to be fixed. Move fixed issues under "Issues Resolved".
 - **Prompt files live in `doc/Prompt/`.** `fitness-app-prompt.md` is an older prompt; where it differs from this file (for example it says a typed exercise name is not saved), this file is the current one.
-- **Say plainly what was not verified.** Most UI work so far was checked by tests and HTTP requests, not by looking at it in a browser.
+- **Say plainly what was not verified.** Before `known-gaps-fixes`, UI work was checked by tests and HTTP requests only.
+- **No Ruby on the machine?** Run the tests in Docker: a `ruby:3.3.5` container with `libpq-dev` and `nodejs` installed, a `postgres` container, and `DATABASE_URL` pointing at it.
 
 ---
 
@@ -92,7 +98,7 @@ bin/rails mock:clear                     # deletes the workouts the mock task lo
 ## 5. Data model
 
 ```
-User (Devise; admin flag; active_split_id)
+User (Devise; admin flag; active_split_id; time_zone)
  ├─ Split (name)
  │    └─ WorkoutDay (day: one of the fixed workout names; weekday 0..6, unique per split)
  │         └─ WorkoutExercise (exercise_id, name, equipment, machine_brand)
@@ -108,8 +114,11 @@ Rules worth knowing:
 - Renaming an `Exercise` renames its planned and logged rows. An exercise that is part of someone's plan cannot be deleted.
 - A `WorkoutLog` copies its user and workout name from the workout day when created. `WorkoutLog.of_workout("Lower")` finds Legs and Lower sessions from any split.
 - A `WorkoutLogExercise` started from the plan copies the plan's exercise and equipment. `top_set` is the heaviest set, with reps as the tie-break.
-- A `WorkoutSet` numbers itself as the next set. Reps can be zero (a failed attempt). Weight is optional (bodyweight).
+- A `WorkoutSet` numbers itself as the next set. Reps can be zero (a failed attempt). Weight is optional (bodyweight) and is a `decimal(8, 3)`.
 - `User#current_split` is the active split, or the oldest split when none is chosen.
+- A user has one `WorkoutLog` per workout per date (Legs and Lower together). `WorkoutExercise#entry_on!(date)` finds or creates that log and the exercise's entry in it; every set added from an exercise page goes through it.
+- A `WorkoutLogExercise` may link to a planned exercise of the log's own day, or of the same workout in another of the user's splits.
+- An exercise is unique per workout day and per logged workout (checked when adding). An `Exercise` name is unique in the catalogue and among one user's own, ignoring case.
 
 ---
 
@@ -121,9 +130,10 @@ Navbar: Dashboard, Splits, History, Exercises.
 - **Splits (`/splits`).** List of splits as week strips; the active one is ringed and badged. "Set as active" sends `PATCH /splits/:id/activate`.
 - **Split page.** The week of circles. A coloured day opens its workout day; a blank day adds one (choose the workout from the fixed list and the weekday).
 - **Workout day page.** Only the exercises of the day. "Add exercise" opens the catalogue modal. Adding one exercise opens that exercise's page; adding several returns to the day. Each row has a trash button, and shows "N sets" once sets were recorded today.
-- **Exercise page (`workout_exercises#show`).** "Today" lists the sets as Set, Weight, Reps. Each row has a pen to edit in place (Stimulus `row_edit_controller.js`, Save, Cancel, Esc) and a trash to delete. The form below adds the next set, pre-filled from the last one. Adding the first set creates today's `WorkoutLog` for that day, dated in the user's time zone. Equipment for the lift is set here.
-- **History (`/workout_logs`).** Logged workouts, newest first. A log page shows its exercises and sets, lets the user add exercises (planned or from the catalogue), edit the date and notes, and delete.
-- **Exercises (`/exercises`).** The catalogue plus the user's own exercises. Admins manage the shared ones; users manage their own.
+- **Exercise page (`workout_exercises#show`).** "Today" lists the sets as Set, Weight, Reps. Each row has a pen to edit in place (Stimulus `row_edit_controller.js`, Save, Cancel, Esc) and a trash to delete. Editing also shows a field for a note on the set, on a second row with Save and Cancel. The form below adds the next set, pre-filled from the last one. Adding the first set creates today's `WorkoutLog` for that workout, dated in the user's time zone. Equipment for the lift is set here, and today's entry follows a change.
+- **History (`/workout_logs`).** Logged workouts, newest first, 20 per page. A log page shows its exercises and sets, lets the user add exercises (planned or from the catalogue), edit the date and notes, and delete. The pen on a logged exercise edits its equipment and a note.
+- **Exercises (`/exercises`).** The catalogue plus the user's own exercises, 30 per page. Admins manage the shared ones; everyone manages their own.
+- **Users (`/admin/users`, admin only, in the user menu).** Every account, with "Make admin" / "Remove admin" and "Delete". An admin's own row has no actions, so one admin always remains.
 
 Conventions in the code:
 
@@ -131,7 +141,8 @@ Conventions in the code:
 - `ExercisePicker` (`app/controllers/concerns/exercise_picker.rb`) reads what the "Add exercises" modal sends.
 - Shared partials: `shared/_exercise_picker`, `shared/_equipment_fields`, `splits/_week`, `pages/_calendar`, `workout_sets/_set`.
 - Styles for the app's own components are in `app/assets/stylesheets/components/_app.scss`.
-- `ApplicationController` requires sign-in everywhere and runs each request in the browser's time zone, read from a cookie set by `app/javascript/time_zone.js`.
+- `Paginated` (`app/controllers/concerns/paginated.rb`) and `shared/_pagination` page the long lists.
+- `ApplicationController` requires sign-in everywhere and runs each request in the browser's time zone, read from a cookie set by `app/javascript/time_zone.js`. The zone is also saved in `users.time_zone` and used when a browser has not reported one yet.
 - Every lookup is scoped to the signed-in user's own records.
 
 ---
@@ -147,8 +158,9 @@ Each merged branch has a detailed doc in `doc/`. Read the relevant one before ch
 | 3 | `claude/universal-back-button-4813cc` | Back button on every sub-page | `doc/claude-universal-back-button-4813cc.md` |
 | 4 | `dashboard-calendar-and-active-split` | Active split, new dashboard, logs that outlive splits, browser time zone | `doc/dashboard-calendar-and-active-split.md` |
 | 5 | `split-page-fixes` | Program-only day page, quick remove, weight before reps, set editing, mock data task | `doc/split-page-fixes.md` |
+| 6 | `known-gaps-fixes` | One workout per day, no duplicate exercises, admin private exercises and users page, three-decimal weights, notes, pagination, saved time zone, Rubocop | `doc/known-gaps-fixes.md` |
 
-State on 2026-11-16: `bin/rails test` on `master` passes with 39 runs, 390 assertions, 0 failures.
+State on 2026-11-16: `bin/rails test` on `master` passes with 39 runs, 390 assertions, 0 failures. On the branch `known-gaps-fixes` (doc: `doc/known-gaps-fixes.md`): 48 runs, 541 assertions, 0 failures, and `bundle exec rubocop` reports no offenses.
 
 ---
 
@@ -163,18 +175,16 @@ State on 2026-11-16: `bin/rails test` on `master` passes with 39 runs, 390 asser
 
 ### Known gaps
 
-- **No browser check.** Almost none of the UI has been looked at in a browser by Claude; layout, spacing and the in-place set editing are verified only by tests and HTTP requests. The owner checks by hand.
-- The first page of a new browser session renders in UTC and reloads once to pick up the time zone. Without JavaScript or cookies the app stays in UTC.
-- Today's log is found per workout day, so training the same workout from two splits on one date creates two logs. The mock data shows this (several "Upper" sessions on one day, one per split).
-- `mock:clear` removes the mock workouts but leaves the planned exercises the mock task added to empty days. The mock task has no test.
-- After editing or deleting a set, the redirect relies on the browser's referer.
-- The same exercise can be added twice to a day's plan or to a logged workout.
-- Equipment changed on a day's exercise does not update an entry already created for today.
-- An admin cannot create a private exercise; what they create in the modal goes to the shared catalogue.
-- Notes on a logged exercise and on a set exist in the database but have no input in the UI.
-- No pagination on History or the catalogue; no admin screen for users (promotion is done in the console).
-- `README.md` is out of date: it still mentions SQLite/MySQL, Vue.js, planned sets and reps, and a rest timer.
-- Devise's mailer sender is still the placeholder address; Rubocop has a config file but is not in the Gemfile; `weight_used` is a bare `decimal` column.
+The gaps this section listed until 2026-11-16 are fixed on the branch `known-gaps-fixes`. What is left:
+
+- **Time zone, first visit ever.** The zone is now saved on the user, so a new session starts in it. Only a user's very first page still renders in UTC and reloads once, and a user whose browser has never run the script stays in UTC.
+- **Data from before the new rules is not merged.** Two logs of the same workout on one date, or an exercise doubled on a day or in a log, stay as they are; the rules apply to what is added from now on. With two logs of a workout on one date, new sets go to the older one. Mock workouts logged by the old task can be removed with `mock:clear` and logged again.
+- **`mock:clear` only removes plans added by the new task.** Planned exercises the old task added to empty days carry no mark and stay.
+- **Deleting the last set of the day leaves an empty logged workout** (it shows as "0 sets" in History until deleted).
+- **Notes are added by editing.** A set's note is typed after pressing its pen, and a logged exercise's note on its edit page; the "Add set" form has no note field, to keep it to two fields.
+- **History and the users table scroll sideways on a phone** when the columns do not fit.
+- **Rubocop's config was relaxed to the code's existing style** (symbol arrays as `[:a, :b]`, `end` aligned with the variable, no method or block length limits) instead of rewriting the code.
+- **Admin screen is users only:** make or unmake an admin, delete a user. Nothing else is managed there.
 
 ---
 
