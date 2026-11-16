@@ -4,6 +4,9 @@
 
 - Add a weekly overview under the week of the slipt and remoe the splits, workout logged and sets recorded boxes.
 - On Recent Workouts tab make the whole block clickable not only the name
+- Make the Recent workout a dropdown, extend it to show it in more details and keep a summary of it at first.
+- Also do the same for the Active split to extend and show the weeksdays.
+- Have a today check as well not only the weekly but another box with todays workout and if none then have a button to start the workout so I can start adding the exercises done to be added to my workout. Like a simple quick button to start it
 
 ### Calendar
 
@@ -18,6 +21,7 @@
 - Also add notes of the exercise and notes for the set. So add a small text field for personal notes.
 - Also add tags for each set. For example: warm-up, assisted etc. Admin can create and edit tags
 - Add the amount of exercises and sets on the top of the exercises pages of the day. Also with that add this data to the weekly overview with the amount of set and exercises done on the week and when someone opens the weekly overview
+- Make the exercises on the movable, so I can move around the order of the exercises done.
 
 ---
 

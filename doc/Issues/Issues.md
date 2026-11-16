@@ -1,5 +1,11 @@
 # Issues
 
+## Exercise page
+
+### Exercise name edit
+
+- When editing the name of the exercise I can also edit the muscle group by tyoing which should not be the case it should be via dropdown
+
 # Issues resolved
 
 ## Home page
