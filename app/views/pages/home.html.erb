@@ -9,12 +9,6 @@
   <div class="row g-4">
     <div class="col-lg-5">
       <%= render "calendar", today: @today, logs_by_date: @logs_by_date %>
-
-      <div class="row g-3">
-        <div class="col-4"><div class="stat-tile"><span class="stat-value"><%= @splits_count %></span><span class="stat-label">Splits</span></div></div>
-        <div class="col-4"><div class="stat-tile"><span class="stat-value"><%= @logs_count %></span><span class="stat-label">Workouts logged</span></div></div>
-        <div class="col-4"><div class="stat-tile"><span class="stat-value"><%= @sets_count %></span><span class="stat-label">Sets recorded</span></div></div>
-      </div>
     </div>
 
     <div class="col-lg-7">
@@ -29,6 +23,7 @@
           </div>
           <div class="card-body">
             <%= render "splits/week", split: @active_split, workout_days: @active_days, today: @today.wday %>
+            <%= render "week_overview", dates: @week_dates, logs_by_date: @week_logs, summary: @week_summary, today: @today %>
           </div>
         <% else %>
           <div class="card-header"><h2>Active split</h2></div>
@@ -53,7 +48,12 @@
               <% end %>
             </div>
             <% if @today_workout %>
-              <%= link_to "Open workout", workout_day_path(@today_workout), class: "btn btn-primary btn-sm" %>
+              <%# Nothing is logged until the first set is added, so "Start workout" only opens the day. %>
+              <%= link_to (@today_summary.sets.positive? ? "Continue" : "Start workout"), workout_day_path(@today_workout), class: "btn btn-primary btn-sm" %>
+            <% elsif @active_days.any? %>
+              <%# A rest day: choose which workout to train anyway. It is logged as a rest day. %>
+              <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#rest-day-start"
+                      aria-expanded="false" aria-controls="rest-day-start">Start workout</button>
             <% end %>
           </div>
 
@@ -70,10 +70,28 @@
             <% end %>
           <% end %>
           <% if @today_workout.nil? %>
-            <p class="text-muted small mb-0">No workout is planned for <%= l @today, format: "%A" %> in this split.</p>
+            <p class="today-last">No workout is planned for <%= l @today, format: "%A" %> in this split.</p>
+            <% @week_logs.fetch(@today, []).each do |rest_log| %>
+              <p class="today-last today-done">
+                Logged today · <%= link_to "#{rest_log.workout}, #{pluralize(@week_summary.sets_in(rest_log), 'set')}", workout_log_path(rest_log, from: "dashboard") %>
+                <% if rest_log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
+              </p>
+            <% end %>
+            <% if @active_days.any? %>
+              <div class="collapse" id="rest-day-start">
+                <p class="today-last">Going to the gym anyway? Pick the workout. It is saved as a rest day workout and your split stays as it is.</p>
+                <div class="today-start chip-row">
+                  <% @active_days.each do |day| %>
+                    <%= link_to workout_day_path(day), class: "btn btn-light btn-sm rounded-pill" do %><%= day.day %> <span class="text-muted"><%= Date::ABBR_DAYNAMES[day.weekday] %></span><% end %>
+                  <% end %>
+                </div>
+              </div>
+            <% else %>
+              <p class="mb-0"><%= link_to "Add a workout day to this split", new_split_workout_day_path(@active_split) %></p>
+            <% end %>
           <% elsif today_lifts.any? %>
             <p class="today-last today-done">
-              Logged today · <%= link_to pluralize(today_lifts.sum { |lift| lift.workout_sets.size }, "set"), workout_log_path(@today_log, from: "dashboard") %>
+              Logged today · <%= pluralize(@today_summary.exercises, "exercise") %> · <%= link_to pluralize(@today_summary.sets, "set"), workout_log_path(@today_log, from: "dashboard") %><% if @today_summary.top_weight %> · top <%= format_weight(@today_summary.top_weight) %><% end %>
             </p>
             <%= render "lifts", lifts: today_lifts, list_class: "today-lifts" %>
             <% if @last_log %><p class="today-last today-previous"><%= last_time %></p><% end %>
@@ -94,16 +112,8 @@
             <p>No workouts logged yet. Open a workout day, open an exercise and add your first set.</p>
           </div>
         <% else %>
-          <ul class="list-rows">
-            <% @recent_logs.each do |log| %>
-              <li>
-                <div>
-                  <%= link_to log.workout, workout_log_path(log), class: "row-title" %>
-                  <div class="text-muted small"><%= l log.date, format: :long %> · <%= pluralize(log.workout_log_exercises.sum { |e| e.workout_sets.size }, "set") %></div>
-                </div>
-                <% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% end %>
-              </li>
-            <% end %>
+          <ul class="recent-list">
+            <%= render partial: "recent_workout", collection: @recent_logs, as: :log %>
           </ul>
         <% end %>
       </div>

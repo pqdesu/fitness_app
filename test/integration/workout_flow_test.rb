@@ -149,6 +149,127 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
     assert_equal upper_lower, @user.reload.active_split
   end
 
+  test "the dashboard has a weekly summary with the days behind a toggle, and no totals boxes" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      get root_path
+      assert_select ".stat-tile", 0
+      assert_equal %w[0 0 0 –], css_select(".week-summary dd").map { |n| n.text.squish }
+      assert_select ".week-overview-days li", 7
+      assert_select ".week-overview-days li.is-today .week-overview-name", "Mon"
+      assert_select ".week-overview .toggle-days[data-bs-target='#week-days'][aria-expanded=false]", 1
+      assert_select "#week-days.collapse:not(.show) .week-overview-days", 1
+
+      log = push.workout_logs.create!(date: Date.current)
+      bench = log.workout_log_exercises.create!(name: "Bench press")
+      bench.workout_sets.create!(reps_completed: 8, weight_used: 60)
+      bench.workout_sets.create!(reps_completed: 6, weight_used: 72.5)
+      log.workout_log_exercises.create!(name: "Dips").workout_sets.create!(reps_completed: 12)
+      # a session of last week is not part of this week
+      push.workout_logs.create!(date: Date.new(2026, 11, 9)).workout_log_exercises.create!(name: "Old").workout_sets.create!(reps_completed: 5, weight_used: 200)
+
+      get root_path
+      # workouts, exercises, sets, top weight
+      assert_equal ["1", "2", "3", "72.5 kg"], css_select(".week-summary dd").map { |n| n.text.squish }
+      assert_select ".week-overview-days li.has-workout", 1
+      assert_select ".week-overview-days a[href=?]", workout_log_path(log, from: "dashboard"), text: "Push"
+      assert_select ".today", /Logged today · 2 exercises · 3 sets · top 72.5 kg/
+      assert_select ".today a.btn-primary[href=?]", workout_day_path(push), text: "Continue"
+    end
+  end
+
+  test "deleting a workout opened from the dashboard goes back to the dashboard" do
+    sign_in @user
+    push = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    log = push.workout_logs.create!(date: Date.new(2026, 11, 16))
+    other = push.workout_logs.create!(date: Date.new(2026, 11, 9))
+
+    get workout_log_path(log, from: "dashboard")
+    assert_select "form[action=?] input[name=_method][value=delete]", workout_log_path(log, from: "dashboard")
+    delete workout_log_path(log, from: "dashboard")
+    assert_redirected_to root_path
+    assert_not WorkoutLog.exists?(log.id)
+
+    # from anywhere else it still goes to History
+    delete workout_log_path(other)
+    assert_redirected_to workout_logs_path
+  end
+
+  test "on a rest day a workout can be started anyway, and it is recorded as a rest day workout" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+    planned = split.workout_days.create!(day: "Pull", weekday: 3)
+    planned.workout_exercises.create!(exercise: @squat)
+
+    # Tuesday: nothing planned
+    travel_to Time.zone.local(2026, 11, 17, 12) do
+      get root_path
+      assert_select ".today-title", "Rest day"
+      assert_select ".today-header button.btn-primary[data-bs-target='#rest-day-start']", "Start workout"
+      assert_select "#rest-day-start.collapse:not(.show) a[href=?]", workout_day_path(push)
+      assert_select "#rest-day-start", /saved as a rest day workout/
+
+      # the first set creates the log, marked as a rest day, and the split is untouched
+      entry = planned.workout_exercises.first
+      assert_difference -> { WorkoutLog.count }, 1 do
+        post workout_exercise_workout_sets_path(entry), params: { workout_set: { reps_completed: 5, weight_used: 100 } }
+      end
+      log = WorkoutLog.order(:id).last
+      assert log.rest_day?
+      assert_equal 2, split.workout_days.reload.count
+
+      get root_path
+      assert_select ".today", /Logged today · Pull, 1 set/
+      assert_select ".today .chip-rest", "Rest day"
+      assert_select ".recent-row .chip-rest", "Rest day"
+      get workout_log_path(log)
+      assert_select ".page-header .chip-rest", "Rest day, trained anyway"
+      get workout_logs_path
+      assert_select "td .chip-rest", "Rest day"
+    end
+
+    # a planned day is not a rest day
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      assert_not push.workout_logs.create!(date: Date.current).rest_day?
+    end
+  end
+
+  test "a recent workout is a dropdown: heaviest set per exercise as pills that open the rest of the sets" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+    log = push.workout_logs.create!(date: Date.new(2026, 11, 16), notes: "Felt strong")
+    bench = log.workout_log_exercises.create!(name: "Bench press")
+    bench.workout_sets.create!(reps_completed: 10, weight_used: 60)
+    bench.workout_sets.create!(reps_completed: 5, weight_used: 80)
+    log.workout_log_exercises.create!(name: "Cable fly")
+
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      get root_path
+      row = ".recent-row"
+      # collapsed summary: name, date and sets, split
+      assert_select "#{row} .recent-toggle[aria-expanded=false][data-bs-target='#recent-log-#{log.id}']", 1
+      assert_select "#{row} .recent-toggle", /Push\s+November 16, 2026 · 2 sets/
+      assert_select "#{row} .recent-toggle .chip", "PPL"
+      assert_select "#recent-log-#{log.id}.collapse:not(.show)", 1
+      # the whole row is not a link any more: the only link out is "Open workout"
+      assert_select "#{row} a.stretched-link", 0
+      assert_select "#recent-log-#{log.id} a[href=?]", workout_log_path(log, from: "dashboard"), text: /Open workout/
+      assert_select "#recent-log-#{log.id} .recent-counts", "1 exercise · 2 sets"
+      assert_select "#recent-log-#{log.id} .recent-notes", "Felt strong"
+      # an exercise is a pill with its heaviest set; it opens every set in order
+      assert_select ".lift-pill[data-bs-target='#recent-lift-#{bench.id}'] .top-set", "80 kg × 5 reps"
+      assert_equal ["Set 1 60 kg × 10 reps", "Set 2 80 kg × 5 reps"],
+                   css_select("#recent-lift-#{bench.id} li").map { |n| n.text.squish }
+      # an exercise without sets has nothing to open
+      assert_select ".lift-pill.is-empty", /Cable fly\s+No sets/
+    end
+  end
+
   test "the dashboard shows the month, this week, today's workout and last time's heaviest sets" do
     sign_in @user
     split = @user.splits.create!(name: "PPL")
@@ -178,7 +299,9 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
       # today's workout, nothing logged before
       assert_select ".today .eyebrow", /Today · Monday, November 16/
       assert_select ".today-title", "Push day"
-      assert_select ".today a[href=?]", workout_day_path(push), text: "Open workout"
+      # nothing is logged yet, so the button starts the workout by opening its day
+      assert_select ".today a.btn-primary[href=?]", workout_day_path(push), text: "Start workout"
+      assert_equal 0, WorkoutLog.count
       assert_select ".today", /not logged a Push session before today/
       assert_select ".last-lifts", 0
 
@@ -275,9 +398,16 @@ class WorkoutFlowTest < ActionDispatch::IntegrationTest
 
     # Tuesday: nothing planned
     travel_to Time.zone.local(2026, 11, 17, 12) do
+      logs_before = WorkoutLog.count
       get root_path
       assert_select ".today-title", "Rest day"
       assert_select ".today", /No workout is planned for Tuesday/
+      # a rest day can still start any workout of the split, which opens that workout day
+      assert_select ".today-start a[href]", User.find(@user.id).current_split.workout_days.count
+      User.find(@user.id).current_split.workout_days.each do |day|
+        assert_select ".today-start a[href=?]", workout_day_path(day), text: /#{day.day}/
+      end
+      assert_equal logs_before, WorkoutLog.count, "starting a workout logs nothing until an exercise is added"
       assert_select ".week .week-day.is-today.is-set", 0
       assert_select ".week .week-day.is-today", 1
     end

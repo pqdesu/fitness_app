@@ -16,6 +16,7 @@ The user merges and pulls themselves; they want control over what goes into the 
 - Never push to the default branch.
 - Never delete the local or remote branch: the open pull request needs the remote one, and the local one is not merged yet.
 - Never use `--force`, and never discard uncommitted changes.
+- Never edit any file other than the three this skill is allowed to write: the change doc (step 3), `doc/Features/Features.md` and `doc/Issues/Issues.md` (step 3a). No code, tests, config or other docs are touched while finalizing.
 
 ## Stop rules
 
@@ -82,6 +83,22 @@ The doc must be detailed. Base it on the real diff (`git diff DEFAULT...HEAD --s
 
 Do not put passwords, tokens or other secrets in the doc, except development-only seed values that are already in the repository.
 
+## 3a. Update the feature and issue lists
+
+These two files are the only existing files this skill may edit, and it edits them only to record the state of the work, in `HERE` so the change is committed on the branch:
+
+- `doc/Features/Features.md`: move each feature this branch finished from its section (for example "Home page") to the matching section under "Features added (DONE)", creating that section heading if it is missing. Keep the wording of the item as the owner wrote it, and keep the unfinished items where they are.
+- `doc/Issues/Issues.md`: move each issue this branch fixed to "Issues Resolved". Leave open issues alone.
+
+Rules for both:
+
+- Only move or tick items the diff really finishes. Do not add, reword, reorder or delete other items, and do not touch any other file, in any part of the repository, for this step.
+- If an item is only partly done, leave it in place and say so in the final report.
+- Edit the copies inside `HERE`, never the ones in the main folder.
+- If a file does not exist in the branch, skip it and say so in the final report.
+
+Mention in the change doc which items were moved.
+
 ## 4. Commit and push the branch
 
 ```bash
@@ -133,5 +150,6 @@ Tell the user:
   1. merge the pull request on GitHub
   2. in the main folder: `git pull origin DEFAULT`
   3. optional cleanup once merged: `git branch -d BRANCH` and `git push origin --delete BRANCH`
+- which items moved in `Features.md` and `Issues.md`
 - anything skipped, failed or not verified
 - when a worktree was removed: this session can no longer run commands, so further work needs a new session from the main folder

@@ -19,6 +19,13 @@ class PagesController < ApplicationController
     calendar_dates = helpers.month_weeks(@today).flatten
     @logs_by_date = current_user.workout_logs.where(date: calendar_dates.first..calendar_dates.last)
                                 .order(:id).group_by(&:date)
+    # This week (Sunday to Saturday) for the overview under the active split's week.
+    @week_dates = (@today.beginning_of_week(:sunday)..@today.end_of_week(:sunday)).to_a
+    @week_logs = current_user.workout_logs.where(date: @week_dates.first..@week_dates.last)
+                             .includes(workout_log_exercises: :workout_sets)
+                             .order(:id).group_by(&:date)
+    @week_summary = WorkoutSummary.new(@week_logs.values.flatten)
+    @today_summary = WorkoutSummary.new(@today_log)
     @recent_logs = current_user.workout_logs
                                .includes(workout_day: :split, workout_log_exercises: :workout_sets)
                                .order(date: :desc, id: :desc).limit(5)

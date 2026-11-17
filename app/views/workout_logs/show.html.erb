@@ -8,10 +8,10 @@
 <div class="page-header">
   <div>
     <h1><%= @workout_log.workout %> workout</h1>
-    <p class="text-muted mb-0"><%= l @workout_log.date, format: :long %></p>
+    <p class="text-muted mb-0"><%= l @workout_log.date, format: :long %><% if @workout_log.rest_day? %> <span class="chip chip-rest">Rest day, trained anyway</span><% end %></p>
   </div>
   <div class="header-actions">
-    <%= button_to "Delete workout", workout_log_path(@workout_log), method: :delete, class: "btn btn-outline-danger",
+    <%= button_to "Delete workout", workout_log_path(@workout_log, from: ("dashboard" if params[:from] == "dashboard")), method: :delete, class: "btn btn-outline-danger",
           form: { data: { turbo_confirm: "Delete this workout and all its sets?" } } %>
   </div>
 </div>
