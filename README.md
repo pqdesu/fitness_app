@@ -15,7 +15,7 @@ A simple workout tracker built with Ruby on Rails. You plan your training week, 
 
 ## Stack
 
-- Ruby 3.3.5, Rails 8.1
+- Ruby 3.3.13, Rails 8.1
 - PostgreSQL
 - Devise for accounts
 - Bootstrap 5 with SCSS, Font Awesome, simple_form

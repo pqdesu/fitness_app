@@ -8,7 +8,7 @@ The review this branch answers is [app-status-review.md](app-status-review.md). 
 
 The owner asked for a check of the whole app, then for everything it found to be fixed, with two exceptions (production email, and reordering exercises, which is already planned).
 
-- **Upgrade:** Rails 7.1.6 to 8.1.4.1, Devise 4.9.4 to 5.0.4, Puma 7.1.0 to 8.1.2, every other gem to its newest version, and the Rails 8.1 behaviour defaults. Ruby stays 3.3.5.
+- **Upgrade:** Rails 7.1.6 to 8.1.4.1, Devise 4.9.4 to 5.0.4, Puma 7.1.0 to 8.1.2, every other gem to its newest version, and the Rails 8.1 behaviour defaults. Ruby moved from 3.3.5 to 3.3.13 at the end (section 4.13).
 - **Security:** account lock after wrong passwords, longer passwords, the only admin cannot delete their account, a content security policy, length limits, two vulnerable gems updated, security scanners and CI added.
 - **Data:** unique indexes behind the "once only" rules, and `workout_days.weekday` is required.
 - **Code:** dead code and unused gems removed, repeated lookups shared, the home page logic moved to a `Dashboard` object, the stylesheet split into 19 files, the integration tests split into seven files.
@@ -200,6 +200,12 @@ Three existing tests changed, each because the behaviour changed on purpose:
 - A `set_number` sent with the form is ignored, not rejected.
 
 Twelve tests were added: the only admin (model and pages), a regular user cancelling, the account lock, the password length with the reset answer, the policy header, the muscle group dropdown, the add-set form on both pages, the length limits, and two for `Dashboard`.
+
+### 4.13 Ruby 3.3.13 and the CI error
+
+The first CI run failed in all three jobs with "Unavailable version 3.3.5 for ruby on ubuntu-26.04". `runs-on: ubuntu-latest` now means Ubuntu 26.04, where `ruby/setup-ruby` builds only the latest patch of a series (3.3.13), and it reads the version from `.ruby-version` (3.3.5). The owner chose to move the project to 3.3.13 rather than pin the runner to `ubuntu-24.04`, so the same Ruby is used on the machine, in the Docker image and in CI.
+
+Changed: `.ruby-version`, `ruby "3.3.13"` in the `Gemfile`, `ARG RUBY_VERSION=3.3.13` in the `Dockerfile`, the `RUBY VERSION` block of `Gemfile.lock`, and the docs that name the version. `ci.yml` itself did not need to change. Developers need `rbenv install 3.3.13` (a current ruby-build is required) and `bundle install`. Not verified: the workflow has not run on GitHub with this change.
 
 ### 4.12 Docs
 

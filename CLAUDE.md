@@ -26,7 +26,7 @@ The full project context (product brief, every decision, data model, page flows,
 - Work in a git worktree under `.claude/worktrees/<branch>`, on a branch named for the work (`git worktree add .claude/worktrees/<branch> -b <branch> master`). The owner asked for this on 2026-11-16, replacing the earlier "no worktrees" rule. Leave the main checkout alone: it is the owner's.
 - A server started from the main folder serves the main folder's branch, not the worktree. To let the owner see the work before merging, run a server from the worktree on another port and say which, or give them the command to check the branch out. Do not finalize work unprompted.
 - The worktree and the main folder share one development database. Say so before running a migration that drops or renames something `master` still reads.
-- Ruby 3.3.5 (through rbenv) and PostgreSQL are installed natively on the owner's machine. Run the tests, the server and migrations directly (`bin/rails test`), not in Docker. If either is missing, tell the owner instead of skipping the tests.
+- Ruby 3.3.13 (through rbenv) and PostgreSQL are installed natively on the owner's machine. Run the tests, the server and migrations directly (`bin/rails test`), not in Docker. If either is missing, tell the owner instead of skipping the tests.
 - Look at changed pages in a real browser at phone width before calling UI work done. The tests do not run the JavaScript or show the layout.
 - When asked to finalize, finish or wrap up a branch, use the `finalize-branch` skill (in `.claude/skills/`). It writes a detailed change doc to `doc/<branch>.md`, pushes, and opens a pull request.
 - Never merge a pull request, enable auto-merge, or run `git pull` / `git merge` for the owner. Give them the commands instead; they decide what goes into `master` and what comes into their folder.
@@ -36,7 +36,7 @@ The full project context (product brief, every decision, data model, page flows,
 
 ## Stack and commands
 
-Ruby 3.3.5, Rails 8.1, PostgreSQL, Devise 5, Bootstrap 5 with SCSS (Dart Sass through dartsass-sprockets), Hotwire (Turbo and Stimulus) through importmap, simple_form, Minitest.
+Ruby 3.3.13, Rails 8.1, PostgreSQL, Devise 5, Bootstrap 5 with SCSS (Dart Sass through dartsass-sprockets), Hotwire (Turbo and Stimulus) through importmap, simple_form, Minitest.
 
 ```bash
 bin/setup                 # gems and database

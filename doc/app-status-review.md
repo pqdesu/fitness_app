@@ -32,7 +32,7 @@ The owner asked to check first whether the upgrade breaks the app, and to leave 
 3. The whole suite passed unchanged on the new versions (62 runs, 0 failures), with no deprecation warnings in `log/test.log`.
 4. The first run after the change took 382 seconds, because every parallel test process recompiled the stylesheet and rebuilt its caches at once. The second run took 40 seconds. It was a one-off, not a regression.
 5. The upgrade was kept. At first `config.load_defaults` stayed at `7.1`; in the second round (below) it moved to `8.1`.
-6. The Ruby version stays 3.3.5, which Rails 8.1 supports. Ruby itself was not upgraded: the new version is Rails.
+6. The Ruby version was 3.3.5 at first, which Rails 8.1 supports. It moved to 3.3.13 afterwards, because the CI runner no longer offers 3.3.5 (see "Third round").
 
 ### Security
 
@@ -166,7 +166,7 @@ In the worktree, `bin/rails server` answered "A server is already running (pid .
 
 ### 3. Gems and app on the new version
 
-The new version is **Rails** (7.1.6 to 8.1.4.1). **Ruby is still 3.3.5.**
+The new version is **Rails** (7.1.6 to 8.1.4.1). Ruby was still 3.3.5 here; see "Third round" for the move to 3.3.13.
 
 - `bundle update` brought every gem to its newest version: among others bootstrap 5.3.8, pg 1.7.0, turbo-rails 2.0.23, importmap-rails 2.2.3, simple_form 5.4.1, sprockets 4.4.1, execjs 2.10.2, autoprefixer-rails 10.6.1.0.
 - The `json < 3` pin is gone. It was there because json 3 broke execjs; with execjs 2.10.2, json 3.1.0 works. Checked by building the assets in production mode from an empty cache and by the tests.
@@ -195,6 +195,21 @@ A search of the code for everything the review said to remove or share. Three sm
 - `bin/rails test`: 74 runs, 1024 assertions, 0 failures.
 - rubocop: no offenses. brakeman: 0 warnings. bundler-audit: no vulnerabilities.
 - Chrome, 390 px frame, on the 8.1 defaults: dashboard, Splits, a split, a workout day, an exercise page, History, a logged workout, Exercises, edit exercise, Users and Account settings. No page wider than the screen, scripts load on every page, no policy violation.
+
+## Third round: the CI error and Ruby 3.3.13
+
+After the push, the three CI jobs (test, lint, security) all failed on the Ruby setup step:
+
+> Unavailable version 3.3.5 for ruby on ubuntu-26.04. Only the latest patch release of each series is built for newer runner images.
+
+Cause: `ci.yml` used `runs-on: ubuntu-latest`, which GitHub moved to Ubuntu 26.04. There `ruby/setup-ruby` offers only the newest patch of each series (3.3.13), and `.ruby-version` asked for 3.3.5. The app was not at fault: the jobs failed before any of its code ran.
+
+The owner chose to move the project to Ruby 3.3.13 (the alternative was pinning the runner to `ubuntu-24.04`). `ruby-build` from apt was too old to know 3.3.13, so the owner installed a current one as an rbenv plugin, then Ruby 3.3.13.
+
+- `.ruby-version`, `Gemfile` (`ruby "3.3.13"`) and the `Dockerfile` (`RUBY_VERSION`) now say 3.3.13; `Gemfile.lock` records it.
+- `CLAUDE.md`, `README.md` and `doc/Prompt/project-context.md` say 3.3.13. The older change docs keep 3.3.5, as it was true when they were written.
+- Checked on 3.3.13: tests, rubocop, brakeman and bundler-audit (results in the commit message and `doc/app-status-fixes.md`).
+- Not checked: the CI workflow itself, which only runs on GitHub after a push.
 
 ## How it was checked
 
