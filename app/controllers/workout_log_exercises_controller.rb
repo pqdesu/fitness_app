@@ -14,14 +14,14 @@ class WorkoutLogExercisesController < ApplicationController
       exercises, error = picked_exercises
       return redirect_to(workout_log_path(workout_log), alert: "Nothing added: #{error}.") if error
 
-      entries = exercises.map { |exercise| workout_log.workout_log_exercises.new(exercise: exercise) }
+      entries = exercises.map { |exercise| workout_log.workout_log_exercises.new(exercise:) }
     end
 
     WorkoutLogExercise.transaction { entries.each(&:save!) }
     redirect_to workout_log_path(workout_log, anchor: "entry-#{entries.first.id}"),
                 notice: "#{entries.map(&:name).to_sentence} added to this workout."
   rescue ActiveRecord::RecordInvalid => e
-    redirect_to workout_log_path(workout_log), alert: "Nothing added: #{e.record.errors.full_messages.to_sentence}."
+    redirect_to workout_log_path(workout_log), alert: "Nothing added: #{errors_of(e.record)}."
   end
 
   def edit
@@ -32,7 +32,7 @@ class WorkoutLogExercisesController < ApplicationController
     if @entry.update(entry_params)
       redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), notice: "#{@entry.name} updated."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -44,12 +44,10 @@ class WorkoutLogExercisesController < ApplicationController
   private
 
   def set_entry
-    @entry = WorkoutLogExercise.joins(:workout_log)
-                               .where(workout_logs: { user_id: current_user.id })
-                               .find(params[:id])
+    @entry = current_user.workout_log_exercises.find(params[:id])
   end
 
   def entry_params
-    params.require(:workout_log_exercise).permit(:equipment, :machine_brand, :notes)
+    params.expect(workout_log_exercise: [:equipment, :machine_brand, :notes])
   end
 end

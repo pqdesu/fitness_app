@@ -36,4 +36,22 @@ class UserTest < ActiveSupport::TestCase
     assert_not @user.valid?
     assert_includes @user.errors[:active_split], "must be one of your splits"
   end
+
+  test "the only admin cannot be deleted" do
+    @user.update!(admin: true)
+    assert @user.last_admin?
+    assert_not @user.destroy
+    assert_includes @user.errors[:base], "You are the only admin. Make someone else an admin first"
+    assert User.exists?(@user.id)
+
+    other = User.create!(email: "other@example.com", password: "secret123", admin: true)
+    assert_not @user.last_admin?
+    assert @user.destroy
+    assert other.reload.last_admin?
+  end
+
+  test "a regular user is never the last admin" do
+    assert_not @user.last_admin?
+    assert @user.destroy
+  end
 end

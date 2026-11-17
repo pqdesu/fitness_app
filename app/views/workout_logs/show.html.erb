@@ -1,4 +1,4 @@
-<% if params[:from] == "dashboard" %>
+<% if from_dashboard? %>
   <% back_to "Dashboard", root_path %>
 <% elsif @workout_day %>
   <% back_to @workout_day.day, workout_day_path(@workout_day) %>
@@ -11,7 +11,7 @@
     <p class="text-muted mb-0"><%= l @workout_log.date, format: :long %><% if @workout_log.rest_day? %> <span class="chip chip-rest">Rest day, trained anyway</span><% end %></p>
   </div>
   <div class="header-actions">
-    <%= button_to "Delete workout", workout_log_path(@workout_log, from: ("dashboard" if params[:from] == "dashboard")), method: :delete, class: "btn btn-outline-danger",
+    <%= button_to "Delete workout", workout_log_path(@workout_log, from: ("dashboard" if from_dashboard?)), method: :delete, class: "btn btn-outline-danger",
           form: { data: { turbo_confirm: "Delete this workout and all its sets?" } } %>
   </div>
 </div>
@@ -45,27 +45,11 @@
         </div>
 
         <% if sets.any? %>
-          <table class="table app-table set-table">
-            <thead><tr><th>Set</th><th>Weight</th><th>Reps</th><th></th></tr></thead>
-            <%= render partial: "workout_sets/set", collection: sets, as: :set %>
-          </table>
+          <%= render "workout_sets/table", sets: sets %>
         <% end %>
 
         <div class="card-footer">
-          <%= form_with model: [entry, WorkoutSet.new], class: "row g-2 align-items-end inline-form" do |f| %>
-            <div class="col-4">
-              <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{entry.id}" %>
-              <%= f.number_field :weight_used, step: "any", placeholder: "–", class: "form-control", id: "weight_#{entry.id}",
-                    value: weight_number(sets.last&.weight_used) %>
-            </div>
-            <div class="col-4">
-              <%= f.label :reps_completed, "Reps", class: "form-label", for: "reps_#{entry.id}" %>
-              <%= f.number_field :reps_completed, value: sets.last&.reps_completed, min: 0, required: true, class: "form-control", id: "reps_#{entry.id}" %>
-            </div>
-            <div class="col-4 d-grid">
-              <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add set<% end %>
-            </div>
-          <% end %>
+          <%= render "workout_sets/form", parent: entry, last_set: sets.last %>
         </div>
       </div>
     <% end %>
@@ -85,7 +69,7 @@
     <% end %>
 
     <div class="d-grid mt-3">
-      <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exercise-picker"><i class="fa-solid fa-plus"></i> Add exercise</button>
+      <%= exercise_picker_button "btn-light" %>
     </div>
   </div>
 
@@ -110,4 +94,4 @@
 </div>
 
 <%= render "shared/exercise_picker", url: workout_log_workout_log_exercises_path(@workout_log),
-      exercises: @picker_exercises, taken_ids: @log_exercises.filter_map(&:exercise_id) %>
+      exercises: picker_exercises, taken_ids: @log_exercises.filter_map(&:exercise_id) %>

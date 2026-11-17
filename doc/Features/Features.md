@@ -55,7 +55,7 @@
 ### Split creation
 
 - Instead of this UI:
-  - /home/pedro/code/pqdesu/fitness_app/doc/Issues/Pics/Screenshot 2026-11-15 200616.png
+  - [screenshot](Pics/screenshot-2026-11-15-200616.png)
     Have a list of the already created exercises and if no exercise has been created then have a Add exercise button instead. Then loads a modal with the UI to create an exercise
 - Only have the exercise, remove the target sets and reps. When the user opens the exercise he can put his sets and reps with their own weight. This section will be entirely based on the user. He can add per Set, add the weight and the reps he has done. When adding have a button to add a new set.
 - Add a UI of a week instead of floating boxes. I want a week starting with Sunday and ending Saturday with each date as a circle with the initial letter and mark it with a color and if not marked with a workout day leave it blank

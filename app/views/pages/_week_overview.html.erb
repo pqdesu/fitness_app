@@ -27,9 +27,7 @@
         <li class="<%= class_names("is-today": date == today, "has-workout": day_logs.any?) %>">
           <span class="week-overview-name"><%= l date, format: "%a" %></span>
           <% if day_logs.any? %>
-            <%= link_to day_logs.map(&:workout).to_sentence,
-                  (day_logs.one? ? workout_log_path(day_logs.first, from: "dashboard") : workout_logs_path(date: date.iso8601, from: "dashboard")),
-                  class: "row-title" %>
+            <%= link_to day_logs.map(&:workout).to_sentence, day_logs_path(day_logs, date), class: "row-title" %>
             <span class="text-muted small"><%= pluralize(day_logs.sum { |log| summary.sets_in(log) }, "set") %></span>
           <% else %>
             <span class="text-muted"><%= date > today ? "–" : "Rest" %></span>

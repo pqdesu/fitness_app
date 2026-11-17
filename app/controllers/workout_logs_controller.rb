@@ -15,7 +15,7 @@ class WorkoutLogsController < ApplicationController
     @date = Date.iso8601(params[:date]) if params[:date].present?
     logs = current_user.workout_logs.order(date: :desc, id: :desc)
     logs = logs.where(date: @date) if @date
-    @workout_logs = paginate(logs, per: 20).includes(workout_day: :split, workout_log_exercises: :workout_sets)
+    @workout_logs = paginate(logs, per: 20).with_sets.includes(workout_day: :split)
   rescue Date::Error
     redirect_to workout_logs_path
   end
@@ -31,14 +31,15 @@ class WorkoutLogsController < ApplicationController
     else
       []
     end
-    @picker_exercises = Exercise.visible_to(current_user).order(:name)
   end
 
   # Nothing is saved here: the workout only exists once its first exercise is added.
   def new
-    return redirect_to(workout_log_path(@todays_log, from: "dashboard")) if @todays_log
+    return unless @todays_log
 
-    @picker_exercises = Exercise.visible_to(current_user).order(:name)
+    # Arriving here after a failed create: the reason travels on to the workout's page.
+    flash.keep
+    redirect_to workout_log_path(@todays_log, from: "dashboard")
   end
 
   # Today's workout of that name, with the exercises chosen in the "Add exercises" modal.
@@ -49,11 +50,11 @@ class WorkoutLogsController < ApplicationController
     log = @todays_log
     WorkoutLog.transaction do
       log ||= current_user.workout_logs.create!(workout: @workout, date: Date.current, rest_day: rest_day_today?)
-      exercises.each { |exercise| log.workout_log_exercises.create!(exercise: exercise) }
+      exercises.each { |exercise| log.workout_log_exercises.create!(exercise:) }
     end
     redirect_to workout_log_path(log, from: "dashboard"), notice: "#{@workout} workout started. Add your sets."
   rescue ActiveRecord::RecordInvalid => e
-    redirect_to new_workout_log_path(workout: @workout), alert: "Nothing added: #{e.record.errors.full_messages.to_sentence}."
+    redirect_to new_workout_log_path(workout: @workout), alert: "Nothing added: #{errors_of(e.record)}."
   end
 
   def update
@@ -61,14 +62,14 @@ class WorkoutLogsController < ApplicationController
       redirect_to workout_log_path(@workout_log), notice: "Workout details saved."
     else
       redirect_to workout_log_path(@workout_log),
-                  alert: "Details not saved: #{@workout_log.errors.full_messages.to_sentence}."
+                  alert: "Details not saved: #{errors_of(@workout_log)}."
     end
   end
 
   def destroy
     @workout_log.destroy
     # Opened from the dashboard, deleting goes back to the dashboard rather than to History.
-    redirect_to (params[:from] == "dashboard" ? root_path : workout_logs_path), notice: "Workout deleted.", status: :see_other
+    redirect_to (from_dashboard? ? root_path : workout_logs_path), notice: "Workout deleted.", status: :see_other
   end
 
   private
@@ -81,17 +82,17 @@ class WorkoutLogsController < ApplicationController
     @workout = params[:workout]
     return redirect_to(root_path, alert: "Choose one of the listed workouts.") unless WorkoutDay::NAMES.include?(@workout)
 
-    @todays_log = current_user.workout_logs.of_workout(@workout).where(date: Date.current).order(:id).first
+    @todays_log = current_user.workout_logs.session_of(@workout, Date.current)
   end
 
   # A workout outside the split has no day of its own to compare with, so it is a rest day
   # workout when the active split has nothing on today this week.
   def rest_day_today?
     split = current_user.current_split
-    split.present? && !split.week_plan(Date.current).key?(Date.current.wday)
+    split.present? && split.rest_day?(Date.current)
   end
 
   def workout_log_params
-    params.require(:workout_log).permit(:date, :notes)
+    params.expect(workout_log: [:date, :notes])
   end
 end

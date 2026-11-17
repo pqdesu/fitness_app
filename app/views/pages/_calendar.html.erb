@@ -1,7 +1,8 @@
 <%#
   The month of `today`, with this week's row and today marked. A day is highlighted only when a
   workout was logged on it, and then it is a link to what was recorded: the workout itself, or the
-  day's list in History when there were several. Locals: today, logs_by_date (date => workout logs).
+  day's list in History when there were several. Locals: today, weeks (the month, as weeks of
+  seven dates), logs_by_date (date => workout logs).
 %>
 <div class="card calendar-card">
   <div class="card-header"><h2><%= l today, format: "%B %Y" %></h2></div>
@@ -10,7 +11,7 @@
       <div class="calendar-week calendar-head" role="row">
         <% Date::DAYNAMES.each do |name| %><span role="columnheader" aria-label="<%= name %>"><%= name.first %></span><% end %>
       </div>
-      <% month_weeks(today).each do |week| %>
+      <% weeks.each do |week| %>
         <div class="<%= class_names("calendar-week", "is-current-week": week.include?(today)) %>" role="row">
           <% week.each do |date| %>
             <% logs = logs_by_date.fetch(date, []) %>
@@ -18,8 +19,7 @@
             <% current = ("date" if date == today) %>
             <% if logs.any? %>
               <% workouts = "#{logs.map(&:workout).to_sentence} #{'workout'.pluralize(logs.size)}" %>
-              <%= link_to date.day,
-                    (logs.one? ? workout_log_path(logs.first, from: "dashboard") : workout_logs_path(date: date.iso8601, from: "dashboard")),
+              <%= link_to date.day, day_logs_path(logs, date),
                     role: "gridcell", class: classes, "aria-current": current,
                     title: workouts, "aria-label": "#{l date, format: '%A, %B %-d'}: #{workouts}" %>
             <% else %>

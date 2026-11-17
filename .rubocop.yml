@@ -53,3 +53,6 @@ Style/EmptyMethod:
   Enabled: false
 Bundler/OrderedGems:
   Enabled: false
+# Ruby 3.1 shorthand: where(date:) for where(date: date).
+Style/HashSyntax:
+  EnforcedShorthandSyntax: always

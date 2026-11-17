@@ -13,7 +13,8 @@ class WorkoutLogExercise < ApplicationRecord
   # Checked when adding only, so entries that were doubled before this rule can still be edited.
   validate :not_already_in_log, on: :create
 
-  before_validation { self.notes = notes.to_s.strip.presence }
+  normalizes :notes, with: ->(notes) { notes.strip.presence }
+  validates :notes, length: { maximum: 500 }
 
   # The heaviest set of this exercise; between equal weights (or bodyweight sets), the most reps.
   def top_set
@@ -47,7 +48,7 @@ class WorkoutLogExercise < ApplicationRecord
 
   def not_already_in_log
     return if workout_log.nil? || exercise_id.nil?
-    return unless workout_log.workout_log_exercises.where(exercise_id: exercise_id).exists?
+    return unless workout_log.workout_log_exercises.where(exercise_id:).exists?
 
     errors.add(:base, "#{name} is already in this workout")
   end

@@ -52,14 +52,14 @@ namespace :mock do
     last_sunday = Date.current.beginning_of_week(:sunday) - 7
 
     users.call.each do |user|
-      user.workout_days.includes(:split).where.not(weekday: nil).order(:split_id, :weekday).each do |day|
+      user.workout_days.includes(:split).order(:split_id, :weekday).each do |day|
         date = last_sunday + day.weekday
         label = "#{user.email} · #{day.split.name} · #{day.day} on #{date.strftime('%a %b %-d')}"
-        if user.workout_logs.of_workout(day.day).exists?(date: date)
+        if user.workout_logs.of_workout(day.day).exists?(date:)
           next puts("skipped  #{label} (#{day.day} already logged that day)")
         end
         # A split has one workout a day (see WorkoutLog).
-        if user.workout_logs.joins(:workout_day).exists?(date: date, workout_days: { split_id: day.split_id })
+        if user.workout_logs.joins(:workout_day).exists?(date:, workout_days: { split_id: day.split_id })
           next puts("skipped  #{label} (#{day.split.name} already has a workout logged that day)")
         end
 
@@ -67,12 +67,12 @@ namespace :mock do
           plan_added = day.workout_exercises.empty?
           if plan_added
             plans.fetch(day.day).each do |name|
-              exercise = Exercise.shared.find_or_create_by!(name: name) { |e| e.muscle_group = lifts.fetch(name).first }
-              day.workout_exercises.create!(exercise: exercise)
+              exercise = Exercise.shared.find_or_create_by!(name:) { |e| e.muscle_group = lifts.fetch(name).first }
+              day.workout_exercises.create!(exercise:)
             end
           end
 
-          log = day.workout_logs.create!(date: date, notes: plan_added ? plan_note : note)
+          log = day.workout_logs.create!(date:, notes: plan_added ? plan_note : note)
           day.workout_exercises.order(:id).each do |planned|
             _, weight, reps = lifts.fetch(planned.name, [nil, 20, 10])
             entry = log.workout_log_exercises.create!(workout_exercise: planned)

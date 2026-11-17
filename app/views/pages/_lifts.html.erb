@@ -5,7 +5,7 @@
     <li>
       <span class="row-title"><%= lift.name %></span>
       <span class="top-set">
-        <% if top %><%= format_weight(top.weight_used) %> × <%= pluralize(top.reps_completed, "rep") %><% else %><span class="text-muted">No sets</span><% end %>
+        <% if top %><%= weight_and_reps(top) %><% else %><span class="text-muted">No sets</span><% end %>
       </span>
     </li>
   <% end %>
