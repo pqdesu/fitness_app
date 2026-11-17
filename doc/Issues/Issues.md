@@ -4,7 +4,12 @@
 
 ### Exercise name edit
 
-- When editing the name of the exercise I can also edit the muscle group by tyoing which should not be the case it should be via dropdown
+- When editing the name of the exercise I can also edit the muscle group by typing which should not be the case it should be via dropdown
+
+## General
+
+### Alerts
+- Alerts do not look appropriate to the UI of the app, please change it to match the style of the app and make it disappear after coupld of seconds, like 5 seconds is fine
 
 # Issues resolved (DONE)
 
