@@ -3,7 +3,12 @@
 ## General
 
 ### Alerts
+
 - Alerts do not look appropriate to the UI of the app, please change it to match the style of the app and make it disappear after coupld of seconds, like 5 seconds is fine
+
+### Back button
+
+- Back button does not work the way I intended, I want the back button to always go back to the page the user was in before. For example I clicked on the workout circle inside the Active split box on home page but the back button goes to the split page. The back button should go back to the previously visited page. Since this will mostly be a Mobile App and those apps do not have browser back buttons that will be useful.
 
 ## History page
 
