@@ -1,9 +1,9 @@
-# Week workout moves, and the home page overview
+# Home page overview, and week workout moves
 
-Record of the work on the branch `week-workout-moves`, in the worktree `.claude/worktrees/week-workout-moves`. The branch was cut on 2026-11-17 from `home-page-overview` at `8b47602`, which itself sits on `master` after pull request 10. `home-page-overview` was pushed but never had a pull request, so against `master` this branch carries two stages of work:
+Record of the work on the branch `home-page-overview`, which sits on `master` after pull request 10. The second stage was built on 2026-11-17 on a branch of its own, `week-workout-moves` (worktree `.claude/worktrees/week-workout-moves`, cut from `home-page-overview` at `8b47602`). The owner then fast-forwarded `home-page-overview` to it, so the pull request comes from `home-page-overview` and `week-workout-moves` is no longer needed. Against `master` the branch carries two stages of work:
 
 - **Stage 1, `home-page-overview`** (commit `3b80da3`, made on 2026-11-16 and 2026-11-17 on the owner's other Windows user): the weekly summary, the dropdowns, "Start workout" and rest day workouts.
-- **Stage 2, `week-workout-moves`** (2026-11-17, this session): moving a workout to another day for one week, and starting a workout that is not in the split on a rest day.
+- **Stage 2, built as `week-workout-moves`** (2026-11-17, this session): moving a workout to another day for one week, and starting a workout that is not in the split on a rest day.
 
 Stage 1 is described from its commit and from `doc/Prompt/home-page-overview-context.md`, the handoff file its session wrote. Stage 2 is described from this session.
 
@@ -45,7 +45,8 @@ Stage 1 is described from its commit and from `doc/Prompt/home-page-overview-con
 | 3 | The owner's answers: a move counts "for the week of that split not the split in general"; it must be offered when the workout is planned on one day too; it must work for every split. "I want to be able to move them at free will." | Redesigned the move as a per-week record and explained the plan, with the choices in section 5. |
 | 4 | "Yes please build it." | Created the worktree and branch, built sections 4.7 to 4.12, wrote the tests, ran the suite and Rubocop. Tried the browser check and could not do it (see section 7). Moved the two issues in `Issues.md`. Left a server on port 3001 for the owner. |
 | 5 | The owner asked why this Windows user has no splits, and for a seed of the other user's splits if it could be made from this folder | Answered that the development database is per machine and user. No seed was made: the other user's data is not reachable from here and is not in the repository. Gave a `pg_dump` command for the other user. |
-| 6 | "Thank you finalize this please" | Reran the tests, wrote this doc, moved the finished features in `Features.md`, committed. |
+| 6 | "Thank you finalize this please" | Reran the tests, wrote this doc, moved the finished features in `Features.md`, committed and pushed `week-workout-moves`, removed the worktree. |
+| 7 | The owner fast-forwarded `home-page-overview` to `week-workout-moves`, then asked for the two pending doc edits to be committed and for this doc to be renamed | Committed the native Ruby and PostgreSQL note in `CLAUDE.md` and `project-context.md` on `home-page-overview`, renamed this doc from `doc/week-workout-moves.md`, pushed. |
 
 ---
 
@@ -267,7 +268,7 @@ WorkoutLog (…, rest_day)                                                   ←
 
 ```bash
 git fetch origin
-git switch week-workout-moves
+git switch home-page-overview
 bin/setup
 bin/rails db:migrate
 bin/rails server
@@ -308,7 +309,7 @@ Other checks in stage 2:
 
 ## 8. Every file changed
 
-30 files against `master`.
+32 files against `master`.
 
 **New (13)**
 
@@ -325,14 +326,15 @@ Other checks in stage 2:
 | `db/migrate/20261117100000_add_rest_day_to_workout_logs.rb` | `workout_logs.rest_day` (stage 1). |
 | `db/migrate/20261117120000_create_workout_day_moves.rb` | The table `workout_day_moves`. |
 | `doc/Prompt/home-page-overview-context.md` | Stage 1's handoff file. |
-| `doc/week-workout-moves.md` | This doc. |
+| `doc/home-page-overview.md` | This doc. |
 | `test/models/workout_summary_test.rb` | Tests of the summary (stage 1). |
 
-**Changed (17)**
+**Changed (19)**
 
 | File | What changed |
 |---|---|
 | `.claude/skills/finalize-branch/SKILL.md` | Step 3a (stage 1). |
+| `CLAUDE.md` | Ruby and PostgreSQL run natively; the Docker note is gone. |
 | `app/assets/stylesheets/components/_app.scss` | Stage 1's overview, dropdown and chip styles; stage 2's move row, pop-ups and moved circle. |
 | `app/controllers/pages_controller.rb` | Week logs and summaries (stage 1); the week plan, movable days, exercise counts and other workouts (stage 2). |
 | `app/controllers/workout_logs_controller.rb` | Delete returns to the dashboard (stage 1); `new` and `create` for a workout outside the split (stage 2). |
@@ -346,6 +348,7 @@ Other checks in stage 2:
 | `config/routes.rb` | `week_move` under splits; `new` and `create` on workout logs. |
 | `db/schema.rb` | The column and the table. |
 | `doc/Features/Features.md` | The five Home page features moved to "Features added (DONE)". |
+| `doc/Prompt/project-context.md` | The same native Ruby and PostgreSQL note. |
 | `doc/Issues/Issues.md` | The two Home page issues moved to "Issues resolved (DONE)". |
 | `test/integration/workout_flow_test.rb` | Stage 1's tests; stage 2's three tests and two updated ones. |
 | `test/models/workout_log_test.rb` | Rest day cases (stage 1). |
@@ -369,5 +372,5 @@ Moved in the lists:
 - **A second workout from the same split on one day is still refused.** After training an extra on a rest day, starting another workout of the split fails on its first set, as before this branch.
 - **A workout day without a weekday** (data from before weekdays existed) is not in the week plan and is not offered on a rest day.
 - **Logs from before `rest_day` existed are not marked** (stage 1).
-- **`doc/Prompt/project-context.md` and `CLAUDE.md` do not describe this branch.** The finalize skill may not edit them. `project-context.md` still ends at `calendar-logged-days`; the code map in `CLAUDE.md` has no line for `WorkoutDayMove` or `Split#week_plan`.
-- **`home-page-overview` needs no pull request of its own:** all of it is in this branch.
+- **`doc/Prompt/project-context.md` and `CLAUDE.md` do not describe this branch.** Beyond the native Ruby and PostgreSQL note, the finalize skill may not edit them. `project-context.md` still ends at `calendar-logged-days`; the code map in `CLAUDE.md` has no line for `WorkoutDayMove` or `Split#week_plan`.
+- **`week-workout-moves` needs no pull request:** `home-page-overview` holds all of it, and the extra branch can be deleted.
