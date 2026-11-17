@@ -10,7 +10,11 @@ class WorkoutLog < ApplicationRecord
   before_validation :copy_from_workout_day, on: :create
   before_validation :mark_rest_day, on: :create
 
+  # A workout is logged on the day it is done, so its date is never after today; the earliest
+  # date only stops a typo in the year (0001, 20026) from sending a workout where no page shows it.
+  EARLIEST_DATE = Date.new(2000, 1, 1)
   validates :date, presence: true
+  validate :date_in_range, if: -> { new_record? || date_changed? }
   validates :notes, length: { maximum: 2000 }
   validates :workout, inclusion: { in: WorkoutDay::NAMES }
   # One session per workout per day: sets added from any split go into the same log.
@@ -30,6 +34,16 @@ class WorkoutLog < ApplicationRecord
   end
 
   private
+
+  def date_in_range
+    return if date.nil?
+
+    if date > Date.current
+      errors.add(:date, "can't be in the future")
+    elsif date < EARLIEST_DATE
+      errors.add(:date, "can't be before #{EARLIEST_DATE.year}")
+    end
+  end
 
   def only_session_of_workout_that_day
     return if user.nil? || date.nil? || workout.blank?

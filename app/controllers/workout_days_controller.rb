@@ -16,7 +16,7 @@ class WorkoutDaysController < ApplicationController
   def new
     # Coming from an empty circle of the week, the weekday is already chosen.
     free = (0..6).to_a - @split.workout_days.pluck(:weekday)
-    weekday = params[:weekday].presence&.to_i
+    weekday = text_param(:weekday).presence&.to_i
     @workout_day = @split.workout_days.new(weekday: free.include?(weekday) ? weekday : free.first)
   end
 

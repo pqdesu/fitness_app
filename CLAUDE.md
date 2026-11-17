@@ -31,6 +31,7 @@ The full project context (product brief, every decision, data model, page flows,
 - When asked to finalize, finish or wrap up a branch, use the `finalize-branch` skill (in `.claude/skills/`). It writes a detailed change doc to `doc/<branch>.md`, pushes, and opens a pull request.
 - Never merge a pull request, enable auto-merge, or run `git pull` / `git merge` for the owner. Give them the commands instead; they decide what goes into `master` and what comes into their folder.
 - Branch names are a few plain lowercase words joined by dashes, with no digits and no `claude/` prefix.
+- Before committing or pushing a branch, update the base data with the `update-seed-data` skill (`.claude/skills/`), so `db/seeds/data.yml` carries the latest data and keeps the old. `finalize-branch` does this as one of its steps.
 - Change docs must be very detailed: every step, decision, file changed, the reason, and how it works now.
 - Open and resolved issues are tracked in [doc/Issues/Issues.md](doc/Issues/Issues.md). When an issue is fixed, move it under "Issues Resolved".
 
@@ -40,7 +41,8 @@ Ruby 3.3.13, Rails 8.1, PostgreSQL, Devise 5, Bootstrap 5 with SCSS (Dart Sass t
 
 ```bash
 bin/setup                 # gems and database
-bin/rails db:seed         # admin user and starter catalogue (idempotent)
+bin/rails db:seed         # admin user, starter catalogue, then db/seeds/data.yml (idempotent, only adds)
+bin/rails seed:dump       # merges the dev database's real data into db/seeds/data.yml (keeps the old)
 bin/rails server
 bin/rails test
 bundle exec rubocop       # linter; must report no offenses
@@ -84,4 +86,5 @@ bin/rails mock:clear      # deletes the mock workouts and the plans the mock tas
 - The content security policy is in `config/initializers/content_security_policy.rb`. A new outside host (fonts, scripts, images) must be added there or the browser blocks it. Do not add inline `style=` attributes or inline scripts.
 - The add-set form and the set table are `workout_sets/_form` and `workout_sets/_table`, used by the exercise page and the logged workout page.
 - Styles: `components/` for what pages share, `pages/` for one page; `application.scss` lists them in one order.
+- `db/seeds/data.yml` is the base data (users, splits, logged workouts), matched by email, name, weekday and date, never by id. `lib/seed_data/` writes it (`Dumper`, `Merge`: the file only grows) and loads it (`Loader`: creates what is missing, changes nothing that exists). Mock workouts are never written.
 - Integration tests are in `test/integration/*_flow_test.rb`, one file per area, on the shared `FlowTest` setup in `test/test_helper.rb`; the dashboard object by `test/models/dashboard_test.rb`; the mock task by `test/tasks/mock_task_test.rb`.

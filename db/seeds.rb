@@ -36,3 +36,8 @@ puts "Admin user: #{admin.email}"
   end
 end
 puts "Exercises in catalogue: #{Exercise.count}"
+
+# The base data: users' plans and logged workouts, kept in db/seeds/data.yml (lib/seed_data.rb).
+if SeedData::PATH.exist?
+  puts "Base data: #{SeedData.describe(SeedData.load)}"
+end

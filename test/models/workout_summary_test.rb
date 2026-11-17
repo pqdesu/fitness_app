@@ -2,6 +2,8 @@ require "test_helper"
 
 class WorkoutSummaryTest < ActiveSupport::TestCase
   setup do
+    # A workout is never logged after today; the dates below are of the week of November 16.
+    travel_to Time.zone.local(2026, 11, 20, 12)
     user = User.create!(email: "lifter@example.com", password: "secret123")
     split = user.splits.create!(name: "PPL")
     @push = split.workout_days.create!(day: "Push", weekday: 1)

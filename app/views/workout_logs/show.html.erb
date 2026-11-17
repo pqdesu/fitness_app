@@ -80,7 +80,7 @@
         <%= form_with model: @workout_log do |f| %>
           <div class="mb-3">
             <%= f.label :date, class: "form-label" %>
-            <%= f.date_field :date, class: "form-control" %>
+            <%= f.date_field :date, class: "form-control", min: WorkoutLog::EARLIEST_DATE, max: Date.current %>
           </div>
           <div class="mb-3">
             <%= f.label :notes, class: "form-label" %>

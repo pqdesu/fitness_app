@@ -351,4 +351,45 @@ class LoggingFlowTest < FlowTest
     patch workout_log_path(entry.workout_log), params: { workout_log: { notes: "x" * 2001 } }
     assert_match "Notes is too long", flash[:alert]
   end
+
+  test "a reps number that is too large is refused with a message, not an error page" do
+    sign_in @user
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: Date.current.wday)
+    planned = day.workout_exercises.create!(exercise: @bench)
+
+    ["99999999999999", (WorkoutSet::MAX_REPS + 1).to_s].each do |reps|
+      assert_no_difference -> { WorkoutSet.count } do
+        post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: reps, weight_used: 60 } }
+      end
+      assert_redirected_to workout_exercise_path(planned)
+      assert_match "Reps completed must be less than or equal to #{WorkoutSet::MAX_REPS}", flash[:alert]
+    end
+    # the refused set did not leave an empty workout behind
+    assert_equal 0, @user.workout_logs.count
+
+    post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
+    set = @user.workout_sets.sole
+    patch workout_set_path(set), params: { workout_set: { reps_completed: "99999999999999" } }
+    assert_match "Set not updated", flash[:alert]
+    assert_equal 8, set.reload.reps_completed
+  end
+
+  test "a workout's date cannot be moved to the future or to a year no page shows" do
+    sign_in @user
+    log = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+               .workout_logs.create!(date: Date.current - 1)
+    # the date picker offers only the days the rule allows
+    get workout_log_path(log)
+    assert_select "input[name='workout_log[date]'][min='2000-01-01'][max=?]", Date.current.iso8601
+
+    { (Date.current + 1).iso8601 => "Date can't be in the future",
+      "0001-01-01" => "Date can't be before 2000",
+      "99999-01-01" => "Date can't be in the future" }.each do |date, message|
+      patch workout_log_path(log), params: { workout_log: { date: } }
+      assert_redirected_to workout_log_path(log)
+      assert_match message, flash[:alert]
+    end
+    assert_equal Date.current - 1, log.reload.date
+  end
 end
+

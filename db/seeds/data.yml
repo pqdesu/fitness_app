@@ -1,0 +1,299 @@
+# Base data of the app, loaded by bin/rails db:seed (lib/seed_data.rb).
+# Rewritten by bin/rails seed:dump, which keeps everything already here and adds what the
+# development database has. Edit by hand only to remove something for good.
+exercises:
+- name: Bench press
+  muscle_group: Chest
+- name: Incline dumbbell press
+  muscle_group: Chest
+- name: Overhead press
+  muscle_group: Shoulders
+- name: Lateral raise
+  muscle_group: Shoulders
+- name: Triceps pushdown
+  muscle_group: Triceps
+- name: Pull-up
+  muscle_group: Back
+- name: Barbell row
+  muscle_group: Back
+- name: Lat pulldown
+  muscle_group: Back
+- name: Barbell curl
+  muscle_group: Biceps
+- name: Squat
+  muscle_group: Legs
+- name: Romanian deadlift
+  muscle_group: Legs
+- name: Leg press
+  muscle_group: Legs
+- name: Calf raise
+  muscle_group: Calves
+- name: Plank
+  muscle_group: Core
+- name: Pokemon
+  muscle_group: Core
+users:
+- email: admin@example.com
+  admin: true
+  time_zone: Asia/Tokyo
+  active_split: U/R/L/U/L
+  exercises:
+  - name: Seated Lateral Raise
+    muscle_group: Shoulders
+  - name: Upper back row
+    muscle_group: Back
+  - name: Pec Fly
+    muscle_group: Chest
+  - name: Shoulder Press
+    muscle_group: Shoulders
+  - name: Front high pulldown
+    muscle_group: Back
+  - name: Curl
+    muscle_group: Biceps
+  splits:
+  - name: PPL/UL
+    days:
+    - day: Push
+      weekday: 1
+      exercises:
+      - name: Pec Fly
+        equipment: machine
+        machine_brand: MTorture
+      - name: Lat pulldown
+        exercise: shared
+        equipment: free_weights
+      - name: Pokemon
+        exercise: shared
+        equipment: machine
+        machine_brand: MTorture
+      - name: Plank
+        exercise: shared
+        equipment: free_weights
+      - name: Overhead press
+        exercise: shared
+        equipment: free_weights
+      - name: Calf raise
+        exercise: shared
+        equipment: machine
+        machine_brand: Bull
+    - day: Pull
+      weekday: 2
+      exercises:
+      - name: Barbell row
+        exercise: shared
+        equipment: free_weights
+    - day: Legs
+      weekday: 3
+    - day: Upper
+      weekday: 5
+    - day: Lower
+      weekday: 6
+  - name: UL
+    days:
+    - day: Upper
+      weekday: 1
+    - day: Lower
+      weekday: 2
+    - day: Upper
+      weekday: 5
+    - day: Lower
+      weekday: 6
+  - name: U/R/L/U/L
+    days:
+    - day: Upper
+      weekday: 1
+      exercises:
+      - name: Seated Lateral Raise
+        exercise: own
+        equipment: free_weights
+      - name: Upper back row
+        exercise: own
+        equipment: free_weights
+      - name: Incline dumbbell press
+        exercise: shared
+        equipment: free_weights
+      - name: Pec Fly
+        exercise: own
+        equipment: machine
+        machine_brand: MTorture
+      - name: Lat pulldown
+        exercise: shared
+        equipment: machine
+        machine_brand: Bull
+      - name: Shoulder Press
+        exercise: own
+        equipment: free_weights
+      - name: Front high pulldown
+        exercise: own
+        equipment: machine
+        machine_brand: MTorture
+      - name: Curl
+        exercise: own
+        equipment: machine
+        machine_brand: Bull
+      - name: Triceps pushdown
+        exercise: shared
+        equipment: machine
+        machine_brand: Bull
+    - day: Lower
+      weekday: 3
+    - day: Upper
+      weekday: 5
+    - day: Lower
+      weekday: 6
+  workouts:
+  - date: '2026-11-16'
+    workout: Upper
+    split: U/R/L/U/L
+    weekday: 1
+    rest_day: false
+    exercises:
+    - name: Seated Lateral Raise
+      exercise: own
+      equipment: free_weights
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 8
+        weight: '14.0'
+      - number: 2
+        reps: 8
+        weight: '10.0'
+      - number: 3
+        reps: 8
+        weight: '14.0'
+      - number: 4
+        reps: 8
+        weight: '10.0'
+    - name: Upper back row
+      exercise: own
+      equipment: free_weights
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 5
+        weight: '40.0'
+      - number: 2
+        reps: 8
+        weight: '70.0'
+      - number: 3
+        reps: 8
+        weight: '70.0'
+    - name: Incline dumbbell press
+      exercise: shared
+      equipment: free_weights
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 5
+        weight: '24.0'
+      - number: 2
+        reps: 6
+        weight: '36.0'
+      - number: 3
+        reps: 5
+        weight: '36.0'
+    - name: Pec Fly
+      exercise: own
+      equipment: machine
+      machine_brand: MTorture
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 5
+        weight: '60.0'
+      - number: 2
+        reps: 7
+        weight: '100.0'
+      - number: 3
+        reps: 4
+        weight: '100.0'
+      - number: 4
+        reps: 3
+        weight: '90.0'
+    - name: Lat pulldown
+      exercise: shared
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 4
+        weight: '40.0'
+      - number: 2
+        reps: 7
+        weight: '85.0'
+      - number: 3
+        reps: 7
+        weight: '80.0'
+    - name: Shoulder Press
+      exercise: own
+      equipment: free_weights
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 5
+        weight: '18.0'
+      - number: 2
+        reps: 6
+        weight: '28.0'
+      - number: 3
+        reps: 5
+        weight: '28.0'
+    - name: Front high pulldown
+      exercise: own
+      equipment: machine
+      machine_brand: MTorture
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 4
+        weight: '35.0'
+      - number: 2
+        reps: 6
+        weight: '55.0'
+    - name: Curl
+      exercise: own
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 5
+        weight: '30.0'
+      - number: 2
+        reps: 8
+        weight: '50.0'
+    - name: Triceps pushdown
+      exercise: shared
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 1
+      sets:
+      - number: 1
+        reps: 3
+        weight: '50.0'
+      - number: 2
+        reps: 8
+        weight: '70.0'
+      - number: 3
+        reps: 7
+        weight: '70.0'
