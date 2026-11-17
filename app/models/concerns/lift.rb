@@ -13,10 +13,10 @@ module Lift
 
     before_validation :normalize_lift
 
-    validates :name, presence: true
+    validates :name, presence: true, length: { maximum: 80 }
     validates :exercise, presence: { message: "is not available" }, if: -> { exercise_id.present? }
     validates :equipment, inclusion: { in: EQUIPMENT.keys }
-    validates :machine_brand, presence: true, if: :machine?
+    validates :machine_brand, presence: true, length: { maximum: 60 }, if: :machine?
   end
 
   def machine?

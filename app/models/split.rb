@@ -3,7 +3,7 @@ class Split < ApplicationRecord
   has_many :workout_days, dependent: :destroy
   has_many :workout_day_moves, through: :workout_days
 
-  validates :name, presence: true
+  validates :name, presence: true, length: { maximum: 60 }
 
   def active?
     user.current_split == self
@@ -15,8 +15,13 @@ class Split < ApplicationRecord
     moved = moves_of_week(date).pluck(:workout_day_id, :weekday).to_h
     workout_days.order(:weekday, :id).each_with_object({}) do |day, plan|
       weekday = moved.fetch(day.id, day.weekday)
-      plan[weekday] ||= day if weekday
+      plan[weekday] ||= day
     end
+  end
+
+  # A date this split has nothing on, in that date's week (the plan, with that week's moves).
+  def rest_day?(date)
+    !week_plan(date).key?(date.wday)
   end
 
   # Why the workout day cannot go to that weekday in the week of today, or nil when it can.
@@ -62,7 +67,7 @@ class Split < ApplicationRecord
     if weekday == day.weekday
       move.destroy if move.persisted?
     else
-      move.update!(weekday: weekday)
+      move.update!(weekday:)
     end
   end
 end

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Shows the panel only while the source field holds the "when" value.
-// Used for "Type my own" -> exercise name, and "Machine" -> machine brand.
+// Used for the equipment of a lift: "Machine" -> machine brand.
 export default class extends Controller {
   static targets = ["source", "panel"]
   static values = { when: String }

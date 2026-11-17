@@ -4,7 +4,8 @@ class ExercisesController < ApplicationController
 
   # The form on this page is the admin's: it adds to the shared catalogue, or to the admin's own
   # exercises. Everyone else creates their own exercises from the "Add exercises" modal.
-  before_action :require_catalogue_admin!, only: [:new, :create]
+  before_action -> { require_admin!(back: exercises_path, message: "Only an admin can manage the exercise catalogue.") },
+                only: [:new, :create]
   before_action :set_exercise, only: [:edit, :update, :destroy]
   before_action :set_return_day, only: [:edit, :update]
 
@@ -26,7 +27,7 @@ class ExercisesController < ApplicationController
     if @exercise.save
       redirect_to exercises_path, notice: "#{@exercise.name} added to #{@shared ? 'the catalogue' : 'your own exercises'}."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -37,7 +38,7 @@ class ExercisesController < ApplicationController
     if @exercise.update(exercise_params)
       redirect_to (@return_day || exercises_path), notice: "#{@exercise.name} updated."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -45,17 +46,11 @@ class ExercisesController < ApplicationController
     if @exercise.destroy
       redirect_to exercises_path, notice: "#{@exercise.name} deleted.", status: :see_other
     else
-      redirect_to exercises_path, alert: "#{@exercise.name} was not deleted: #{errors_for(@exercise)}", status: :see_other
+      redirect_to exercises_path, alert: "#{@exercise.name} was not deleted: #{errors_of(@exercise)}", status: :see_other
     end
   end
 
   private
-
-  def require_catalogue_admin!
-    return if current_user.admin?
-
-    redirect_to exercises_path, alert: "Only an admin can manage the exercise catalogue."
-  end
 
   # Everyone manages the exercises they created; an admin also manages the shared catalogue.
   def set_exercise
@@ -69,10 +64,6 @@ class ExercisesController < ApplicationController
   end
 
   def exercise_params
-    params.require(:exercise).permit(:name, :muscle_group)
-  end
-
-  def errors_for(record)
-    record.errors.full_messages.to_sentence
+    params.expect(exercise: [:name, :muscle_group])
   end
 end

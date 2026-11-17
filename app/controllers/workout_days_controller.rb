@@ -1,15 +1,16 @@
 class WorkoutDaysController < ApplicationController
+  include ExercisePicker
+
   before_action :set_split, only: [:new, :create]
   before_action :set_workout_day, only: [:show, :edit, :update, :destroy]
 
   def show
     @workout_exercises = @workout_day.workout_exercises.includes(:exercise).order(:id)
     # Sets recorded today per exercise, read from today's session of this workout.
-    log = @workout_exercises.first&.log_on(Date.current)
+    log = current_user.workout_logs.with_sets.session_of(@workout_day.day, Date.current)
     @sets_today = @workout_exercises.to_h do |planned|
-      [planned.id, (log && planned.entry_in(log))&.workout_sets&.count.to_i]
+      [planned.id, (log && planned.entry_in(log))&.workout_sets&.size.to_i]
     end
-    @picker_exercises = Exercise.visible_to(current_user).order(:name)
   end
 
   def new
@@ -24,7 +25,7 @@ class WorkoutDaysController < ApplicationController
     if @workout_day.save
       redirect_to @workout_day, notice: "Workout day created. Add its exercises."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -37,7 +38,7 @@ class WorkoutDaysController < ApplicationController
       redirect_to @workout_day, notice: "Workout day updated."
     else
       @split = @workout_day.split
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -57,6 +58,6 @@ class WorkoutDaysController < ApplicationController
   end
 
   def workout_day_params
-    params.require(:workout_day).permit(:day, :weekday)
+    params.expect(workout_day: [:day, :weekday])
   end
 end

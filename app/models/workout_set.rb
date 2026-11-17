@@ -14,7 +14,9 @@ class WorkoutSet < ApplicationRecord
   # The column keeps three decimals (1.125 kg) and goes up to 99,999.999.
   validates :weight_used, numericality: { greater_than_or_equal_to: 0, less_than: 100_000 }, allow_nil: true
 
-  before_validation { self.notes = notes.to_s.squish.presence }
+  normalizes :notes, with: ->(notes) { notes.squish.presence }
+  # The same limit as the note field of a set (see workout_sets/_set).
+  validates :notes, length: { maximum: 200 }
 
   private
 

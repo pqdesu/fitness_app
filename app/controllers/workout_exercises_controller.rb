@@ -9,8 +9,7 @@ class WorkoutExercisesController < ApplicationController
     @entry = @workout_exercise.entry_on(Date.current)
     @sets = @entry ? @entry.workout_sets.order(:set_number).to_a : []
     # Pre-fills the form, so repeating the last set is a single tap.
-    @last_set = @sets.last || WorkoutSet.joins(:workout_log_exercise)
-                                        .where(workout_log_exercises: { workout_exercise_id: @workout_exercise.id })
+    @last_set = @sets.last || WorkoutSet.where(workout_log_exercise: @workout_exercise.workout_log_exercises)
                                         .order(created_at: :desc, id: :desc).first
   end
 
@@ -20,14 +19,14 @@ class WorkoutExercisesController < ApplicationController
     exercises, error = picked_exercises
 
     # An exercise is on a day once: the ones already there are left out.
-    on_day = workout_day.workout_exercises.where(exercise_id: exercises.map(&:id)).pluck(:exercise_id) unless error
+    on_day = workout_day.workout_exercises.where(exercise_id: exercises.filter_map(&:id)).pluck(:exercise_id) unless error
     if error
       redirect_to workout_day, alert: "Nothing added: #{error}."
     elsif (exercises = exercises.reject { |exercise| on_day.include?(exercise.id) }).empty?
       redirect_to workout_day, alert: "Nothing added: already on this day."
     else
       added = WorkoutExercise.transaction do
-        exercises.map { |exercise| workout_day.workout_exercises.create!(exercise: exercise) }
+        exercises.map { |exercise| workout_day.workout_exercises.create!(exercise:) }
       end
       # A single new exercise opens straight away, ready for its first set; several go back to the day.
       redirect_to (added.one? ? added.first : workout_day), notice: "#{exercises.map(&:name).to_sentence} added."
@@ -41,7 +40,7 @@ class WorkoutExercisesController < ApplicationController
       @workout_exercise.entry_on(Date.current)&.update(equipment_params)
       redirect_to @workout_exercise, notice: "Equipment saved."
     else
-      redirect_to @workout_exercise, alert: "Equipment not saved: #{@workout_exercise.errors.full_messages.to_sentence}."
+      redirect_to @workout_exercise, alert: "Equipment not saved: #{errors_of(@workout_exercise)}."
     end
   end
 
@@ -53,12 +52,10 @@ class WorkoutExercisesController < ApplicationController
   private
 
   def set_workout_exercise
-    @workout_exercise = WorkoutExercise.joins(workout_day: :split)
-                                       .where(splits: { user_id: current_user.id })
-                                       .find(params[:id])
+    @workout_exercise = current_user.workout_exercises.find(params[:id])
   end
 
   def equipment_params
-    params.require(:workout_exercise).permit(:equipment, :machine_brand)
+    params.expect(workout_exercise: [:equipment, :machine_brand])
   end
 end

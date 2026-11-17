@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension "pg_catalog.plpgsql"
 
   create_table "exercises", force: :cascade do |t|
     t.string "name", null: false
@@ -20,6 +20,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.index "lower((name)::text)", name: "index_exercises_on_shared_name", unique: true, where: "(user_id IS NULL)"
+    t.index "user_id, lower((name)::text)", name: "index_exercises_on_own_name", unique: true, where: "(user_id IS NOT NULL)"
     t.index ["user_id"], name: "index_exercises_on_user_id"
   end
 
@@ -42,6 +44,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
     t.boolean "admin", default: false, null: false
     t.bigint "active_split_id"
     t.string "time_zone"
+    t.integer "failed_attempts", default: 0, null: false
+    t.datetime "locked_at"
     t.index ["active_split_id"], name: "index_users_on_active_split_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -61,7 +65,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
     t.string "day", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "weekday"
+    t.integer "weekday", null: false
     t.index ["split_id", "weekday"], name: "index_workout_days_on_split_id_and_weekday", unique: true
     t.index ["split_id"], name: "index_workout_days_on_split_id"
   end
@@ -75,6 +79,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
     t.string "equipment", default: "free_weights", null: false
     t.string "machine_brand"
     t.index ["exercise_id"], name: "index_workout_exercises_on_exercise_id"
+    t.index ["workout_day_id", "exercise_id"], name: "index_workout_exercises_on_workout_day_id_and_exercise_id", unique: true, where: "(exercise_id IS NOT NULL)"
     t.index ["workout_day_id"], name: "index_workout_exercises_on_workout_day_id"
   end
 
@@ -90,6 +95,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
     t.bigint "exercise_id"
     t.index ["exercise_id"], name: "index_workout_log_exercises_on_exercise_id"
     t.index ["workout_exercise_id"], name: "index_workout_log_exercises_on_workout_exercise_id"
+    t.index ["workout_log_id", "exercise_id"], name: "index_workout_log_exercises_on_workout_log_id_and_exercise_id", unique: true, where: "(exercise_id IS NOT NULL)"
     t.index ["workout_log_id"], name: "index_workout_log_exercises_on_workout_log_id"
   end
 
@@ -102,7 +108,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
     t.bigint "user_id", null: false
     t.string "workout", null: false
     t.boolean "rest_day", default: false, null: false
-    t.index ["user_id", "workout", "date"], name: "index_workout_logs_on_user_id_and_workout_and_date"
+    t.index ["user_id", "workout", "date"], name: "index_workout_logs_on_user_id_and_workout_and_date", unique: true
     t.index ["user_id"], name: "index_workout_logs_on_user_id"
     t.index ["workout_day_id"], name: "index_workout_logs_on_workout_day_id"
   end

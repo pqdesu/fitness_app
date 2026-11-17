@@ -39,8 +39,7 @@
           </div>
           <div class="col-7 col-sm-3">
             <%= f.label :muscle_group, "Muscle group", class: "form-label" %>
-            <%= f.select :muscle_group, (Exercise::MUSCLE_GROUPS | exercises.filter_map { |e| e.muscle_group.presence }),
-                  { include_blank: "Other" }, class: "form-select" %>
+            <%= f.select :muscle_group, Exercise::MUSCLE_GROUPS, { include_blank: "Other" }, class: "form-select" %>
           </div>
           <div class="col-5 col-sm-3 d-grid">
             <%= f.submit "Create", class: "btn btn-light" %>

@@ -13,8 +13,12 @@
       <span class="row-title"><%= log.workout %></span>
       <span class="text-muted small"><%= l log.date, format: :long %> · <%= pluralize(set_count, "set") %></span>
     </span>
-    <% if log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
-    <% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% end %>
+    <% if log.rest_day? || log.workout_day %>
+      <span class="recent-chips">
+        <% if log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
+        <% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% end %>
+      </span>
+    <% end %>
     <i class="fa-solid fa-chevron-down recent-chevron" aria-hidden="true"></i>
   </button>
 
@@ -33,14 +37,14 @@
               <button type="button" class="lift-pill" data-bs-toggle="collapse" data-bs-target="#<%= sets_id %>"
                       aria-expanded="false" aria-controls="<%= sets_id %>">
                 <span class="lift-pill-name"><%= lift.name %></span>
-                <span class="top-set"><%= format_weight(top.weight_used) %> × <%= pluralize(top.reps_completed, "rep") %></span>
+                <span class="top-set"><%= weight_and_reps(top) %></span>
                 <i class="fa-solid fa-chevron-down lift-pill-chevron" aria-hidden="true"></i>
               </button>
               <ol class="collapse lift-sets" id="<%= sets_id %>">
                 <% lift.workout_sets.sort_by(&:set_number).each do |set| %>
                   <li>
                     <span class="text-muted">Set <%= set.set_number %></span>
-                    <span><%= format_weight(set.weight_used) %> × <%= pluralize(set.reps_completed, "rep") %></span>
+                    <span><%= weight_and_reps(set) %></span>
                   </li>
                 <% end %>
               </ol>

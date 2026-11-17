@@ -4,7 +4,6 @@ class SplitsController < ApplicationController
   def index
     @splits = current_user.splits.includes(:workout_days).order(:name)
     @active_split = current_user.current_split
-    @from_dashboard = params[:from] == "dashboard"
   end
 
   def show
@@ -20,7 +19,7 @@ class SplitsController < ApplicationController
     if @split.save
       redirect_to @split, notice: "Split created. Add its workout days next."
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -31,7 +30,7 @@ class SplitsController < ApplicationController
     if @split.update(split_params)
       redirect_to @split, notice: "Split updated."
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -40,10 +39,10 @@ class SplitsController < ApplicationController
     notice = "#{@split.name} is now your active split."
     # Changing it from the dashboard ("Change" on the active split card) returns there;
     # anywhere else the user stays on the page they were on.
-    if params[:from] == "dashboard"
-      redirect_to root_path, notice: notice, status: :see_other
+    if from_dashboard?
+      redirect_to root_path, notice:, status: :see_other
     else
-      redirect_back fallback_location: splits_path, notice: notice, status: :see_other
+      redirect_back fallback_location: splits_path, notice:, status: :see_other
     end
   end
 
@@ -59,6 +58,6 @@ class SplitsController < ApplicationController
   end
 
   def split_params
-    params.require(:split).permit(:name)
+    params.expect(split: [:name])
   end
 end

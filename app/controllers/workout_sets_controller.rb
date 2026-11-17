@@ -7,14 +7,12 @@ class WorkoutSetsController < ApplicationController
 
     WorkoutSet.transaction do
       if params[:workout_exercise_id]
-        planned = WorkoutExercise.joins(workout_day: :split).where(splits: { user_id: current_user.id })
-                                 .find(params[:workout_exercise_id])
+        planned = current_user.workout_exercises.find(params[:workout_exercise_id])
         back = workout_exercise_path(planned)
         # One session per workout per day: this joins today's log of the workout if there is one.
         entry = planned.entry_on!(Date.current)
       else
-        entry = WorkoutLogExercise.joins(:workout_log).where(workout_logs: { user_id: current_user.id })
-                                  .find(params[:workout_log_exercise_id])
+        entry = current_user.workout_log_exercises.find(params[:workout_log_exercise_id])
         back = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
       end
 
@@ -26,44 +24,36 @@ class WorkoutSetsController < ApplicationController
     if workout_set.persisted?
       redirect_to back, notice: "Set #{workout_set.set_number} added."
     else
-      redirect_to back, alert: "Set not added: #{workout_set.errors.full_messages.to_sentence}."
+      redirect_to back, alert: "Set not added: #{errors_of(workout_set)}."
     end
   rescue ActiveRecord::RecordInvalid => e
     # Today's workout could not be started: this split already has another workout logged today.
-    redirect_to back, alert: "Set not added: #{e.record.errors.full_messages.to_sentence}."
+    redirect_to back, alert: "Set not added: #{errors_of(e.record)}."
   end
 
   # Corrects the weight, reps or note of a set that is already recorded.
   def update
-    workout_set = own_set
-    message = if workout_set.update(params.require(:workout_set).permit(:reps_completed, :weight_used, :notes))
+    workout_set = current_user.workout_sets.find(params[:id])
+    message = if workout_set.update(workout_set_params)
       { notice: "Set #{workout_set.set_number} updated." }
     else
-      { alert: "Set not updated: #{workout_set.errors.full_messages.to_sentence}." }
+      { alert: "Set not updated: #{errors_of(workout_set)}." }
     end
     redirect_to page_of(workout_set), status: :see_other, **message
   end
 
   def destroy
-    workout_set = own_set
+    workout_set = current_user.workout_sets.find(params[:id])
     workout_set.destroy
     redirect_to page_of(workout_set), notice: "Set deleted.", status: :see_other
   end
 
   private
 
-  def own_set
-    WorkoutSet.joins(workout_log_exercise: :workout_log)
-              .where(workout_logs: { user_id: current_user.id }).find(params[:id])
-  end
-
   # Where the set was edited or deleted from. The exercise page says so itself by sending its
   # workout_exercise_id (see workout_sets/_set); otherwise it was the logged workout page.
   def page_of(workout_set)
-    planned = if params[:workout_exercise_id].present?
-      WorkoutExercise.joins(workout_day: :split).where(splits: { user_id: current_user.id })
-                     .find_by(id: params[:workout_exercise_id])
-    end
+    planned = current_user.workout_exercises.find_by(id: params[:workout_exercise_id]) if params[:workout_exercise_id].present?
     return workout_exercise_path(planned) if planned
 
     entry = workout_set.workout_log_exercise
@@ -71,6 +61,6 @@ class WorkoutSetsController < ApplicationController
   end
 
   def workout_set_params
-    params.require(:workout_set).permit(:set_number, :reps_completed, :weight_used, :notes)
+    params.expect(workout_set: [:reps_completed, :weight_used, :notes])
   end
 end

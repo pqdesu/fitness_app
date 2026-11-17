@@ -16,14 +16,24 @@ module ApplicationHelper
     content_for :back, link_to(tag.i(class: "fa-solid fa-arrow-left") + label, path, class: "back-link"), flush: true
   end
 
-  # The weeks (Sunday to Saturday) that cover the month of the given date.
-  def month_weeks(date)
-    first = date.beginning_of_month.beginning_of_week(:sunday)
-    last = date.end_of_month.end_of_week(:sunday)
-    (first..last).each_slice(7).to_a
+  # A set in one line: "80 kg × 8 reps".
+  def weight_and_reps(set)
+    "#{format_weight(set.weight_used)} × #{pluralize(set.reps_completed, 'rep')}"
+  end
+
+  # Where a day of the dashboard leads: the workout logged on it, or that day's list in History
+  # when there were several.
+  def day_logs_path(logs, date)
+    logs.one? ? workout_log_path(logs.first, from: "dashboard") : workout_logs_path(date: date.iso8601, from: "dashboard")
+  end
+
+  # The button that opens the "Add exercises" modal (shared/_exercise_picker).
+  def exercise_picker_button(css)
+    tag.button safe_join([tag.i(class: "fa-solid fa-plus"), " Add exercise"]),
+               type: "button", class: "btn #{css}", data: { bs_toggle: "modal", bs_target: "#exercise-picker" }
   end
 
   def nav_link_to(label, path, active:)
-    link_to label, path, class: class_names("nav-link", active: active)
+    link_to label, path, class: class_names("nav-link", active:)
   end
 end

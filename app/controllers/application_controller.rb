@@ -2,6 +2,14 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!
   around_action :use_browser_time_zone
 
+  # Two requests at the same moment (a double tap) can both pass a "once only" check; the
+  # database's unique index then refuses the second one.
+  rescue_from ActiveRecord::RecordNotUnique do
+    redirect_back fallback_location: root_path, alert: "That was already saved, so nothing was added twice.", status: :see_other
+  end
+
+  helper_method :from_dashboard?, :errors_of
+
   private
 
   # Dates and times follow the clock of whoever is using the app: the browser reports its
@@ -24,9 +32,18 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def require_admin!
+  def require_admin!(back: root_path, message: "Only an admin can do that.")
     return if current_user.admin?
 
-    redirect_to root_path, alert: "Only an admin can do that."
+    redirect_to back, alert: message
+  end
+
+  # The page was opened from the dashboard (its links add from=dashboard), so it goes back there.
+  def from_dashboard?
+    params[:from] == "dashboard"
+  end
+
+  def errors_of(record)
+    record.errors.full_messages.to_sentence
   end
 end

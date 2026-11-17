@@ -1,0 +1,20 @@
+<%#
+  "Add set": weight, then reps, pre-filled with the last set so repeating it is a single tap.
+  Locals: parent (the planned exercise or the logged exercise the set is added to), last_set (or nil).
+%>
+<% suffix = "#{parent.model_name.param_key}_#{parent.id}" %>
+<%= form_with model: [parent, WorkoutSet.new], class: "row g-2 align-items-end inline-form" do |f| %>
+  <div class="col-4">
+    <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{suffix}" %>
+    <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", min: 0, placeholder: "–",
+          inputmode: "decimal", class: "form-control", id: "weight_#{suffix}" %>
+  </div>
+  <div class="col-4">
+    <%= f.label :reps_completed, "Reps", class: "form-label", for: "reps_#{suffix}" %>
+    <%= f.number_field :reps_completed, value: last_set&.reps_completed, min: 0, required: true,
+          inputmode: "numeric", class: "form-control", id: "reps_#{suffix}" %>
+  </div>
+  <div class="col-4 d-grid">
+    <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add set<% end %>
+  </div>
+<% end %>

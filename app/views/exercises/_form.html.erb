@@ -4,7 +4,8 @@
       <%# Opened from a workout day: saving or cancelling goes back to it. %>
       <% if @return_day %><%= hidden_field_tag :workout_day_id, @return_day.id, id: nil %><% end %>
       <%= f.input :name, placeholder: "Bench press", autofocus: true %>
-      <%= f.input :muscle_group, placeholder: "Chest" %>
+      <%# Chosen from the list, as in the "Add exercises" modal; empty is listed under "Other". %>
+      <%= f.input :muscle_group, collection: Exercise::MUSCLE_GROUPS, include_blank: "Other" %>
       <% if exercise.new_record? %>
         <%# Only an admin reaches this form: the exercise goes to the catalogue, or stays the admin's own. %>
         <div class="form-check mb-3">

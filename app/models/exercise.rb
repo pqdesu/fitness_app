@@ -15,10 +15,14 @@ class Exercise < ApplicationRecord
   scope :shared, -> { where(user_id: nil) }
   scope :visible_to, ->(user) { where(user_id: [nil, user.id]) }
 
-  before_validation { self.name = name.to_s.squish.presence }
+  # Tidied when assigned, and when looked up by (find_by(name: " bench  press ") finds "bench press").
+  normalizes :name, with: ->(name) { name.squish.presence }
+  normalizes :muscle_group, with: lambda(&:presence)
 
   # No twins in the same list: one of each name in the catalogue, and one among a user's own.
-  validates :name, presence: true, uniqueness: { scope: :user_id, case_sensitive: false }
+  validates :name, presence: true, length: { maximum: 80 }, uniqueness: { scope: :user_id, case_sensitive: false }
+  # Chosen from the list, or left empty ("Other").
+  validates :muscle_group, inclusion: { in: MUSCLE_GROUPS, message: "must be one of the listed muscle groups" }, allow_nil: true
 
   after_update :rename_linked_lifts, if: :saved_change_to_name?
 
@@ -35,7 +39,7 @@ class Exercise < ApplicationRecord
 
   # Plans and logs store the name themselves; keep them in step with the exercise.
   def rename_linked_lifts
-    workout_exercises.update_all(name: name)
-    workout_log_exercises.update_all(name: name)
+    workout_exercises.update_all(name:)
+    workout_log_exercises.update_all(name:)
   end
 end

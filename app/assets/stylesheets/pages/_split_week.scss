@@ -1,0 +1,61 @@
+// Week of a split: one circle per weekday, coloured when it has a workout day
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: .25rem;
+}
+
+.week-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .375rem;
+  min-width: 0;
+  padding: .25rem 0;
+  color: $muted;
+  text-decoration: none;
+}
+
+.week-circle {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  max-width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid $line;
+  border-radius: 50%;
+  background: white;
+  font-family: $headers-font;
+  font-weight: 700;
+  transition: border-color .15s, background-color .15s;
+}
+
+.week-label {
+  max-width: 100%;
+  min-height: 1.1rem;
+  overflow: hidden;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.week-day:hover .week-circle { border-color: $blue; }
+.week-day.is-set { color: $gray; }
+.week-day.is-set .week-circle { border-color: $blue; background: $blue; color: white; }
+
+// A workout moved to this day for this week only: dashed, not the solid circle of the plan
+.week-day.is-moved .week-circle { border-style: dashed; background: $primary-soft; color: $blue; }
+
+// Today: a ring around the circle, whether or not the day has a workout
+.week-day.is-today {
+  color: $gray;
+  .week-circle { box-shadow: 0 0 0 2px white, 0 0 0 4px $blue; }
+  .week-label { font-weight: 700; }
+}
+
+@media (max-width: 420px) {
+  .week-circle { width: 2.25rem; height: 2.25rem; }
+}

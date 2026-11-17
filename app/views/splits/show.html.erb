@@ -22,18 +22,3 @@
     <p class="text-muted small text-center mb-0 mt-3">Tap a coloured day to open its workout, or an empty day to add one.</p>
   </div>
 </div>
-
-<% unscheduled = @workout_days.select { |day| day.weekday.nil? } %>
-<% if unscheduled.any? %>
-  <div class="card">
-    <div class="card-header"><h2>Not on a weekday yet</h2></div>
-    <ul class="list-rows">
-      <% unscheduled.each do |day| %>
-        <li>
-          <%= link_to day.day, workout_day_path(day), class: "row-title" %>
-          <%= link_to "Choose a weekday", edit_workout_day_path(day), class: "btn btn-light btn-sm" %>
-        </li>
-      <% end %>
-    </ul>
-  </div>
-<% end %>
