@@ -207,6 +207,10 @@ The first CI run failed in all three jobs with "Unavailable version 3.3.5 for ru
 
 Changed: `.ruby-version`, `ruby "3.3.13"` in the `Gemfile`, `ARG RUBY_VERSION=3.3.13` in the `Dockerfile`, the `RUBY VERSION` block of `Gemfile.lock`, and the docs that name the version. `ci.yml` itself did not need to change. Developers need `rbenv install 3.3.13` (a current ruby-build is required) and `bundle install`. Not verified: the workflow has not run on GitHub with this change.
 
+### 4.14 The lint job and vendor/bundle
+
+The first lint run on GitHub that got past Ruby setup failed with "Unable to find gem rubocop-discourse". The CI installs the gems into `vendor/bundle`, inside the project. `.rubocop.yml` lists its own `Exclude`, which replaces RuboCop's default list (that default skips `vendor`), so RuboCop walked into `vendor/bundle`, found the `.rubocop.yml` that the `mini_mime` gem ships (it inherits from `rubocop-discourse`), and stopped. Locally the gems are outside the project, so it never happened. `'vendor/**/*'` was added to the `Exclude` list. Reproduced here by copying `mini_mime` into `vendor/bundle` (same error before, 34 files and no offenses after).
+
 ### 4.12 Docs
 
 - `doc/claude-universal-back-button-4813cc.md` is now `doc/universal-back-button.md`.

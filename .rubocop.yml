@@ -9,6 +9,9 @@ AllCops:
     - 'script/**/*'
     - 'support/**/*'
     - 'tmp/**/*'
+    # CI installs the gems into vendor/bundle, inside the project. Listing Exclude here replaces
+    # RuboCop's default, which skips vendor; without this, a gem's own .rubocop.yml is read.
+    - 'vendor/**/*'
     - 'test/**/*'
 
 Style/ConditionalAssignment:
