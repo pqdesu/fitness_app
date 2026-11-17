@@ -5,6 +5,12 @@
 ### Alerts
 - Alerts do not look appropriate to the UI of the app, please change it to match the style of the app and make it disappear after coupld of seconds, like 5 seconds is fine
 
+## History page
+
+### Table columns off-screen on a phone
+
+- At phone width (390 px) the History table (`/workout_logs`) is wider than the screen (about 595 px in a 364 px box). It scrolls sideways inside its own box, so the Exercises and Sets columns start off-screen and only Date, Workout and part of Split show until you swipe the table. Found in the phone-width browser check on 2026-11-17.
+
 # Issues resolved (DONE)
 
 ## Home page

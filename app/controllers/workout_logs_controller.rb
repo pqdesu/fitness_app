@@ -12,7 +12,8 @@ class WorkoutLogsController < ApplicationController
   # The history, or with ?date=YYYY-MM-DD the workouts of that one day (a calendar day that
   # has several workouts links here).
   def index
-    @date = Date.iso8601(params[:date]) if params[:date].present?
+    date = text_param(:date)
+    @date = Date.iso8601(date) if date.present?
     logs = current_user.workout_logs.order(date: :desc, id: :desc)
     logs = logs.where(date: @date) if @date
     @workout_logs = paginate(logs, per: 20).with_sets.includes(workout_day: :split)

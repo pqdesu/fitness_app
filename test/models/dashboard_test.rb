@@ -4,6 +4,8 @@ class DashboardTest < ActiveSupport::TestCase
   setup do
     @user = User.create!(email: "lifter@example.com", password: "secret123")
     @today = Date.new(2026, 11, 18) # a Wednesday
+    # A workout is never logged after today, so the clock is on that Wednesday too.
+    travel_to Time.zone.local(2026, 11, 18, 12)
   end
 
   test "without a split there is nothing planned, and the calendar still covers the month" do

@@ -228,6 +228,18 @@ class WorkoutRecordingTest < ActiveSupport::TestCase
     assert_not set.update(weight_used: 100_000)
   end
 
+  test "reps go from 0 to the limit, and a huge number is refused by the check, not the database" do
+    sets = @log_exercise.workout_sets
+    assert sets.new(reps_completed: 0).valid?
+    assert sets.new(reps_completed: WorkoutSet::MAX_REPS).valid?
+    assert_not sets.new(reps_completed: WorkoutSet::MAX_REPS + 1).valid?
+    assert_not sets.new(reps_completed: -1).valid?
+
+    huge = sets.new(reps_completed: "99999999999999")
+    assert_not huge.save
+    assert_includes huge.errors[:reps_completed], "must be less than or equal to #{WorkoutSet::MAX_REPS}"
+  end
+
   test "an exercise name is unique in the catalogue and among a user's own" do
     assert_not Exercise.new(name: " bench  PRESS ").valid?
     own = Exercise.create!(name: "Bench press", user: @user)

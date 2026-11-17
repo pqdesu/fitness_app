@@ -43,6 +43,13 @@ class ApplicationController < ActionController::Base
     params[:from] == "dashboard"
   end
 
+  # A query parameter read as text. A client can send page[]=1 or page[a]=1, which Rails turns
+  # into an Array or a Hash; those are treated as if the parameter was not sent.
+  def text_param(key)
+    value = params[key]
+    value if value.is_a?(String)
+  end
+
   def errors_of(record)
     record.errors.full_messages.to_sentence
   end

@@ -49,4 +49,24 @@ class WorkoutLogTest < ActiveSupport::TestCase
     @split.workout_days.create!(day: "Pull", weekday: 2)
     assert tuesday.reload.rest_day?
   end
+
+  test "a workout's date is not after today nor before 2000" do
+    travel_to Time.zone.local(2026, 11, 17, 12) do
+      assert @day.workout_logs.build(date: Date.new(2026, 11, 17)).valid?
+      assert @day.workout_logs.build(date: WorkoutLog::EARLIEST_DATE).valid?
+
+      tomorrow = @day.workout_logs.build(date: Date.new(2026, 11, 18))
+      assert_not tomorrow.valid?
+      assert_includes tomorrow.errors[:date], "can't be in the future"
+      [Date.new(1999, 12, 31), Date.new(1, 1, 1)].each do |date|
+        old = @day.workout_logs.build(date:)
+        assert_not old.valid?, date.to_s
+        assert_includes old.errors[:date], "can't be before 2000"
+      end
+
+      log = @day.workout_logs.create!(date: Date.new(2026, 11, 16))
+      ["2200-05-05", "99999-01-01", "0001-01-01"].each { |date| assert_not log.update(date:), date }
+      assert_equal Date.new(2026, 11, 16), log.reload.date
+    end
+  end
 end

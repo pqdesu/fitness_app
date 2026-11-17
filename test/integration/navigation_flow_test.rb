@@ -76,4 +76,21 @@ class NavigationFlowTest < FlowTest
     assert_select "table.app-table tbody tr", 30
     assert_select ".pagination-bar", text: /Page 1 of 2/
   end
+
+  test "a list sent where one value is expected is ignored, not an error page" do
+    sign_in @admin
+    split = @admin.splits.create!(name: "PPL")
+
+    get "#{workout_logs_path}?page[]=1"
+    assert_response :success
+    get "#{exercises_path}?page[a]=1"
+    assert_response :success
+    get "#{admin_users_path}?page[]=2"
+    assert_response :success
+    get "#{workout_logs_path}?date[]=2026-11-17"
+    assert_response :success
+    get "#{new_split_workout_day_path(split)}?weekday[]=3"
+    assert_response :success
+  end
 end
+
