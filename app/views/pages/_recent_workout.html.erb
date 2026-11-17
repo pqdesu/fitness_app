@@ -1,0 +1,61 @@
+<%#
+  One recent workout as a dropdown. The summary row opens a panel with the exercises, each as a
+  pill showing its heaviest set; a pill opens that exercise's sets. "Open workout" is the only
+  link out. Locals: log (loaded with its exercises and sets).
+%>
+<% panel_id = "recent-log-#{log.id}" %>
+<% lifts = log.workout_log_exercises.sort_by(&:id) %>
+<% set_count = lifts.sum { |lift| lift.workout_sets.size } %>
+<li class="recent-row">
+  <button type="button" class="recent-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
+          aria-expanded="false" aria-controls="<%= panel_id %>">
+    <span class="recent-summary">
+      <span class="row-title"><%= log.workout %></span>
+      <span class="text-muted small"><%= l log.date, format: :long %> · <%= pluralize(set_count, "set") %></span>
+    </span>
+    <% if log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
+    <% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% end %>
+    <i class="fa-solid fa-chevron-down recent-chevron" aria-hidden="true"></i>
+  </button>
+
+  <div class="collapse recent-panel" id="<%= panel_id %>">
+    <p class="recent-counts"><%= pluralize(lifts.count { |lift| lift.workout_sets.any? }, "exercise") %> · <%= pluralize(set_count, "set") %></p>
+
+    <% if lifts.empty? %>
+      <p class="text-muted small">No exercises in this workout.</p>
+    <% else %>
+      <ul class="lift-pills">
+        <% lifts.each do |lift| %>
+          <% top = lift.top_set %>
+          <li>
+            <% if top %>
+              <% sets_id = "recent-lift-#{lift.id}" %>
+              <button type="button" class="lift-pill" data-bs-toggle="collapse" data-bs-target="#<%= sets_id %>"
+                      aria-expanded="false" aria-controls="<%= sets_id %>">
+                <span class="lift-pill-name"><%= lift.name %></span>
+                <span class="top-set"><%= format_weight(top.weight_used) %> × <%= pluralize(top.reps_completed, "rep") %></span>
+                <i class="fa-solid fa-chevron-down lift-pill-chevron" aria-hidden="true"></i>
+              </button>
+              <ol class="collapse lift-sets" id="<%= sets_id %>">
+                <% lift.workout_sets.sort_by(&:set_number).each do |set| %>
+                  <li>
+                    <span class="text-muted">Set <%= set.set_number %></span>
+                    <span><%= format_weight(set.weight_used) %> × <%= pluralize(set.reps_completed, "rep") %></span>
+                  </li>
+                <% end %>
+              </ol>
+            <% else %>
+              <span class="lift-pill is-empty">
+                <span class="lift-pill-name"><%= lift.name %></span>
+                <span class="text-muted">No sets</span>
+              </span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <% if log.notes.present? %><p class="recent-notes"><%= log.notes %></p><% end %>
+    <%= link_to workout_log_path(log, from: "dashboard"), class: "btn btn-light btn-sm rounded-pill recent-open" do %>Open workout <i class="fa-solid fa-arrow-right" aria-hidden="true"></i><% end %>
+  </div>
+</li>

@@ -10,6 +10,8 @@ Rails.application.routes.draw do
     # Makes this the split the dashboard follows
     patch :activate, on: :member
     resources :workout_days, only: [:new, :create]
+    # A workout on another weekday for this week only; deleting goes back to the plan
+    resource :week_move, only: [:create, :destroy]
   end
   resources :workout_days, only: [:show, :edit, :update, :destroy] do
     resources :workout_exercises, only: [:create]
@@ -19,8 +21,8 @@ Rails.application.routes.draw do
     resources :workout_sets, only: [:create]
   end
 
-  # Recording: log -> logged exercises -> sets
-  resources :workout_logs, only: [:index, :show, :update, :destroy] do
+  # Recording: log -> logged exercises -> sets. new and create start a workout that is not in a split.
+  resources :workout_logs, only: [:index, :show, :new, :create, :update, :destroy] do
     resources :workout_log_exercises, only: [:create]
   end
   resources :workout_log_exercises, only: [:edit, :update, :destroy] do

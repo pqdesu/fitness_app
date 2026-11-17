@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_16_150000) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_17_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -45,6 +45,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_16_150000) do
     t.index ["active_split_id"], name: "index_users_on_active_split_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "workout_day_moves", force: :cascade do |t|
+    t.bigint "workout_day_id", null: false
+    t.date "week_start", null: false
+    t.integer "weekday", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workout_day_id", "week_start"], name: "index_workout_day_moves_on_workout_day_id_and_week_start", unique: true
   end
 
   create_table "workout_days", force: :cascade do |t|
@@ -92,6 +101,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_16_150000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "workout", null: false
+    t.boolean "rest_day", default: false, null: false
     t.index ["user_id", "workout", "date"], name: "index_workout_logs_on_user_id_and_workout_and_date"
     t.index ["user_id"], name: "index_workout_logs_on_user_id"
     t.index ["workout_day_id"], name: "index_workout_logs_on_workout_day_id"
@@ -112,6 +122,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_16_150000) do
   add_foreign_key "exercises", "users"
   add_foreign_key "splits", "users"
   add_foreign_key "users", "splits", column: "active_split_id", on_delete: :nullify
+  add_foreign_key "workout_day_moves", "workout_days", on_delete: :cascade
   add_foreign_key "workout_days", "splits"
   add_foreign_key "workout_exercises", "exercises"
   add_foreign_key "workout_exercises", "workout_days"

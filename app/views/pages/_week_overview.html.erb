@@ -1,0 +1,41 @@
+<%#
+  This week at a glance, Sunday to Saturday. The summary (workouts, exercises, sets and the heaviest
+  weight) is always visible; the toggle opens one row per day: what was logged and how many sets.
+  A logged day links to that workout, or to the day's list in History when there were several.
+  Locals: dates (the 7 days), logs_by_date (date => workout logs), summary (a WorkoutSummary of
+  the week), today.
+%>
+<div class="week-overview">
+  <p class="eyebrow">This week</p>
+  <dl class="week-summary">
+    <div><dt>Workouts</dt><dd><%= summary.workouts %></dd></div>
+    <div><dt>Exercises</dt><dd><%= summary.exercises %></dd></div>
+    <div><dt>Sets</dt><dd><%= summary.sets %></dd></div>
+    <div><dt>Top weight</dt><dd><%= summary.top_weight ? weight_number(summary.top_weight) : "–" %><% if summary.top_weight %><small> kg</small><% end %></dd></div>
+  </dl>
+
+  <button type="button" class="toggle-days" data-bs-toggle="collapse" data-bs-target="#week-days"
+          aria-expanded="false" aria-controls="week-days">
+    <span class="toggle-days-label"><span class="when-closed">Show days</span><span class="when-open">Hide days</span></span>
+    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+  </button>
+
+  <div class="collapse" id="week-days">
+    <ul class="week-overview-days">
+      <% dates.each do |date| %>
+        <% day_logs = logs_by_date.fetch(date, []) %>
+        <li class="<%= class_names("is-today": date == today, "has-workout": day_logs.any?) %>">
+          <span class="week-overview-name"><%= l date, format: "%a" %></span>
+          <% if day_logs.any? %>
+            <%= link_to day_logs.map(&:workout).to_sentence,
+                  (day_logs.one? ? workout_log_path(day_logs.first, from: "dashboard") : workout_logs_path(date: date.iso8601, from: "dashboard")),
+                  class: "row-title" %>
+            <span class="text-muted small"><%= pluralize(day_logs.sum { |log| summary.sets_in(log) }, "set") %></span>
+          <% else %>
+            <span class="text-muted"><%= date > today ? "–" : "Rest" %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</div>

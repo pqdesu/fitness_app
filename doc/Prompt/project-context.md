@@ -58,7 +58,7 @@ Do not reopen these unless the owner brings them up.
 - **Issues live in `doc/Issues/Issues.md`,** with screenshots in `doc/Issues/Pics/`. The owner writes issues there and asks for a section to be fixed. Move fixed issues under "Issues Resolved".
 - **Prompt files live in `doc/Prompt/`.** `fitness-app-prompt.md` is an older prompt; where it differs from this file (for example it says a typed exercise name is not saved), this file is the current one.
 - **Say plainly what was not verified.** Before `known-gaps-fixes`, UI work was checked by tests and HTTP requests only.
-- **No Ruby on the machine?** Run the tests in Docker: a `ruby:3.3.5` container with `libpq-dev` and `nodejs` installed, a `postgres` container, and `DATABASE_URL` pointing at it.
+- **Ruby and PostgreSQL run natively.** Ruby 3.3.5 (through rbenv) and PostgreSQL are installed on the owner's machine, so run `bin/rails test`, the server and migrations directly. Do not use Docker for them.
 
 ---
 

@@ -8,6 +8,7 @@ class WorkoutLog < ApplicationRecord
   has_many :workout_exercises, through: :workout_log_exercises
 
   before_validation :copy_from_workout_day, on: :create
+  before_validation :mark_rest_day, on: :create
 
   validates :date, presence: true
   validates :workout, inclusion: { in: WorkoutDay::NAMES }
@@ -39,6 +40,16 @@ class WorkoutLog < ApplicationRecord
 
     errors.add(:base, "#{other.workout} is already logged on #{I18n.l(date, format: :long)} in #{workout_day.split.name}. " \
                       "A second workout that day has to come from another split")
+  end
+
+  # A workout logged on a weekday its own split has nothing on that week (the plan, with that
+  # week's moves): a rest day the user trained on anyway. Decided when the session starts and
+  # kept, so editing the split later does not rewrite what the user did that day. The split
+  # itself is not changed.
+  def mark_rest_day
+    return if workout_day.nil? || date.nil?
+
+    self.rest_day = !workout_day.split.week_plan(date).key?(date.wday)
   end
 
   def copy_from_workout_day

@@ -35,4 +35,18 @@ class WorkoutLogTest < ActiveSupport::TestCase
     assert_equal 0, WorkoutLog.count
     assert_equal 0, WorkoutSet.count
   end
+
+  test "a workout logged on a weekday its split plans nothing for is marked as a rest day" do
+    monday = @day.workout_logs.create!(date: Date.new(2026, 11, 16))
+    tuesday = @day.workout_logs.create!(date: Date.new(2026, 11, 17))
+
+    assert_not monday.rest_day?
+    assert tuesday.rest_day?
+    # the split itself is not changed
+    assert_equal [1], @split.workout_days.reload.map(&:weekday)
+
+    # adding a Tuesday workout to the split later does not rewrite what was done
+    @split.workout_days.create!(day: "Pull", weekday: 2)
+    assert tuesday.reload.rest_day?
+  end
 end

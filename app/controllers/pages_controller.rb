@@ -9,7 +9,10 @@ class PagesController < ApplicationController
     @active_days = @active_split ? @active_split.workout_days.order(:weekday, :id) : []
 
     @today = Date.current
-    @today_workout = @active_days.find { |day| day.weekday == @today.wday }
+    # This week as it is trained: the plan, with the workouts moved for this week on their new days.
+    @week_plan = @active_split ? @active_split.week_plan(@today) : {}
+    @week_moved = @active_split.present? && @active_split.moves_of_week(@today).exists?
+    @today_workout = @week_plan[@today.wday]
     if @today_workout
       # Once today's session has sets, the Today box shows them; "last time" stays as a link.
       @today_log = session_of(@today_workout).where(date: @today).order(:id).first
@@ -19,6 +22,19 @@ class PagesController < ApplicationController
     calendar_dates = helpers.month_weeks(@today).flatten
     @logs_by_date = current_user.workout_logs.where(date: calendar_dates.first..calendar_dates.last)
                                 .order(:id).group_by(&:date)
+    # This week (Sunday to Saturday) for the overview under the active split's week.
+    @week_dates = (@today.beginning_of_week(:sunday)..@today.end_of_week(:sunday)).to_a
+    @week_logs = current_user.workout_logs.where(date: @week_dates.first..@week_dates.last)
+                             .includes(workout_log_exercises: :workout_sets)
+                             .order(:id).group_by(&:date)
+    @week_summary = WorkoutSummary.new(@week_logs.values.flatten)
+    # A workout already trained this week has nothing left to move.
+    logged_day_ids = @week_logs.values.flatten.filter_map(&:workout_day_id)
+    @movable_days = @week_plan.reject { |_weekday, day| logged_day_ids.include?(day.id) }
+    @exercise_counts = WorkoutExercise.where(workout_day_id: @active_days.map(&:id)).group(:workout_day_id).count
+    # On a rest day: the fixed workouts the split does not have, for a workout outside the split.
+    @other_workouts = WorkoutDay::NAMES - @active_days.flat_map { |day| WorkoutDay.names_for(day.day) }
+    @today_summary = WorkoutSummary.new(@today_log)
     @recent_logs = current_user.workout_logs
                                .includes(workout_day: :split, workout_log_exercises: :workout_sets)
                                .order(date: :desc, id: :desc).limit(5)

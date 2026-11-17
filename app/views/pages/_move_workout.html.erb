@@ -1,0 +1,44 @@
+<%#
+  "Move a workout" pop-up: one workout of the split on another day, for this week only.
+  Locals: split, movable (weekday this week => workout day, the ones not trained yet),
+  plan (weekday => workout day, this week), today.
+%>
+<div class="modal fade" id="move-workout" tabindex="-1" aria-labelledby="move-workout-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+    <%= form_with url: split_week_move_path(split), class: "modal-content" do %>
+      <div class="modal-header">
+        <h2 class="modal-title" id="move-workout-title">Move a workout</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="text-muted small">For this week only. Next week follows <%= split.name %> as planned.</p>
+
+        <h3 class="picker-group">Which workout</h3>
+        <% movable.each do |weekday, day| %>
+          <label class="picker-row">
+            <%= radio_button_tag :workout_day_id, day.id, movable.one?, id: "move_day_#{day.id}", class: "form-check-input", required: true %>
+            <span class="picker-name"><%= day.day %></span>
+            <span class="text-muted small"><%= Date::DAYNAMES[weekday] %><% if day.weekday != weekday %>, planned <%= day.weekday_name %><% end %></span>
+          </label>
+        <% end %>
+
+        <h3 class="picker-group">Move to</h3>
+        <div class="move-days">
+          <% (today.wday..6).each do |weekday| %>
+            <%= radio_button_tag :weekday, weekday, false, id: "move_to_#{weekday}", class: "btn-check", required: true %>
+            <label class="btn btn-outline-primary" for="move_to_<%= weekday %>">
+              <strong><%= weekday == today.wday ? "Today" : Date::ABBR_DAYNAMES[weekday] %></strong>
+              <small><%= plan[weekday]&.day || "Free" %></small>
+            </label>
+          <% end %>
+        </div>
+        <p class="text-muted small mt-3 mb-0">A day that already has a workout swaps with the one you move.</p>
+      </div>
+
+      <div class="modal-footer">
+        <%= submit_tag "Move for this week", class: "btn btn-primary w-100" %>
+      </div>
+    <% end %>
+  </div>
+</div>
