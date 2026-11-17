@@ -16,6 +16,9 @@ The full project context (product brief, every decision, data model, page flows,
 - There is one logged workout per workout per day. Sets added from any split join it, and Legs and Lower count as the same workout.
 - A split has one logged workout per day. A second workout on the same day only comes from another split.
 - An exercise is on a workout day once and in a logged workout once.
+- A workout can be moved to another day for the current week only (today to Saturday). The split's plan is never changed by a move, and the next week follows the plan again. Moving onto a day that has a workout swaps the two.
+- "Start workout" creates nothing. A split's workout is logged when its first set is added; a workout that is not in the split is logged when its first exercise is added.
+- A workout trained on a day its split has nothing on that week is a rest day workout. It is marked when logged (`workout_logs.rest_day`) and the mark is never recalculated.
 - Weights keep three decimals (1.125 kg).
 
 ## How to work in this repo
@@ -53,12 +56,18 @@ bin/rails mock:clear      # deletes the mock workouts and the plans the mock tas
 - Record: `WorkoutLog` (belongs to the user, survives split deletion) has many `WorkoutLogExercise` has many `WorkoutSet`.
 - `Lift` concern (`app/models/concerns/lift.rb`) is shared by planned and logged exercises: name copy, equipment, machine brand.
 - `Exercise` without a user is in the shared catalogue; with a user it is that user's own. A name is unique within the catalogue and within one user's own exercises.
-- `WorkoutExercise#entry_on!(date)` is the one way sets reach a log: it finds or creates the user's session of that workout on that date, and the entry of that exercise in it.
+- `WorkoutDayMove` (workout day, `week_start`, weekday) is a workout on another weekday for one week. `Split#week_plan(date)` is the one place that answers what is on which day that week (the plan with that week's moves); the dashboard, the Today box and the rest day mark read it. `Split#move_for_week!` writes moves and swaps; creating a workout day or changing a weekday clears the split's moves.
+- `WeekMovesController` (`POST` and `DELETE /splits/:id/week_move`) moves a workout for this week and goes back to the plan. The Splits pages show the plan; only the dashboard passes `plan:` to `splits/_week`.
+- `WorkoutSummary` (plain Ruby, `app/models/workout_summary.rb`) totals loaded logs: workouts, exercises, sets, top weight. It needs logs loaded with `includes(workout_log_exercises: :workout_sets)`.
+- `WorkoutExercise#entry_on!(date)` is the one way sets of a split's workout reach a log: it finds or creates the user's session of that workout on that date, and the entry of that exercise in it.
 - `ExercisePicker` (controller concern) reads the "Add exercises" modal and decides whether a new exercise is private or shared. `Paginated` (controller concern) with `shared/_pagination` pages History, the catalogue and the users list.
 - `Admin::UsersController` (`/admin/users`) is the admin's users page, linked from the user menu.
 - A set is a `<tbody>` of its own in a set table (`workout_sets/_set`): the row of numbers, then its note, or the note field with Save and Cancel while editing (`row_edit_controller.js`).
 - The dashboard calendar (`pages/_calendar`) rings only the days a workout was logged on. A ringed day links to that workout, or to `/workout_logs?date=YYYY-MM-DD` when the day has several.
-- The dashboard's Today box (`pages/home`, `pages/_lifts`) shows today's sets once there are any, with "last time" as a link; before that it shows last time's heaviest sets.
+- The dashboard's Today box (`pages/home`, `pages/_lifts`) shows today's sets once there are any, with "last time" as a link; before that it shows last time's heaviest sets. Its button is "Start workout", then "Continue".
+- On a rest day the Today box opens a panel: one pill per workout name of the split, each with a pop-up (`pages/_rest_day_start`) to move it to today or train it as an extra, and pills for the fixed workouts the split does not have, which open `workout_logs#new`.
+- The active split card has "This week" (`pages/_week_overview`), "Move a workout" (`pages/_move_workout`) and "Back to the plan". Recent workouts are dropdowns (`pages/_recent_workout`). All of these use Bootstrap collapse and modals, with no JavaScript of their own.
+- Deleting a workout opened with `?from=dashboard` returns to the dashboard, otherwise to History.
 - An admin renames an exercise from a workout day: the pencil opens `exercises#edit` with `workout_day_id`, which is where saving or cancelling returns.
 - Sub-pages declare their back button with `<% back_to "Label", path %>` at the top of the view; the layout draws it.
 - Dates follow the browser's time zone, sent in a cookie by `app/javascript/time_zone.js` and remembered in `users.time_zone` for sessions that have not reported one yet.

@@ -334,7 +334,7 @@ Other checks in stage 2:
 | File | What changed |
 |---|---|
 | `.claude/skills/finalize-branch/SKILL.md` | Step 3a (stage 1). |
-| `CLAUDE.md` | Ruby and PostgreSQL run natively; the Docker note is gone. |
+| `CLAUDE.md` | Ruby and PostgreSQL run natively; the Docker note is gone. Product rules and code map lines for this branch's work. |
 | `app/assets/stylesheets/components/_app.scss` | Stage 1's overview, dropdown and chip styles; stage 2's move row, pop-ups and moved circle. |
 | `app/controllers/pages_controller.rb` | Week logs and summaries (stage 1); the week plan, movable days, exercise counts and other workouts (stage 2). |
 | `app/controllers/workout_logs_controller.rb` | Delete returns to the dashboard (stage 1); `new` and `create` for a workout outside the split (stage 2). |
@@ -372,5 +372,5 @@ Moved in the lists:
 - **A second workout from the same split on one day is still refused.** After training an extra on a rest day, starting another workout of the split fails on its first set, as before this branch.
 - **A workout day without a weekday** (data from before weekdays existed) is not in the week plan and is not offered on a rest day.
 - **Logs from before `rest_day` existed are not marked** (stage 1).
-- **`doc/Prompt/project-context.md` and `CLAUDE.md` do not describe this branch.** Beyond the native Ruby and PostgreSQL note, the finalize skill may not edit them. `project-context.md` still ends at `calendar-logged-days`; the code map in `CLAUDE.md` has no line for `WorkoutDayMove` or `Split#week_plan`.
+- **`doc/Prompt/project-context.md` does not describe this branch.** `project-context.md` still ends at `calendar-logged-days`, apart from the native Ruby and PostgreSQL note. `CLAUDE.md` was brought up to date after finalizing, at the owner's request.
 - **`week-workout-moves` needs no pull request:** `home-page-overview` holds all of it, and the extra branch can be deleted.
