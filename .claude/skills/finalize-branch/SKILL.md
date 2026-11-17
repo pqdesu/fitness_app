@@ -16,7 +16,7 @@ The user merges and pulls themselves; they want control over what goes into the 
 - Never push to the default branch.
 - Never delete the local or remote branch: the open pull request needs the remote one, and the local one is not merged yet.
 - Never use `--force`, and never discard uncommitted changes.
-- Never edit any file other than the three this skill is allowed to write: the change doc (step 3), `doc/Features/Features.md` and `doc/Issues/Issues.md` (step 3a). No code, tests, config or other docs are touched while finalizing.
+- Never edit any file other than the four this skill is allowed to write: the change doc (step 3), `doc/Features/Features.md` and `doc/Issues/Issues.md` (step 3a), and `db/seeds/data.yml` (step 3b, written by `bin/rails seed:dump`). No code, tests, config or other docs are touched while finalizing.
 
 ## Stop rules
 
@@ -98,6 +98,10 @@ Rules for both:
 - If a file does not exist in the branch, skip it and say so in the final report.
 
 Mention in the change doc which items were moved.
+
+## 3b. Update the seed data
+
+Follow the `update-seed-data` skill (`.claude/skills/update-seed-data/SKILL.md`) in `HERE`: `bin/rails seed:dump`, read the diff of `db/seeds/data.yml`, run its test. The file then goes into the commit of step 4, so the push carries the latest data together with all the old data. Say in the change doc what the file gained (new workouts by date, splits, exercises). If the skill stops (pending migrations, workouts missing from the diff, an email to confirm), stop here and report.
 
 ## 4. Commit and push the branch
 
