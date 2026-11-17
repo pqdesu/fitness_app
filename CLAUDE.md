@@ -26,7 +26,7 @@ The full project context (product brief, every decision, data model, page flows,
 - Work in a git worktree under `.claude/worktrees/<branch>`, on a branch named for the work (`git worktree add .claude/worktrees/<branch> -b <branch> master`). The owner asked for this on 2026-11-16, replacing the earlier "no worktrees" rule. Leave the main checkout alone: it is the owner's.
 - A server started from the main folder serves the main folder's branch, not the worktree. To let the owner see the work before merging, run a server from the worktree on another port and say which, or give them the command to check the branch out. Do not finalize work unprompted.
 - The worktree and the main folder share one development database. Say so before running a migration that drops or renames something `master` still reads.
-- Ruby 3.3.5 (through rbenv) and PostgreSQL are installed natively on the owner's machine. Run the tests, the server and migrations directly (`bin/rails test`), not in Docker. If either is missing, tell the owner instead of skipping the tests.
+- Ruby 3.3.13 (through rbenv) and PostgreSQL are installed natively on the owner's machine. Run the tests, the server and migrations directly (`bin/rails test`), not in Docker. If either is missing, tell the owner instead of skipping the tests.
 - Look at changed pages in a real browser at phone width before calling UI work done. The tests do not run the JavaScript or show the layout.
 - When asked to finalize, finish or wrap up a branch, use the `finalize-branch` skill (in `.claude/skills/`). It writes a detailed change doc to `doc/<branch>.md`, pushes, and opens a pull request.
 - Never merge a pull request, enable auto-merge, or run `git pull` / `git merge` for the owner. Give them the commands instead; they decide what goes into `master` and what comes into their folder.
@@ -36,7 +36,7 @@ The full project context (product brief, every decision, data model, page flows,
 
 ## Stack and commands
 
-Ruby 3.3.5, Rails 7.1, PostgreSQL, Devise, Bootstrap 5 with SCSS, Hotwire (Turbo and Stimulus) through importmap, simple_form, Minitest.
+Ruby 3.3.13, Rails 8.1, PostgreSQL, Devise 5, Bootstrap 5 with SCSS (Dart Sass through dartsass-sprockets), Hotwire (Turbo and Stimulus) through importmap, simple_form, Minitest.
 
 ```bash
 bin/setup                 # gems and database
@@ -44,11 +44,15 @@ bin/rails db:seed         # admin user and starter catalogue (idempotent)
 bin/rails server
 bin/rails test
 bundle exec rubocop       # linter; must report no offenses
+bundle exec brakeman      # security scan of the code; must report no warnings
+bundle exec bundler-audit check --update  # known vulnerabilities in the gems
 bin/rails mock:last_week  # logs last week's sessions for every split, as mock data
 bin/rails mock:clear      # deletes the mock workouts and the plans the mock task added
 ```
 
-`MAILER_SENDER` sets the address password-reset emails come from. `json` is pinned below 3 in the Gemfile because json 3 breaks asset compilation (execjs) and rack-test.
+`.github/workflows/ci.yml` runs the tests, rubocop, brakeman and bundler-audit on every push.
+
+`MAILER_SENDER` sets the address password-reset emails come from.
 
 ## Code map
 
@@ -69,6 +73,15 @@ bin/rails mock:clear      # deletes the mock workouts and the plans the mock tas
 - The active split card has "This week" (`pages/_week_overview`), "Move a workout" (`pages/_move_workout`) and "Back to the plan". Recent workouts are dropdowns (`pages/_recent_workout`). All of these use Bootstrap collapse and modals, with no JavaScript of their own.
 - Deleting a workout opened with `?from=dashboard` returns to the dashboard, otherwise to History.
 - An admin renames an exercise from a workout day: the pencil opens `exercises#edit` with `workout_day_id`, which is where saving or cancelling returns.
+- The muscle group of an exercise is chosen from `Exercise::MUSCLE_GROUPS` (or left empty, "Other"); it is never typed.
 - Sub-pages declare their back button with `<% back_to "Label", path %>` at the top of the view; the layout draws it.
 - Dates follow the browser's time zone, sent in a cookie by `app/javascript/time_zone.js` and remembered in `users.time_zone` for sessions that have not reported one yet.
-- Most behaviour is covered by `test/integration/workout_flow_test.rb`; the mock task by `test/tasks/mock_task_test.rb`.
+- `Dashboard` (plain Ruby, `app/models/dashboard.rb`) answers everything the home page shows for a user on a date; `PagesController#home` only builds it. It also keeps `logs_count` and `sets_count`, which no box shows now (the owner asked to keep them).
+- A controller finds a record through its owner: `current_user.workout_exercises`, `.workout_log_exercises` and `.workout_sets` (`has_many through` on `User`). `WorkoutLog.session_of(workout, date)` is the one lookup of a session; `WorkoutDay#log_on(date)` uses it. `Split#rest_day?(date)` is the one rest day check.
+- Controllers read form fields with `params.expect(model: [:field])` (Rails 8), and models tidy text with `normalizes` rather than a `before_validation`. Rubocop enforces the hash shorthand (`where(date:)`).
+- The "once only" rules also have unique indexes; `ApplicationController` rescues `RecordNotUnique` (a double tap) with a message. `from_dashboard?` and `errors_of(record)` are there too, for controllers and views.
+- Accounts: Devise `:lockable` (10 wrong passwords, 15 minutes), passwords of 8 or more characters, `paranoid`. The only admin cannot delete their account (`User#last_admin?`, `Users::RegistrationsController`).
+- The content security policy is in `config/initializers/content_security_policy.rb`. A new outside host (fonts, scripts, images) must be added there or the browser blocks it. Do not add inline `style=` attributes or inline scripts.
+- The add-set form and the set table are `workout_sets/_form` and `workout_sets/_table`, used by the exercise page and the logged workout page.
+- Styles: `components/` for what pages share, `pages/` for one page; `application.scss` lists them in one order.
+- Integration tests are in `test/integration/*_flow_test.rb`, one file per area, on the shared `FlowTest` setup in `test/test_helper.rb`; the dashboard object by `test/models/dashboard_test.rb`; the mock task by `test/tasks/mock_task_test.rb`.

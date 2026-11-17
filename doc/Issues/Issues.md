@@ -1,11 +1,5 @@
 # Issues
 
-## Exercise page
-
-### Exercise name edit
-
-- When editing the name of the exercise I can also edit the muscle group by typing which should not be the case it should be via dropdown
-
 ## General
 
 ### Alerts
@@ -39,4 +33,8 @@
 
 ### Exercise name edit
 
-- I can not edit the name of the exercise after adding it. Make it possible on this page: /home/pedro/code/pqdesu/fitness_app/doc/Issues/Pics/Screenshot 2026-11-16 221022.png. Only Admins
+- I can not edit the name of the exercise after adding it. Make it possible on this page: [screenshot](../Features/Pics/screenshot-2026-11-16-221022.png). Only Admins
+
+### Muscle group typed when editing an exercise
+
+- When editing the name of the exercise I can also edit the muscle group by typing which should not be the case it should be via dropdown

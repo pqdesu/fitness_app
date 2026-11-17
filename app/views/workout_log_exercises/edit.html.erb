@@ -8,7 +8,7 @@
   <div class="card-body">
     <%= form_with model: @entry, class: "inline-form" do |f| %>
       <% if @entry.errors.any? %>
-        <div class="alert alert-danger"><%= @entry.errors.full_messages.to_sentence %>.</div>
+        <div class="alert alert-danger"><%= errors_of(@entry) %>.</div>
       <% end %>
       <%= render "shared/equipment_fields", f: f %>
       <div class="mt-3">

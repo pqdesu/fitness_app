@@ -1,5 +1,5 @@
 <%# With a date (a calendar day with several workouts) this is a sub-page: the workouts of that day. %>
-<% from = ("dashboard" if params[:from] == "dashboard") %>
+<% from = ("dashboard" if from_dashboard?) %>
 <% if @date %>
   <% from ? back_to("Dashboard", root_path) : back_to("History", workout_logs_path) %>
 <% end %>

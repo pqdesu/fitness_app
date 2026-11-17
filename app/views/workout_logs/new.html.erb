@@ -10,8 +10,8 @@
   <div class="empty-state">
     <i class="fa-solid fa-dumbbell"></i>
     <p>Pick what you are doing today. The workout is saved when you add the first exercise, and your split stays as it is.</p>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exercise-picker"><i class="fa-solid fa-plus"></i> Add exercise</button>
+    <%= exercise_picker_button "btn-primary" %>
   </div>
 </div>
 
-<%= render "shared/exercise_picker", url: workout_logs_path(workout: @workout), exercises: @picker_exercises, taken_ids: [] %>
+<%= render "shared/exercise_picker", url: workout_logs_path(workout: @workout), exercises: picker_exercises, taken_ids: [] %>

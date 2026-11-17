@@ -3,13 +3,23 @@
 module ExercisePicker
   extend ActiveSupport::Concern
 
+  included do
+    helper_method :picker_exercises
+  end
+
   private
 
-  # Returns [exercises, error message].
+  # What the modal lists: the catalogue and the user's own exercises.
+  def picker_exercises
+    @picker_exercises ||= Exercise.visible_to(current_user).order(:name).to_a
+  end
+
+  # Returns [exercises, error message]. A new exercise is returned unsaved: it is saved with the
+  # row it is added to (the caller's create!), so it does not stay behind when the add fails.
   def picked_exercises
     if params[:exercise].present?
-      exercise = find_or_build_exercise(params.require(:exercise).permit(:name, :muscle_group))
-      exercise.save ? [[exercise], nil] : [[], exercise.errors.full_messages.to_sentence]
+      exercise = find_or_build_exercise(params.expect(exercise: [:name, :muscle_group]))
+      exercise.valid? ? [[exercise], nil] : [[], errors_of(exercise)]
     else
       exercises = Exercise.visible_to(current_user).where(id: params[:exercise_ids]).order(:name).to_a
       exercises.any? ? [exercises, nil] : [[], "Choose at least one exercise"]

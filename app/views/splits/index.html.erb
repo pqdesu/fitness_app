@@ -1,4 +1,4 @@
-<% back_to "Dashboard", root_path if @from_dashboard %>
+<% back_to "Dashboard", root_path if from_dashboard? %>
 <div class="page-header">
   <div>
     <p class="eyebrow">Programs</p>
@@ -9,13 +9,7 @@
 </div>
 
 <% if @splits.empty? %>
-  <div class="card">
-    <div class="empty-state">
-      <i class="fa-solid fa-layer-group"></i>
-      <p>You have no splits yet. A split is your training program, made of workout days.</p>
-      <%= link_to "Create your first split", new_split_path, class: "btn btn-primary" %>
-    </div>
-  </div>
+  <div class="card"><%= render "empty" %></div>
 <% else %>
   <div class="row g-3">
     <% @splits.each do |split| %>
@@ -27,12 +21,12 @@
             <h2><%= link_to split.name, split, class: "stretched-link" %></h2>
             <p class="text-muted small"><%= pluralize(split.workout_days.size, "workout day") %></p>
             <div class="chip-row">
-              <% split.workout_days.sort_by { |d| [d.weekday || 7, d.id] }.each do |day| %>
+              <% split.workout_days.sort_by { |d| [d.weekday, d.id] }.each do |day| %>
                 <span class="chip"><%= day.day %></span>
               <% end %>
             </div>
             <% unless active %>
-              <%= button_to "Set as active", activate_split_path(split, from: ("dashboard" if @from_dashboard)), method: :patch,
+              <%= button_to "Set as active", activate_split_path(split, from: ("dashboard" if from_dashboard?)), method: :patch,
                     class: "btn btn-light btn-sm", form: { class: "split-activate" } %>
             <% end %>
           </div>

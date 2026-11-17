@@ -29,7 +29,13 @@ class WorkoutDay < ApplicationRecord
                       uniqueness: { scope: :split_id, message: "already has a workout in this split" }
 
   def weekday_name
-    Date::DAYNAMES[weekday] if weekday
+    Date::DAYNAMES[weekday]
+  end
+
+  # The user's session of this workout on the given date. There is one session per workout per
+  # day, whichever split it was started from (see WorkoutLog).
+  def log_on(date)
+    user.workout_logs.session_of(day, date)
   end
 
   private

@@ -1,0 +1,30 @@
+// Tables
+.app-table {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+
+  th {
+    padding: .625rem 1.25rem;
+    font-size: .75rem;
+    font-weight: 600;
+    color: $muted;
+    background: #FAFBFC;
+    white-space: nowrap;
+  }
+  td { padding: .75rem 1.25rem; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  a { text-decoration: none; }
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: .375rem;
+  justify-content: flex-end;
+}
+
+.inline-form .form-label {
+  margin-bottom: .25rem;
+  font-size: .78rem;
+  font-weight: 600;
+  color: $muted;
+}

@@ -192,9 +192,9 @@ class WorkoutRecordingTest < ActiveSupport::TestCase
     assert_not twice.valid?
     assert_includes twice.errors[:base], "Bench press is already in this workout"
 
-    # rows doubled before the rule existed can still be changed
-    again.save!(validate: false)
-    assert again.update(equipment: "machine", machine_brand: "Acme")
+    # the database refuses what slips past the check (two requests at the same moment)
+    assert_raises(ActiveRecord::RecordNotUnique) { again.save!(validate: false) }
+    assert_raises(ActiveRecord::RecordNotUnique) { twice.save!(validate: false) }
   end
 
   test "there is one session per workout per day, shared by every split" do
@@ -207,7 +207,7 @@ class WorkoutRecordingTest < ActiveSupport::TestCase
     other = @user.splits.create!(name: "Other").workout_days.create!(day: "Push", weekday: 3)
     same_lift = other.workout_exercises.create!(exercise: @exercise)
     new_lift = other.workout_exercises.create!(exercise: Exercise.create!(name: "Dips"))
-    assert_equal @log, same_lift.log_on(Date.current)
+    assert_equal @log, other.log_on(Date.current)
     assert_equal @log_exercise, same_lift.entry_on!(Date.current)
     assert_nil new_lift.entry_on(Date.current)
     entry = new_lift.entry_on!(Date.current)

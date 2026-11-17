@@ -58,15 +58,15 @@ Do not reopen these unless the owner brings them up.
 - **Issues live in `doc/Issues/Issues.md`,** with screenshots in `doc/Issues/Pics/`. The owner writes issues there and asks for a section to be fixed. Move fixed issues under "Issues Resolved".
 - **Prompt files live in `doc/Prompt/`.** `fitness-app-prompt.md` is an older prompt; where it differs from this file (for example it says a typed exercise name is not saved), this file is the current one.
 - **Say plainly what was not verified.** Before `known-gaps-fixes`, UI work was checked by tests and HTTP requests only.
-- **Ruby and PostgreSQL run natively.** Ruby 3.3.5 (through rbenv) and PostgreSQL are installed on the owner's machine, so run `bin/rails test`, the server and migrations directly. Do not use Docker for them.
+- **Ruby and PostgreSQL run natively.** Ruby 3.3.13 (through rbenv) and PostgreSQL are installed on the owner's machine, so run `bin/rails test`, the server and migrations directly. Do not use Docker for them.
 
 ---
 
 ## 4. Stack and setup
 
-- Ruby 3.3.5, Rails 7.1, PostgreSQL
+- Ruby 3.3.13, Rails 8.1, PostgreSQL
 - Devise for accounts
-- Bootstrap 5.3 with SCSS (sassc-rails), Font Awesome, simple_form
+- Bootstrap 5.3 with SCSS (dartsass-sprockets), Font Awesome, simple_form
 - Hotwire: Turbo and Stimulus through importmap (no Node build)
 - Minitest; one integration test file carries most of the coverage
 
@@ -140,7 +140,7 @@ Conventions in the code:
 - A sub-page view starts with `<% back_to "Label", some_path %>` (helper in `application_helper.rb`); the layout draws the button.
 - `ExercisePicker` (`app/controllers/concerns/exercise_picker.rb`) reads what the "Add exercises" modal sends.
 - Shared partials: `shared/_exercise_picker`, `shared/_equipment_fields`, `splits/_week`, `pages/_calendar`, `workout_sets/_set`.
-- Styles for the app's own components are in `app/assets/stylesheets/components/_app.scss`.
+- Styles are in `app/assets/stylesheets/components/` (shared by pages) and `pages/` (one page), listed in order in `application.scss`.
 - `Paginated` (`app/controllers/concerns/paginated.rb`) and `shared/_pagination` page the long lists.
 - `ApplicationController` requires sign-in everywhere and runs each request in the browser's time zone, read from a cookie set by `app/javascript/time_zone.js`. The zone is also saved in `users.time_zone` and used when a browser has not reported one yet.
 - Every lookup is scoped to the signed-in user's own records.
@@ -155,7 +155,7 @@ Each merged branch has a detailed doc in `doc/`. Read the relevant one before ch
 |---|---|---|---|
 | 1 | `first-ui` | Code review fixes, the first UI, the admin user | `doc/first-ui-changes.md` |
 | 2 | `catalogue-or-typed-exercises-and-equipment` | User-created exercises, equipment per lift, split planned as a week, plan reduced to exercises only | `doc/catalogue-or-typed-exercises-and-equipment.md` |
-| 3 | `claude/universal-back-button-4813cc` | Back button on every sub-page | `doc/claude-universal-back-button-4813cc.md` |
+| 3 | `claude/universal-back-button-4813cc` | Back button on every sub-page | `doc/universal-back-button.md` |
 | 4 | `dashboard-calendar-and-active-split` | Active split, new dashboard, logs that outlive splits, browser time zone | `doc/dashboard-calendar-and-active-split.md` |
 | 5 | `split-page-fixes` | Program-only day page, quick remove, weight before reps, set editing, mock data task | `doc/split-page-fixes.md` |
 | 6 | `known-gaps-fixes` | One workout per day, no duplicate exercises, admin private exercises and users page, three-decimal weights, notes, pagination, saved time zone, Rubocop | `doc/known-gaps-fixes.md` |

@@ -1,0 +1,4 @@
+// Today box: the workouts a rest day can still start
+.today-start { padding: 0 1.25rem 1.25rem; margin-top: 0; }
+.today .collapse > .today-last { margin: .25rem 0 .5rem; padding: 0 1.25rem; font-size: .8rem; font-weight: 600; color: $muted; }
+.today > .today-last + .today-start { margin-top: .5rem; }

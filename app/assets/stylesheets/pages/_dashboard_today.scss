@@ -1,0 +1,25 @@
+// Dashboard: today's workout and what was lifted last time
+
+.today-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.125rem 1.25rem .5rem;
+}
+
+.today-title { margin: 0; font-size: 1.25rem; }
+
+.today > p { padding: 0 1.25rem 1.25rem; }
+.today > .today-last {
+  margin: 0;
+  padding-bottom: .25rem;
+  font-size: .8rem;
+  font-weight: 600;
+  color: $muted;
+}
+
+// "Last time" as a closing line, under the sets logged today
+.today > .today-previous { padding: .75rem 1.25rem 1rem; border-top: 1px solid $line; }
+
+.top-set { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }

@@ -7,6 +7,27 @@
 @import "bootstrap";
 @import "font-awesome";
 
-// Your CSS partials
-@import "components/index";
-@import "pages/index";
+// The app's own styles. components/ holds what several pages share, pages/ what belongs to one
+// page. They are listed here in one order on purpose: a later rule wins over an earlier one of
+// the same weight, so keep a new file after the ones it builds on.
+@import "components/alert";
+@import "components/navbar";
+@import "components/layout";
+@import "components/cards";
+@import "components/lists";
+@import "pages/splits_cards";
+@import "components/tables";
+@import "pages/workout_log";
+@import "components/pagination";
+@import "components/empty_state";
+@import "pages/landing";
+@import "pages/auth";
+@import "pages/split_week";
+@import "pages/dashboard_calendar";
+@import "pages/dashboard_today";
+@import "components/row_link";
+@import "components/exercise_picker";
+@import "pages/dashboard_week";
+@import "pages/dashboard_rest_day";
+@import "pages/dashboard_recent";
+@import "pages/dashboard_moves";

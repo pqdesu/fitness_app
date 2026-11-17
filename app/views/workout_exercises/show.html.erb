@@ -21,27 +21,11 @@
       <% if @sets.empty? %>
         <div class="empty-state compact"><p>No sets yet today. Add your first set below.</p></div>
       <% else %>
-        <table class="table app-table set-table">
-          <thead><tr><th>Set</th><th>Weight</th><th>Reps</th><th></th></tr></thead>
-          <%= render partial: "workout_sets/set", collection: @sets, as: :set, locals: { workout_exercise: @workout_exercise } %>
-        </table>
+        <%= render "workout_sets/table", sets: @sets, workout_exercise: @workout_exercise %>
       <% end %>
 
       <div class="card-footer">
-        <%= form_with model: [@workout_exercise, WorkoutSet.new], class: "row g-2 align-items-end inline-form" do |f| %>
-          <div class="col-4">
-            <%= f.label :weight_used, "Weight kg", class: "form-label" %>
-            <%= f.number_field :weight_used, step: "any", min: 0, placeholder: "–", inputmode: "decimal", class: "form-control",
-                  value: weight_number(@last_set&.weight_used) %>
-          </div>
-          <div class="col-4">
-            <%= f.label :reps_completed, "Reps", class: "form-label" %>
-            <%= f.number_field :reps_completed, value: @last_set&.reps_completed, min: 0, required: true, inputmode: "numeric", class: "form-control" %>
-          </div>
-          <div class="col-4 d-grid">
-            <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add set<% end %>
-          </div>
-        <% end %>
+        <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set %>
       </div>
     </div>
   </div>

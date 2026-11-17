@@ -1,0 +1,73 @@
+// Recent workouts: each row is a dropdown, a summary that opens its exercises
+.recent-list { list-style: none; margin: 0; padding: 0; }
+
+.recent-row { border-bottom: 1px solid $line; }
+.recent-row:last-child { border-bottom: 0; }
+
+// On a phone the chips sit on a row of their own under the summary, so the date keeps its line;
+// from the sm breakpoint up they are beside it, before the chevron.
+.recent-toggle {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .375rem .75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: .875rem 1.25rem;
+  border: 0;
+  background: none;
+  text-align: left;
+  transition: background .15s;
+
+  &:hover { background: $primary-soft; }
+  .recent-chevron { grid-area: 1 / 2; color: $muted; transition: transform .2s; }
+  &[aria-expanded="true"] .recent-chevron { transform: rotate(180deg); }
+
+  @include media-breakpoint-up(sm) {
+    grid-template-columns: 1fr auto auto;
+    .recent-chips { grid-area: 1 / 2; }
+    .recent-chevron { grid-area: 1 / 3; }
+  }
+}
+
+.recent-chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .375rem; }
+
+.recent-summary { display: flex; flex-direction: column; min-width: 0; }
+
+.recent-panel { padding: 0 1.25rem 1rem; }
+.recent-counts { margin: 0 0 .625rem; color: $muted; font-size: .8rem; font-weight: 600; }
+.recent-notes { margin: .75rem 0 0; font-size: .875rem; overflow-wrap: anywhere; }
+.recent-open { margin-top: .875rem; }
+
+// An exercise of the workout as a pill: its name and heaviest set, and it opens the rest of its sets
+.lift-pills { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+
+.lift-pill {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: .5rem .875rem;
+  border: 1px solid $line;
+  border-radius: 999px;
+  background: white;
+  text-align: left;
+  font-size: .9rem;
+
+  .lift-pill-name { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .lift-pill-chevron { color: $muted; font-size: .75rem; transition: transform .2s; }
+  &[aria-expanded="true"] { border-color: $blue; .lift-pill-chevron { transform: rotate(180deg); } }
+  &.is-empty { background: transparent; }
+}
+button.lift-pill:hover { border-color: $blue; }
+
+.lift-sets {
+  list-style: none;
+  margin: 0;
+  padding: .25rem 1rem 0;
+  font-size: .85rem;
+  font-variant-numeric: tabular-nums;
+
+  li { display: flex; justify-content: space-between; gap: 1rem; padding: .3rem 0; }
+}

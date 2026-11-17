@@ -15,7 +15,7 @@ A simple workout tracker built with Ruby on Rails. You plan your training week, 
 
 ## Stack
 
-- Ruby 3.3.5, Rails 7.1
+- Ruby 3.3.13, Rails 8.1
 - PostgreSQL
 - Devise for accounts
 - Bootstrap 5 with SCSS, Font Awesome, simple_form
@@ -43,6 +43,8 @@ The seed creates an admin account for development (`admin@example.com` / `admin1
 ```bash
 bin/rails test                           # the test suite
 bundle exec rubocop                      # the linter
+bundle exec brakeman                     # security scan of the code
+bundle exec bundler-audit check --update # known vulnerabilities in the gems
 bin/rails mock:last_week                 # logs last week's sessions for every split, as mock data
 bin/rails mock:last_week EMAIL=me@x.com  # the same, for one user
 bin/rails mock:clear                     # deletes what the mock task added

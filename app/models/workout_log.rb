@@ -11,6 +11,7 @@ class WorkoutLog < ApplicationRecord
   before_validation :mark_rest_day, on: :create
 
   validates :date, presence: true
+  validates :notes, length: { maximum: 2000 }
   validates :workout, inclusion: { in: WorkoutDay::NAMES }
   # One session per workout per day: sets added from any split go into the same log.
   validate :only_session_of_workout_that_day, if: -> { new_record? || date_changed? || workout_changed? }
@@ -20,12 +21,19 @@ class WorkoutLog < ApplicationRecord
 
   # Sessions of this same workout, whichever split they were done in.
   scope :of_workout, ->(name) { where(workout: WorkoutDay.names_for(name)) }
+  # With everything WorkoutSummary and the pages read, so they ask the database for nothing more.
+  scope :with_sets, -> { includes(workout_log_exercises: :workout_sets) }
+
+  # The session of that workout on that date among these logs (a user's), or nil.
+  def self.session_of(workout, date)
+    of_workout(workout).where(date:).order(:id).first
+  end
 
   private
 
   def only_session_of_workout_that_day
     return if user.nil? || date.nil? || workout.blank?
-    return unless user.workout_logs.of_workout(workout).where(date: date).where.not(id: id).exists?
+    return unless user.workout_logs.of_workout(workout).where(date:).where.not(id:).exists?
 
     errors.add(:date, "already has a #{workout} workout logged")
   end
@@ -34,7 +42,7 @@ class WorkoutLog < ApplicationRecord
     # The same workout twice is already reported by the rule above.
     return if user.nil? || date.nil? || workout_day.nil? || errors[:date].any?
 
-    other = user.workout_logs.joins(:workout_day).where(date: date).where.not(id: id)
+    other = user.workout_logs.joins(:workout_day).where(date:).where.not(id:)
                 .find_by(workout_days: { split_id: workout_day.split_id })
     return if other.nil?
 
@@ -49,7 +57,7 @@ class WorkoutLog < ApplicationRecord
   def mark_rest_day
     return if workout_day.nil? || date.nil?
 
-    self.rest_day = !workout_day.split.week_plan(date).key?(date.wday)
+    self.rest_day = workout_day.split.rest_day?(date)
   end
 
   def copy_from_workout_day

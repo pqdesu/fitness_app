@@ -1,0 +1,10 @@
+// Rows that open something (an exercise of a workout day)
+.row-link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  text-decoration: none;
+
+  &:hover .row-title { color: $blue; }
+}
