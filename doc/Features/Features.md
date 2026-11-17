@@ -6,12 +6,6 @@
 
 ### Home page
 
-- Add a weekly overview under the week of the slipt and remoe the splits, workout logged and sets recorded boxes.
-- On Recent Workouts tab make the whole block clickable not only the name
-- Make the Recent workout a dropdown, extend it to show it in more details and keep a summary of it at first.
-- Also do the same for the Active split to extend and show the weeksdays.
-- Have a today check as well not only the weekly but another box with todays workout and if none then have a button to start the workout so I can start adding the exercises done to be added to my workout. Like a simple quick button to start it
-
 ### Calendar
 
 - Make possible to open the Month of the calendar by clicking the name of the month to open a page of the month with the data of the splits, sets, weight, exercises done etc.
@@ -76,3 +70,8 @@
 
 - Instead of having Splits on the home page I want them to be a separate page. I want the week from the 3rd issue to be on the dashboard page with which day is today highlighted and what Workout from the split it is.
 - Have the a calendar of the month on the home page and the week highlighted on the calendar on the left of the page on top of the Splits, Workout logged and Sets recorded boxes. Also add a Text saying what day of the Split will it be, use the name of workout to be displayed and what last weeks exercises were done with the heaviest set and amount of reps.
+- Add a weekly overview under the week of the slipt and remoe the splits, workout logged and sets recorded boxes.
+- On Recent Workouts tab make the whole block clickable not only the name
+- Make the Recent workout a dropdown, extend it to show it in more details and keep a summary of it at first.
+- Also do the same for the Active split to extend and show the weeksdays.
+- Have a today check as well not only the weekly but another box with todays workout and if none then have a button to start the workout so I can start adding the exercises done to be added to my workout. Like a simple quick button to start it

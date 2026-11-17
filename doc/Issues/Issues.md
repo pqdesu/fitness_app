@@ -1,15 +1,5 @@
 # Issues
 
-## Home page
-
-### Only Split workout are selectable on rest day
-
-- I want to be able to either add the split day or create a new one.
-
-### Days on the split names and repetitive workout names
-
-- Since the workout is static and only Admin can edit, I believe, change the way it is now to only display the workout name wihtout the date and incase it is the same as on one of the say, for example: I do Lower on Tuesday and there is Lower on Wednesday and Saturday. Have a option to move either one, like a info pop up. Make this possible for all splits.
-
 ## Exercise page
 
 ### Exercise name edit
@@ -19,6 +9,14 @@
 # Issues resolved (DONE)
 
 ## Home page
+
+### Only Split workout are selectable on rest day
+
+- I want to be able to either add the split day or create a new one.
+
+### Days on the split names and repetitive workout names
+
+- Since the workout is static and only Admin can edit, I believe, change the way it is now to only display the workout name wihtout the date and incase it is the same as on one of the say, for example: I do Lower on Tuesday and there is Lower on Wednesday and Saturday. Have a option to move either one, like a info pop up. Make this possible for all splits.
 
 ### Deleting workout
 

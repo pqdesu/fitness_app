@@ -42,13 +42,14 @@ class WorkoutLog < ApplicationRecord
                       "A second workout that day has to come from another split")
   end
 
-  # A workout logged on a weekday its own split plans nothing for: a rest day the user trained on
-  # anyway. Decided when the session starts and kept, so editing the split later does not rewrite
-  # what the user did that day. The split itself is not changed.
+  # A workout logged on a weekday its own split has nothing on that week (the plan, with that
+  # week's moves): a rest day the user trained on anyway. Decided when the session starts and
+  # kept, so editing the split later does not rewrite what the user did that day. The split
+  # itself is not changed.
   def mark_rest_day
     return if workout_day.nil? || date.nil?
 
-    self.rest_day = workout_day.split.workout_days.where(weekday: date.wday).none?
+    self.rest_day = !workout_day.split.week_plan(date).key?(date.wday)
   end
 
   def copy_from_workout_day

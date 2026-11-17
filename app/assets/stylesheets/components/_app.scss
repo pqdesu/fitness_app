@@ -386,6 +386,9 @@ div.card-link {
 .week-day.is-set { color: $gray; }
 .week-day.is-set .week-circle { border-color: $blue; background: $blue; color: white; }
 
+// A workout moved to this day for this week only: dashed, not the solid circle of the plan
+.week-day.is-moved .week-circle { border-style: dashed; background: $primary-soft; color: $blue; }
+
 // Today: a ring around the circle, whether or not the day has a workout
 .week-day.is-today {
   color: $gray;
@@ -653,4 +656,53 @@ button.lift-pill:hover { border-color: $blue; }
   font-variant-numeric: tabular-nums;
 
   li { display: flex; justify-content: space-between; gap: 1rem; padding: .3rem 0; }
+}
+
+// Active split: moving a workout for this week only
+.week-moves {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .25rem .5rem;
+  margin-top: .75rem;
+
+  .btn { min-height: 2.75rem; }
+  form { display: inline-flex; }
+}
+.week-moves-note { margin-right: auto; font-size: .8rem; font-weight: 600; color: $muted; }
+.today-moved { margin: .125rem 0 0; font-size: .8rem; font-weight: 600; color: $muted; }
+
+// "Move a workout" pop-up: the days of the week left, as buttons
+.move-days {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+  gap: .5rem;
+
+  .btn { display: flex; flex-direction: column; align-items: center; min-height: 3.25rem; padding: .375rem .25rem; }
+  small { font-size: .75rem; font-weight: 600; }
+}
+
+// Rest day pop-up: one row per day the workout is on, with its two actions
+.rest-start-days {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .75rem 0;
+    border-top: 1px solid $line;
+  }
+  li > div:first-child { display: flex; flex-direction: column; }
+}
+.rest-start-actions {
+  display: flex;
+  gap: .5rem;
+
+  .btn { min-height: 2.75rem; display: inline-flex; align-items: center; }
 }

@@ -22,7 +22,19 @@
             <% if @splits_count > 1 %><%= link_to "Change", splits_path(from: "dashboard"), class: "link-quiet" %><% end %>
           </div>
           <div class="card-body">
-            <%= render "splits/week", split: @active_split, workout_days: @active_days, today: @today.wday %>
+            <%= render "splits/week", split: @active_split, workout_days: @active_days, plan: @week_plan, today: @today.wday %>
+            <% if @week_moved || @movable_days.any? %>
+              <%# Moving a workout counts for this week only; the split keeps its plan. %>
+              <div class="week-moves">
+                <% if @week_moved %>
+                  <span class="week-moves-note">Moved this week</span>
+                  <%= button_to "Back to the plan", split_week_move_path(@active_split), method: :delete, class: "btn btn-link btn-sm" %>
+                <% end %>
+                <% if @movable_days.any? %>
+                  <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#move-workout"><i class="fa-solid fa-arrows-left-right"></i> Move a workout</button>
+                <% end %>
+              </div>
+            <% end %>
             <%= render "week_overview", dates: @week_dates, logs_by_date: @week_logs, summary: @week_summary, today: @today %>
           </div>
         <% else %>
@@ -43,6 +55,7 @@
               <p class="eyebrow">Today · <%= l @today, format: "%A, %B %-d" %></p>
               <% if @today_workout %>
                 <h3 class="today-title"><%= @today_workout.day %> day</h3>
+                <% if @today_workout.weekday != @today.wday %><p class="today-moved">Moved from <%= @today_workout.weekday_name %>, this week only</p><% end %>
               <% else %>
                 <h3 class="today-title">Rest day</h3>
               <% end %>
@@ -51,7 +64,7 @@
               <%# Nothing is logged until the first set is added, so "Start workout" only opens the day. %>
               <%= link_to (@today_summary.sets.positive? ? "Continue" : "Start workout"), workout_day_path(@today_workout), class: "btn btn-primary btn-sm" %>
             <% elsif @active_days.any? %>
-              <%# A rest day: choose which workout to train anyway. It is logged as a rest day. %>
+              <%# A rest day: choose which workout to train anyway, from the split or outside it. %>
               <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#rest-day-start"
                       aria-expanded="false" aria-controls="rest-day-start">Start workout</button>
             <% end %>
@@ -79,12 +92,22 @@
             <% end %>
             <% if @active_days.any? %>
               <div class="collapse" id="rest-day-start">
-                <p class="today-last">Going to the gym anyway? Pick the workout. It is saved as a rest day workout and your split stays as it is.</p>
-                <div class="today-start chip-row">
-                  <% @active_days.each do |day| %>
-                    <%= link_to workout_day_path(day), class: "btn btn-light btn-sm rounded-pill" do %><%= day.day %> <span class="text-muted"><%= Date::ABBR_DAYNAMES[day.weekday] %></span><% end %>
-                  <% end %>
-                </div>
+                <% if @week_plan.any? %>
+                  <p class="today-last">From your split. Move it to today for this week, or train it as an extra.</p>
+                  <div class="today-start chip-row">
+                    <% @week_plan.values.map(&:day).uniq.each_with_index do |name, index| %>
+                      <button type="button" class="btn btn-light btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#rest-start-<%= index %>"><%= name %></button>
+                    <% end %>
+                  </div>
+                <% end %>
+                <% if @other_workouts.any? %>
+                  <p class="today-last">Something else. It is saved as a rest day workout and your split stays as it is.</p>
+                  <div class="today-start chip-row">
+                    <% @other_workouts.each do |name| %>
+                      <%= link_to name, new_workout_log_path(workout: name), class: "btn btn-light btn-sm rounded-pill" %>
+                    <% end %>
+                  </div>
+                <% end %>
               </div>
             <% else %>
               <p class="mb-0"><%= link_to "Add a workout day to this split", new_split_workout_day_path(@active_split) %></p>
@@ -119,6 +142,19 @@
       </div>
     </div>
   </div>
+
+  <%# Pop-ups, outside the cards. %>
+  <% if @active_split %>
+    <% if @movable_days.any? %>
+      <%= render "move_workout", split: @active_split, movable: @movable_days, plan: @week_plan, today: @today %>
+    <% end %>
+    <% if @today_workout.nil? %>
+      <% @week_plan.group_by { |_weekday, day| day.day }.each_with_index do |(name, days), index| %>
+        <%= render "rest_day_start", split: @active_split, name: name, days: days.to_h, index: index, today: @today,
+              movable_ids: @movable_days.values.map(&:id), exercise_counts: @exercise_counts %>
+      <% end %>
+    <% end %>
+  <% end %>
 <% else %>
   <section class="hero">
     <span class="brand-mark brand-mark-lg"><i class="fa-solid fa-dumbbell"></i></span>

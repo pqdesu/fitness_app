@@ -1,0 +1,39 @@
+<%#
+  Rest day pop-up for one workout of the split: every day it is on this week, each either moved
+  to today (this week only) or trained as an extra, which keeps the week as planned.
+  Locals: split, name (the workout), days (weekday this week => workout day), index, today,
+  movable_ids (workout days not trained yet this week), exercise_counts (workout day id => count).
+%>
+<div class="modal fade" id="rest-start-<%= index %>" tabindex="-1" aria-labelledby="rest-start-title-<%= index %>" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="rest-start-title-<%= index %>"><%= name %> today</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small">
+          <%= name %> is planned on <%= days.keys.map { |weekday| Date::DAYNAMES[weekday] }.to_sentence %>.
+          <strong>Move</strong> puts it on <%= l today, format: "%A" %> for this week only.
+          <strong>Extra</strong> keeps the week as planned and saves today as a rest day workout.
+        </p>
+        <ul class="rest-start-days">
+          <% days.each do |weekday, day| %>
+            <li>
+              <div>
+                <span class="row-title"><%= Date::DAYNAMES[weekday] %></span>
+                <span class="text-muted small"><%= pluralize(exercise_counts.fetch(day.id, 0), "exercise") %><% unless movable_ids.include?(day.id) %> · done this week<% end %></span>
+              </div>
+              <div class="rest-start-actions">
+                <% if movable_ids.include?(day.id) %>
+                  <%= button_to "Move to today", split_week_move_path(split), params: { workout_day_id: day.id, weekday: today.wday, open: 1 }, class: "btn btn-primary btn-sm" %>
+                <% end %>
+                <%= link_to "Train as extra", workout_day_path(day), class: "btn btn-light btn-sm" %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

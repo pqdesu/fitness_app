@@ -5,6 +5,12 @@ class WorkoutDay < ApplicationRecord
   has_many :exercises, through: :workout_exercises
   # Logged workouts belong to the user: they stay when the day is deleted.
   has_many :workout_logs, dependent: :nullify
+  # Weeks this workout was trained on another weekday (see WorkoutDayMove).
+  has_many :workout_day_moves, dependent: :delete_all
+
+  # Changing the plan's weekdays starts every week from the plan again: a move made for one week
+  # could otherwise land on a weekday the plan now uses.
+  after_save :clear_moves_of_split, if: :saved_change_to_weekday?
 
   # A workout day is one of a fixed set of workouts, not a name the user types. That keeps a
   # workout comparable over time: a Push session is the same workout in whichever split it was done.
@@ -24,5 +30,11 @@ class WorkoutDay < ApplicationRecord
 
   def weekday_name
     Date::DAYNAMES[weekday] if weekday
+  end
+
+  private
+
+  def clear_moves_of_split
+    WorkoutDayMove.where(workout_day_id: split.workout_day_ids).delete_all
   end
 end

@@ -1,17 +1,25 @@
 <%#
   The week of a split, Sunday to Saturday. A weekday with a workout day is coloured and opens it;
   an empty weekday is blank and starts a new workout day on it. Locals: split, workout_days,
-  and optionally today (a weekday number, 0 = Sunday) to ring that day.
+  optionally today (a weekday number, 0 = Sunday) to ring that day, and optionally plan
+  (weekday => workout day, from Split#week_plan) to show one week with its moved workouts: a moved
+  workout is drawn dashed on its new day, and the day it left is blank and opens the split.
 %>
-<% days_by_weekday = workout_days.index_by(&:weekday) %>
+<% days_by_weekday = local_assigns[:plan] || workout_days.index_by(&:weekday) %>
+<% planned_weekdays = workout_days.map(&:weekday) %>
 <% today = local_assigns[:today] %>
 <div class="week">
   <% Date::DAYNAMES.each_with_index do |weekday_name, weekday| %>
     <% day = days_by_weekday[weekday] %>
-    <%= link_to (day ? workout_day_path(day) : new_split_workout_day_path(split, weekday: weekday)),
-          class: class_names("week-day", "is-set": day, "is-today": weekday == today),
+    <% moved = day && day.weekday != weekday %>
+    <% left = day.nil? && planned_weekdays.include?(weekday) %>
+    <%= link_to (day ? workout_day_path(day) : (left ? split_path(split) : new_split_workout_day_path(split, weekday: weekday))),
+          class: class_names("week-day", "is-set": day, "is-moved": moved, "is-today": weekday == today),
           "aria-current": ("date" if weekday == today),
-          "aria-label": (day ? "#{weekday_name}: #{day.day}" : "#{weekday_name}: add a workout day") do %>
+          "aria-label": (if moved then "#{weekday_name}: #{day.day}, moved from #{day.weekday_name} this week"
+                         elsif day then "#{weekday_name}: #{day.day}"
+                         elsif left then "#{weekday_name}: no workout this week, it was moved"
+                         else "#{weekday_name}: add a workout day" end) do %>
       <span class="week-circle"><%= weekday_name.first %></span>
       <span class="week-label"><%= day&.day %></span>
     <% end %>
