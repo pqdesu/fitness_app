@@ -1,14 +1,24 @@
-<% if notice %>
-  <div class="alert alert-info alert-dismissible fade show m-1" role="alert">
-    <%= notice %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-    </button>
-  </div>
-<% end %>
-<% if alert %>
-  <div class="alert alert-warning alert-dismissible fade show m-1" role="alert">
-    <%= alert %>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-    </button>
+<%#
+  Flash messages: a card that drops in at the top of the screen and leaves by itself after
+  5 seconds (flash_controller.js), or at once on the ×. A notice is green, an alert red.
+  data-turbo-temporary keeps them out of Turbo's page cache, so going back does not show
+  an old message again.
+%>
+<% messages = { notice: notice, alert: alert }.compact_blank %>
+<% if messages.any? %>
+  <div class="flash-stack" data-turbo-temporary>
+    <% messages.each do |kind, message| %>
+      <div class="flash flash-<%= kind %>" role="<%= kind == :alert ? "alert" : "status" %>"
+           data-controller="flash" data-flash-delay-value="5000">
+        <span class="flash-icon">
+          <i class="fa-solid <%= kind == :alert ? "fa-circle-exclamation" : "fa-circle-check" %>"></i>
+        </span>
+        <p class="flash-text"><%= message %></p>
+        <button type="button" class="flash-close" data-action="flash#dismiss" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <span class="flash-timer" aria-hidden="true"></span>
+      </div>
+    <% end %>
   </div>
 <% end %>

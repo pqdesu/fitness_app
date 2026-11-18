@@ -10,9 +10,11 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body data-time-zone="<%= Time.zone.tzinfo.name %>" data-reloadable="<%= request.get? %>">
+  <body data-time-zone="<%= Time.zone.tzinfo.name %>" data-reloadable="<%= request.get? %>"
+        data-back-skip="<%= action_name.in?(%w[new edit create update]) %>">
     <%= render "shared/navbar" %>
     <%= render "shared/flashes" %>
+    <%= render "shared/confirm" %>
 
     <main class="container app-main">
       <% if devise_controller? %>

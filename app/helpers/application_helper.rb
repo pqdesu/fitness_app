@@ -10,10 +10,13 @@ module ApplicationHelper
     number_with_precision(weight, precision: 3, strip_insignificant_zeros: true)
   end
 
-  # Declares the page a view sits under. The layout draws it as the back button,
-  # so every sub-page gets the same control in the same place.
-  def back_to(label, path)
-    content_for :back, link_to(tag.i(class: "fa-solid fa-arrow-left") + label, path, class: "back-link"), flush: true
+  # Gives a sub-page its back button, an arrow the layout draws above the page header. It returns
+  # to the page the user was on before (back_controller.js, back_trail.js); `path`, the page this
+  # one sits under, is where it goes when there was none, such as a link opened directly.
+  def back_to(path)
+    content_for :back, link_to(tag.i(class: "fa-solid fa-arrow-left", aria: { hidden: true }), path,
+                               class: "back-link", aria: { label: "Back" }, title: "Back",
+                               data: { controller: "back", action: "back#go" }), flush: true
   end
 
   # A set in one line: "80 kg × 8 reps".

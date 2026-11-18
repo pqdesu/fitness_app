@@ -1,0 +1,107 @@
+// Flash messages (shared/_flashes, flash_controller.js): white cards like the rest of the app,
+// dropped in at the top centre of the screen, above the navbar. On a phone they span the width
+// with a small gutter; on a wider screen they keep a card's width.
+.flash-stack {
+  position: fixed;
+  top: calc(.75rem + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  z-index: 1090; // above the sticky navbar, like Bootstrap's toasts
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  padding: 0 .75rem;
+  pointer-events: none; // the gaps around the cards do not block the page
+}
+
+.flash {
+  --flash-color: #{$green};
+
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  max-width: 26rem;
+  padding: .75rem .5rem .75rem .75rem;
+  background: white;
+  border: 1px solid $line;
+  border-radius: $border-radius-xl;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, .14), 0 2px 6px rgba(16, 24, 40, .06);
+  pointer-events: auto;
+  animation: flash-in .5s ease-out;
+
+  &.is-leaving { animation: flash-out .5s ease-in-out forwards; }
+}
+
+.flash-alert { --flash-color: #{$red}; }
+
+.flash-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  color: var(--flash-color);
+  background: color-mix(in srgb, var(--flash-color) 12%, white);
+}
+
+.flash-text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: .9rem;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+// A large enough target for a thumb.
+.flash-close {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: $muted;
+
+  &:hover, &:focus-visible { color: $gray; background: $light-gray; }
+}
+
+// Shows the 5 seconds running out. Keep the duration equal to the controller's delay.
+.flash-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--flash-color);
+  opacity: .5;
+  transform-origin: left;
+  animation: flash-timer 5s linear forwards;
+}
+
+// A half-second fade, in and out, with only a hint of movement.
+@keyframes flash-in {
+  from { opacity: 0; transform: translateY(-.375rem); }
+}
+
+@keyframes flash-out {
+  to { opacity: 0; transform: translateY(-.375rem); }
+}
+
+@keyframes flash-timer {
+  to { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash, .flash.is-leaving { animation: none; }
+  .flash-timer { display: none; }
+}

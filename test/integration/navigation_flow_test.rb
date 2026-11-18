@@ -2,7 +2,7 @@ require "test_helper"
 
 # Back buttons and paged lists.
 class NavigationFlowTest < FlowTest
-  test "every sub-page has one back button to its parent, top-level pages have none" do
+  test "every sub-page has one back arrow, falling back to its parent; top-level pages have none" do
     sign_in @user
     mine = Exercise.create!(name: "Cable fly", muscle_group: "Chest", user: @user)
     split = @user.splits.create!(name: "PPL")
@@ -13,22 +13,28 @@ class NavigationFlowTest < FlowTest
     entry = log.workout_log_exercises.sole
 
     {
-      edit_exercise_path(mine) => ["Exercises", exercises_path],
-      new_split_path => ["Splits", splits_path],
-      split_path(split) => ["Splits", splits_path],
-      edit_split_path(split) => ["PPL", split_path(split)],
-      new_split_workout_day_path(split) => ["PPL", split_path(split)],
-      workout_day_path(day) => ["PPL", split_path(split)],
-      edit_workout_day_path(day) => ["Push", workout_day_path(day)],
-      workout_exercise_path(planned) => ["Push", workout_day_path(day)],
-      workout_log_path(log) => ["Push", workout_day_path(day)],
-      edit_workout_log_exercise_path(entry) => ["Push workout", workout_log_path(log)]
-    }.each do |path, (label, parent)|
+      edit_exercise_path(mine) => exercises_path,
+      new_split_path => splits_path,
+      split_path(split) => splits_path,
+      edit_split_path(split) => split_path(split),
+      new_split_workout_day_path(split) => split_path(split),
+      workout_day_path(day) => split_path(split),
+      edit_workout_day_path(day) => workout_day_path(day),
+      workout_exercise_path(planned) => workout_day_path(day),
+      workout_log_path(log) => workout_day_path(day),
+      edit_workout_log_exercise_path(entry) => workout_log_path(log)
+    }.each do |path, parent|
       get path
       assert_response :success, "#{path} failed"
-      assert_select "a.back-link", { count: 1, text: label }, "#{path} back button"
+      assert_select "a.back-link[aria-label=Back][data-controller=back][data-action='back#go']", { count: 1, text: "" }, "#{path} back arrow"
       assert_select "a.back-link[href=?]", parent, { count: 1 }, "#{path} back target"
     end
+
+    # a form page is marked, so the arrow goes past it once the form is saved
+    get edit_split_path(split)
+    assert_select "body[data-back-skip=true]"
+    get split_path(split)
+    assert_select "body[data-back-skip=false]"
 
     [root_path, splits_path, workout_logs_path, exercises_path].each do |path|
       get path
@@ -38,12 +44,12 @@ class NavigationFlowTest < FlowTest
     # a rejected form keeps pointing at the saved name, not the one being typed
     patch split_path(split), params: { split: { name: "" } }
     assert_response :unprocessable_content
-    assert_select "a.back-link", text: "PPL"
+    assert_select "a.back-link[href=?]", split_path(split), count: 1
 
     # only an admin reaches the catalogue form
     sign_in @admin
     get new_exercise_path
-    assert_select "a.back-link[href=?]", exercises_path, text: "Exercises", count: 1
+    assert_select "a.back-link[href=?]", exercises_path, count: 1
   end
 
   test "long lists are split into pages" do
@@ -91,6 +97,34 @@ class NavigationFlowTest < FlowTest
     assert_response :success
     get "#{new_split_workout_day_path(split)}?weekday[]=3"
     assert_response :success
+  end
+
+  test "a flash message is a card that leaves by itself and stays out of the page cache" do
+    sign_in @user
+    post splits_path, params: { split: { name: "PPL" } }
+    follow_redirect!
+    assert_select ".flash-stack[data-turbo-temporary] .flash.flash-notice[role=status][data-controller=flash]", 1
+    assert_select ".flash-notice .flash-close[data-action='flash#dismiss']", 1
+
+    get admin_users_path
+    follow_redirect!
+    assert_select ".flash.flash-alert[role=alert]", text: /Only an admin can do that/
+
+    get root_path
+    assert_select ".flash-stack", false
+  end
+
+  test "a delete asks in the app's own box, not the browser's" do
+    sign_in @user
+    log = @user.workout_logs.create!(workout: "Push", date: Date.current)
+    get workout_log_path(log)
+    assert_select "form[action=?][data-turbo-confirm='Delete this workout and all its sets?']", workout_log_path(log)
+    assert_select "#confirm-modal.modal" do
+      assert_select "[data-confirm-title]", 1
+      assert_select "[data-confirm-detail]", 1
+      assert_select "button[data-bs-dismiss=modal]", "Cancel"
+      assert_select "button[data-confirm-accept]", 1
+    end
   end
 end
 
