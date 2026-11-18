@@ -1,15 +1,5 @@
 # Issues
 
-## General
-
-### Alerts
-
-- Alerts do not look appropriate to the UI of the app, please change it to match the style of the app and make it disappear after coupld of seconds, like 5 seconds is fine
-
-### Back button
-
-- Back button does not work the way I intended, I want the back button to always go back to the page the user was in before. For example I clicked on the workout circle inside the Active split box on home page but the back button goes to the split page. The back button should go back to the previously visited page. Since this will mostly be a Mobile App and those apps do not have browser back buttons that will be useful.
-
 ## History page
 
 ### Table columns off-screen on a phone
@@ -17,6 +7,18 @@
 - At phone width (390 px) the History table (`/workout_logs`) is wider than the screen (about 595 px in a 364 px box). It scrolls sideways inside its own box, so the Exercises and Sets columns start off-screen and only Date, Workout and part of Split show until you swipe the table. Found in the phone-width browser check on 2026-11-17.
 
 # Issues resolved (DONE)
+
+## General
+
+### Alerts
+
+- Alerts do not look appropriate to the UI of the app, please change it to match the style of the app and make it disappear after coupld of seconds, like 5 seconds is fine
+- Fixed on `alerts-and-back-button`: a white card at the top of the screen that fades in and out in 0.5 s and leaves after 5 s; delete confirmations are an in-app box over a tinted page instead of the browser pop-up. See [doc/alerts-and-back-button.md](../alerts-and-back-button.md).
+
+### Back button
+
+- Back button does not work the way I intended, I want the back button to always go back to the page the user was in before. For example I clicked on the workout circle inside the Active split box on home page but the back button goes to the split page. The back button should go back to the previously visited page. Since this will mostly be a Mobile App and those apps do not have browser back buttons that will be useful.
+- Fixed on `alerts-and-back-button`: the back button is a round arrow that returns to the page visited before, skipping form pages and deleted records, and falls back to the parent page when the tab has no earlier page. See [doc/alerts-and-back-button.md](../alerts-and-back-button.md).
 
 ## Home page
 

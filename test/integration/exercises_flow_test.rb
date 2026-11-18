@@ -81,7 +81,7 @@ class ExercisesFlowTest < FlowTest
     assert_select "a[href=?][aria-label=?]", edit, "Edit Bench press"
     # the edit page belongs to the day it was opened from
     get edit
-    assert_select ".back-link[href=?]", workout_day_path(day), text: "Push"
+    assert_select ".back-link[href=?]", workout_day_path(day), count: 1
     assert_select "input[type=hidden][name=workout_day_id][value=?]", day.id.to_s
     assert_select ".form-actions a[href=?]", workout_day_path(day), text: "Cancel"
     patch exercise_path(@bench), params: { exercise: { name: "" }, workout_day_id: day.id }

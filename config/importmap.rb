@@ -2,6 +2,8 @@
 
 pin "application"
 pin "time_zone"
+pin "confirm_dialog"
+pin "back_trail"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"

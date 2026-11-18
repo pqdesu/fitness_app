@@ -150,7 +150,7 @@ class DashboardFlowTest < FlowTest
       get workout_log_path(last, from: "dashboard")
       assert_select "h1", "Push workout"
       assert_equal ["Bench press", "Dips"], css_select(".entry-card h2").map(&:text)
-      assert_select ".back-link[href=?]", root_path, text: "Dashboard"
+      assert_select ".back-link[href=?]", root_path, count: 1
 
       # a day with two workouts (the second from another split) opens that day's list, which leads to each of them
       pull_day = @user.splits.create!(name: "Other").workout_days.create!(day: "Pull", weekday: 1)
@@ -163,13 +163,13 @@ class DashboardFlowTest < FlowTest
       assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push and Pull workouts"
       get workout_logs_path(date: "2026-11-09", from: "dashboard")
       assert_select "h1", "Workouts on November 09, 2026"
-      assert_select ".back-link[href=?]", root_path, text: "Dashboard"
+      assert_select ".back-link[href=?]", root_path, count: 1
       assert_select "table.app-table tbody tr", 2
       assert_select "a[href=?]", workout_log_path(pull_log, from: "dashboard")
       assert_select "a[href=?]", workout_log_path(last, from: "dashboard")
       # reached without the dashboard it goes back to the history; a day with nothing, or a bad date, is handled
       get workout_logs_path(date: "2026-11-09")
-      assert_select ".back-link[href=?]", workout_logs_path, text: "History"
+      assert_select ".back-link[href=?]", workout_logs_path, count: 1
       get workout_logs_path(date: "2026-11-10")
       assert_select ".empty-state", /No workouts were logged on this day/
       get workout_logs_path(date: "not-a-date")
@@ -184,9 +184,9 @@ class DashboardFlowTest < FlowTest
 
       # opened from the dashboard, last time's workout goes back to the dashboard
       get workout_log_path(last, from: "dashboard")
-      assert_select ".back-link[href=?]", root_path, text: "Dashboard"
+      assert_select ".back-link[href=?]", root_path, count: 1
       get workout_log_path(last)
-      assert_select ".back-link[href=?]", workout_day_path(push), text: "Push"
+      assert_select ".back-link[href=?]", workout_day_path(push), count: 1
     end
 
     # after changing split, last time is still found: Lower is the same workout as Legs,

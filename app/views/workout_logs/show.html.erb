@@ -1,9 +1,9 @@
 <% if from_dashboard? %>
-  <% back_to "Dashboard", root_path %>
+  <% back_to root_path %>
 <% elsif @workout_day %>
-  <% back_to @workout_day.day, workout_day_path(@workout_day) %>
+  <% back_to workout_day_path(@workout_day) %>
 <% else %>
-  <% back_to "History", workout_logs_path %>
+  <% back_to workout_logs_path %>
 <% end %>
 <div class="page-header">
   <div>

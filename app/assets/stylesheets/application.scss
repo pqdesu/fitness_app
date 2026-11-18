@@ -10,7 +10,8 @@
 // The app's own styles. components/ holds what several pages share, pages/ what belongs to one
 // page. They are listed here in one order on purpose: a later rule wins over an earlier one of
 // the same weight, so keep a new file after the ones it builds on.
-@import "components/alert";
+@import "components/flash";
+@import "components/confirm";
 @import "components/navbar";
 @import "components/layout";
 @import "components/cards";

@@ -33,3 +33,7 @@ $btn-font-weight:     600;
 $input-border-color:  #D5D9E0;
 $table-border-color:  $line;
 $dropdown-border-color: $line;
+
+// Modals: the page behind is tinted with the body text colour rather than pure black
+$modal-backdrop-bg:      $gray;
+$modal-backdrop-opacity: .45;
