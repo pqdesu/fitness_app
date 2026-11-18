@@ -1,5 +1,11 @@
 # Issues
 
+## Exercises
+
+### Future workout logs have present days logged
+
+- I just added a exercise on a future workout and the logs showed it as added on the day added but not the day it was supposed to happend. For example: added curl to Friday but it is Wednesday, and the logs saved it as added November 18th (Wednesday). Now here is the issue, I want to be able to add to the past wprkput as well since I might forget to add a exercise but remember the next day. Also if I workout between 11pm and 1am the workout will be split into 2 days which is not really ideal. So I need help to brainstorm a solution, specially the future logs. For the past midnight I thought about adding a small tags or ntoe saying it the exercise was logged past midnight, day after the first logs, so it stays in the day started but shows the time you worked out which it is the next day. What you think could be a solutioni for these issues.
+
 ## History page
 
 ### Table columns off-screen on a phone
