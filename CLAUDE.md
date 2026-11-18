@@ -34,6 +34,7 @@ The full project context (product brief, every decision, data model, page flows,
 - Before committing or pushing a branch, update the base data with the `update-seed-data` skill (`.claude/skills/`), so `db/seeds/data.yml` carries the latest data and keeps the old. `finalize-branch` does this as one of its steps.
 - Change docs must be very detailed: every step, decision, file changed, the reason, and how it works now.
 - Open and resolved issues are tracked in [doc/Issues/Issues.md](doc/Issues/Issues.md). When an issue is fixed, move it under "Issues Resolved".
+- When asked to read, investigate or explain issues from `Issues.md` (usually one section, on `master`), use the `investigate-issues` skill (`.claude/skills/`). It traces each issue to its cause and explains it without changing anything, then asks before fixing.
 
 ## Stack and commands
 
