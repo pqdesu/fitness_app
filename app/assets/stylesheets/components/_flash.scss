@@ -29,7 +29,7 @@
   background: white;
   border: 1px solid $line;
   border-radius: $border-radius-xl;
-  box-shadow: 0 10px 30px rgba(16, 24, 40, .14), 0 2px 6px rgba(16, 24, 40, .06);
+  box-shadow: 0 10px 30px rgba($shadow, .14), 0 2px 6px rgba($shadow, .06);
   pointer-events: auto;
   animation: flash-in .5s ease-out;
 
@@ -59,13 +59,13 @@
   overflow-wrap: anywhere;
 }
 
-// A large enough target for a thumb.
+// A thumb-sized target (44px): it is the only way to close an alert.
 .flash-close {
   flex: none;
   display: inline-grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -87,6 +87,9 @@
   transform-origin: left;
   animation: flash-timer 5s linear forwards;
 }
+
+// While the notice waits (pointed at or focused), its timer bar waits with it.
+.flash.is-paused .flash-timer { animation-play-state: paused; }
 
 // A half-second fade, in and out, with only a hint of movement.
 @keyframes flash-in {

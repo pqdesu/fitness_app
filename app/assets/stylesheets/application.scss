@@ -5,7 +5,17 @@
 
 // External libraries
 @import "bootstrap";
-@import "font-awesome";
+
+// Font Awesome: the core, every icon's class, and the solid and regular styles the views use.
+// Left out: brands and the extras no view uses (spin, stack, lists, borders, rotation, sizes).
+@import "font-awesome/functions";
+@import "font-awesome/variables";
+@import "font-awesome/mixins";
+@import "font-awesome/core";
+@import "font-awesome/icons";
+@import "font-awesome/screen-reader";
+@import "font-awesome/solid";
+@import "font-awesome/regular";
 
 // The app's own styles. components/ holds what several pages share, pages/ what belongs to one
 // page. They are listed here in one order on purpose: a later rule wins over an earlier one of

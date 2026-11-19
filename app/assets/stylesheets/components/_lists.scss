@@ -28,17 +28,17 @@ a.row-title:hover { color: $blue; }
   display: inline-block;
   padding: .125rem .625rem;
   border-radius: 999px;
-  background: #EEF0F3;
-  color: #3F4651;
+  background: $chip-bg;
+  color: $chip-text;
   font-size: .78rem;
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
 }
 a.chip:hover { background: $primary-soft; color: $blue; }
-.chip-done { background: #DDF3EE; color: #0B6B60; }
+.chip-done { background: $done-bg; color: $done-text; }
 // A workout done on a rest day of its split
-.chip-rest { background: #FFF1D6; color: #8A5A00; }
+.chip-rest { background: $rest-bg; color: $rest-text; }
 
 .badge-soft { background: $primary-soft; color: $blue; font-weight: 600; }
 
