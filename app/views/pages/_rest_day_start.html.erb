@@ -28,7 +28,7 @@
                 <% if movable_ids.include?(day.id) %>
                   <%= button_to "Move to today", split_week_move_path(split), params: { workout_day_id: day.id, weekday: today.wday, open: 1 }, class: "btn btn-primary btn-sm" %>
                 <% end %>
-                <%= link_to "Train as extra", workout_day_path(day), class: "btn btn-light btn-sm" %>
+                <%= link_to "Train as extra", workout_day_path(day, date: today), class: "btn btn-light btn-sm" %>
               </div>
             </li>
           <% end %>

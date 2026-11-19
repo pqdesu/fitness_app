@@ -30,7 +30,7 @@ class DashboardFlowTest < FlowTest
       assert_select ".week-overview-days li.has-workout", 1
       assert_select ".week-overview-days a[href=?]", workout_log_path(log, from: "dashboard"), text: "Push"
       assert_select ".today", /Logged today · 2 exercises · 3 sets · top 72.5 kg/
-      assert_select ".today a.btn-primary[href=?]", workout_day_path(push), text: "Continue"
+      assert_select ".today a.btn-primary[href=?]", workout_day_path(push, date: Date.current), text: "Continue"
     end
   end
 
@@ -112,8 +112,8 @@ class DashboardFlowTest < FlowTest
       # today's workout, nothing logged before
       assert_select ".today .eyebrow", /Today · Monday, November 16/
       assert_select ".today-title", "Push day"
-      # nothing is logged yet, so the button starts the workout by opening its day
-      assert_select ".today a.btn-primary[href=?]", workout_day_path(push), text: "Start workout"
+      # nothing is logged yet, so the button starts the workout by opening its day, on today's date
+      assert_select ".today a.btn-primary[href=?]", workout_day_path(push, date: Date.current), text: "Start workout"
       assert_equal 0, WorkoutLog.count
       assert_select ".today", /not logged a Push session before today/
       assert_select ".last-lifts", 0
@@ -189,7 +189,7 @@ class DashboardFlowTest < FlowTest
       get workout_log_path(last, from: "dashboard")
       assert_select ".back-link[href=?]", root_path, count: 1
       get workout_log_path(last)
-      assert_select ".back-link[href=?]", workout_day_path(push), count: 1
+      assert_select ".back-link[href=?]", workout_day_path(push, date: last.date), count: 1
     end
 
     # after changing split, last time is still found: Lower is the same workout as Legs,
@@ -221,7 +221,7 @@ class DashboardFlowTest < FlowTest
       # a rest day can still start any workout of the split: its pop-up opens that workout day
       User.find(@user.id).current_split.workout_days.each do |day|
         assert_select ".today-start button", text: day.day
-        assert_select ".modal a[href=?]", workout_day_path(day), text: "Train as extra"
+        assert_select ".modal a[href=?]", workout_day_path(day, date: Date.current), text: "Train as extra"
       end
       assert_equal logs_before, WorkoutLog.count, "starting a workout logs nothing until an exercise is added"
       assert_select ".week .week-day.is-today.is-set", 0

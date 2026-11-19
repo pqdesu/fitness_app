@@ -1,14 +1,16 @@
 class WorkoutDaysController < ApplicationController
   include ExercisePicker
+  include LoggingDate
 
   before_action :set_split, only: [:new, :create]
   before_action :set_workout_day, only: [:show, :edit, :update, :destroy]
 
   def show
     @workout_exercises = @workout_day.workout_exercises.includes(:exercise).order(:id)
-    # Sets recorded today per exercise, read from today's session of this workout.
-    log = current_user.workout_logs.with_sets.session_of(@workout_day.day, Date.current)
-    @sets_today = @workout_exercises.to_h do |planned|
+    @date = logging_date(@workout_day)
+    # Sets recorded on that date per exercise, read from that day's session of this workout.
+    log = current_user.workout_logs.with_sets.session_of(@workout_day.day, @date)
+    @sets_logged = @workout_exercises.to_h do |planned|
       [planned.id, (log && planned.entry_in(log))&.workout_sets&.size.to_i]
     end
   end

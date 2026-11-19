@@ -32,6 +32,12 @@ class WorkoutDay < ApplicationRecord
     Date::DAYNAMES[weekday]
   end
 
+  # The date this workout is trained in the week (Sunday to Saturday) of the given date: its own
+  # weekday, or the one it was moved to for that week.
+  def date_in_week_of(date)
+    date.beginning_of_week(:sunday) + (split.week_plan(date).key(self) || weekday)
+  end
+
   # The user's session of this workout on the given date. There is one session per workout per
   # day, whichever split it was started from (see WorkoutLog).
   def log_on(date)

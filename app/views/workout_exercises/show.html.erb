@@ -1,11 +1,12 @@
-<% back_to workout_day_path(@workout_day) %>
+<% back_to workout_day_path(@workout_day, date: @date) %>
+<% upcoming = @date > Date.current %>
 <div class="page-header">
   <div>
     <h1><%= @workout_exercise.name %></h1>
     <p class="text-muted mb-0"><%= @workout_exercise.equipment_label %></p>
   </div>
   <div class="header-actions">
-    <%= button_to "Remove", workout_exercise_path(@workout_exercise), method: :delete, class: "btn btn-outline-danger",
+    <%= button_to "Remove", workout_exercise_path(@workout_exercise, date: @date), method: :delete, class: "btn btn-outline-danger",
           form: { data: { turbo_confirm: "Remove #{@workout_exercise.name} from #{@workout_day.day}? Workouts already logged keep it." } } %>
   </div>
 </div>
@@ -14,19 +15,24 @@
   <div class="col-lg-8">
     <div class="card">
       <div class="card-header">
-        <h2>Today</h2>
-        <span class="text-muted small"><%= l Date.current, format: :long %></span>
+        <h2><%= logging_date_label(@date) %></h2>
+        <span class="text-muted small"><%= l @date, format: :long %></span>
       </div>
 
-      <% if @sets.empty? %>
-        <div class="empty-state compact"><p>No sets yet today. Add your first set below.</p></div>
+      <% if upcoming %>
+        <%# A workout later this week is planned, not done: sets are added on its day. %>
+        <div class="empty-state compact"><p><%= @workout_day.day %> is on <%= l @date, format: "%A" %> this week. Add sets on that day.</p></div>
+      <% elsif @sets.empty? %>
+        <div class="empty-state compact"><p>No sets yet <%= @date == Date.current ? "today" : "on #{l @date, format: "%A"}" %>. Add your first set below.</p></div>
       <% else %>
-        <%= render "workout_sets/table", sets: @sets, workout_exercise: @workout_exercise %>
+        <%= render "workout_sets/table", sets: @sets, workout_exercise: @workout_exercise, date: @date %>
       <% end %>
 
-      <div class="card-footer">
-        <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set %>
-      </div>
+      <% unless upcoming %>
+        <div class="card-footer">
+          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date %>
+        </div>
+      <% end %>
     </div>
   </div>
 
@@ -34,7 +40,7 @@
     <div class="card">
       <div class="card-header"><h2>Equipment</h2></div>
       <div class="card-body">
-        <%= form_with model: @workout_exercise, class: "inline-form" do |f| %>
+        <%= form_with model: @workout_exercise, url: workout_exercise_path(@workout_exercise, date: @date), class: "inline-form" do |f| %>
           <%= render "shared/equipment_fields", f: f %>
           <%= f.submit "Save equipment", class: "btn btn-light w-100 mt-3" %>
         <% end %>

@@ -16,13 +16,14 @@ class WeekMovesFlowTest < FlowTest
       assert_select ".today-header button.btn-primary[data-bs-target='#rest-day-start']", "Start workout"
       # one pill per workout of the split, by name only; its pop-up trains it as an extra
       assert_equal %w[Push Pull], css_select("#rest-day-start.collapse:not(.show) button[data-bs-toggle='modal']").map(&:text)
-      assert_select "#rest-start-0 a[href=?]", workout_day_path(push), text: "Train as extra"
+      assert_select "#rest-start-0 a[href=?]", workout_day_path(push, date: Date.current), text: "Train as extra"
       assert_select "#rest-day-start", /saved as a rest day workout/
 
-      # the first set creates the log, marked as a rest day, and the split is untouched
+      # the first set creates the log, marked as a rest day, and the split is untouched; the
+      # pages opened from "Train as extra" carry today's date to the form
       entry = planned.workout_exercises.first
       assert_difference -> { WorkoutLog.count }, 1 do
-        post workout_exercise_workout_sets_path(entry), params: { workout_set: { reps_completed: 5, weight_used: 100 } }
+        post workout_exercise_workout_sets_path(entry, date: Date.current), params: { workout_set: { reps_completed: 5, weight_used: 100 } }
       end
       log = WorkoutLog.order(:id).last
       assert log.rest_day?

@@ -32,4 +32,20 @@ class WorkoutDayTest < ActiveSupport::TestCase
     assert_equal [logs[0], logs[2]], @user.workout_logs.of_workout("Lower").order(:id).to_a
     assert_equal [logs[1]], @user.workout_logs.of_workout("Push").to_a
   end
+
+  test "a workout day's date in a week is its weekday, or the one it was moved to that week" do
+    lower = @split.workout_days.create!(day: "Lower", weekday: 3)
+    upper = @split.workout_days.create!(day: "Upper", weekday: 5)
+    thursday = Date.new(2026, 11, 19)
+
+    # Sunday to Saturday: Wednesday the 18th, Friday the 20th, from any day of that week
+    assert_equal Date.new(2026, 11, 18), lower.date_in_week_of(thursday)
+    assert_equal Date.new(2026, 11, 20), upper.date_in_week_of(Date.new(2026, 11, 15))
+    assert_equal Date.new(2026, 11, 25), lower.date_in_week_of(Date.new(2026, 11, 22))
+
+    # Upper moved to Thursday that week only
+    @split.move_for_week!(upper, 4, thursday)
+    assert_equal thursday, upper.date_in_week_of(thursday)
+    assert_equal Date.new(2026, 11, 27), upper.date_in_week_of(Date.new(2026, 11, 26))
+  end
 end

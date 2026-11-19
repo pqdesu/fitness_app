@@ -17,6 +17,7 @@ The full project context (product brief, every decision, data model, page flows,
 - A split has one logged workout per day. A second workout on the same day only comes from another split.
 - An exercise is on a workout day once and in a logged workout once.
 - A workout can be moved to another day for the current week only (today to Saturday). The split's plan is never changed by a move, and the next week follows the plan again. Moving onto a day that has a workout swaps the two.
+- Sets added from a workout day go to the date that workout falls on this week (its weekday, or the one it was moved to). Wednesday's workout opened on Thursday fills in Wednesday; a workout later this week takes no sets yet. "Start workout" and "Train as extra" open it on today.
 - "Start workout" creates nothing. A split's workout is logged when its first set is added; a workout that is not in the split is logged when its first exercise is added.
 - A workout trained on a day its split has nothing on that week is a rest day workout. It is marked when logged (`workout_logs.rest_day`) and the mark is never recalculated.
 - Weights keep three decimals (1.125 kg).
@@ -66,6 +67,7 @@ bin/rails mock:clear      # deletes the mock workouts and the plans the mock tas
 - `WorkoutDayMove` (workout day, `week_start`, weekday) is a workout on another weekday for one week. `Split#week_plan(date)` is the one place that answers what is on which day that week (the plan with that week's moves); the dashboard, the Today box and the rest day mark read it. `Split#move_for_week!` writes moves and swaps; creating a workout day or changing a weekday clears the split's moves.
 - `WeekMovesController` (`POST` and `DELETE /splits/:id/week_move`) moves a workout for this week and goes back to the plan. The Splits pages show the plan; only the dashboard passes `plan:` to `splits/_week`.
 - `WorkoutSummary` (plain Ruby, `app/models/workout_summary.rb`) totals loaded logs: workouts, exercises, sets, top weight. It needs logs loaded with `includes(workout_log_exercises: :workout_sets)`.
+- `LoggingDate` (controller concern) gives the date a workout day's pages log on: `?date=`, which those pages pass along, or else `WorkoutDay#date_in_week_of(today)`. A future date shows no add-set form, and `WorkoutLog` refuses it.
 - `WorkoutExercise#entry_on!(date)` is the one way sets of a split's workout reach a log: it finds or creates the user's session of that workout on that date, and the entry of that exercise in it.
 - `ExercisePicker` (controller concern) reads the "Add exercises" modal and decides whether a new exercise is private or shared. `Paginated` (controller concern) with `shared/_pagination` pages History, the catalogue and the users list.
 - `Admin::UsersController` (`/admin/users`) is the admin's users page, linked from the user menu.

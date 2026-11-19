@@ -64,7 +64,7 @@
             </div>
             <% if today_workout %>
               <%# Nothing is logged until the first set is added, so "Start workout" only opens the day. %>
-              <%= link_to (dashboard.today_summary.sets.positive? ? "Continue" : "Start workout"), workout_day_path(today_workout), class: "btn btn-primary btn-sm" %>
+              <%= link_to (dashboard.today_summary.sets.positive? ? "Continue" : "Start workout"), workout_day_path(today_workout, date: today), class: "btn btn-primary btn-sm" %>
             <% elsif dashboard.days.any? %>
               <%# A rest day: choose which workout to train anyway, from the split or outside it. %>
               <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#rest-day-start"

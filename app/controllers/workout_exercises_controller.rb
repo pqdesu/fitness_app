@@ -1,12 +1,15 @@
 class WorkoutExercisesController < ApplicationController
   include ExercisePicker
+  include LoggingDate
 
   before_action :set_workout_exercise, only: [:show, :update, :destroy]
 
-  # Opening an exercise: today's sets, and the form to add the next one.
+  # Opening an exercise: the sets of the date its workout is logged on (see LoggingDate), and the
+  # form to add the next one, unless that date is still to come.
   def show
     @workout_day = @workout_exercise.workout_day
-    @entry = @workout_exercise.entry_on(Date.current)
+    @date = logging_date(@workout_day)
+    @entry = @workout_exercise.entry_on(@date)
     @sets = @entry ? @entry.workout_sets.order(:set_number).to_a : []
     # Pre-fills the form, so repeating the last set is a single tap.
     @last_set = @sets.last || WorkoutSet.where(workout_log_exercise: @workout_exercise.workout_log_exercises)
@@ -29,24 +32,28 @@ class WorkoutExercisesController < ApplicationController
         exercises.map { |exercise| workout_day.workout_exercises.create!(exercise:) }
       end
       # A single new exercise opens straight away, ready for its first set; several go back to the day.
-      redirect_to (added.one? ? added.first : workout_day), notice: "#{exercises.map(&:name).to_sentence} added."
+      date = text_param(:date).presence
+      to = added.one? ? workout_exercise_path(added.first, date:) : workout_day_path(workout_day, date:)
+      redirect_to to, notice: "#{exercises.map(&:name).to_sentence} added."
     end
   end
 
-  # Changes the equipment used for this exercise. Sets already recorded today were done on the
-  # equipment being chosen now, so today's entry follows; earlier workouts keep theirs.
+  # Changes the equipment used for this exercise. Sets already recorded on the page's date were
+  # done on the equipment being chosen now, so that entry follows; other workouts keep theirs.
   def update
+    date = logging_date(@workout_exercise.workout_day)
     if @workout_exercise.update(equipment_params)
-      @workout_exercise.entry_on(Date.current)&.update(equipment_params)
-      redirect_to @workout_exercise, notice: "Equipment saved."
+      @workout_exercise.entry_on(date)&.update(equipment_params)
+      redirect_to workout_exercise_path(@workout_exercise, date:), notice: "Equipment saved."
     else
-      redirect_to @workout_exercise, alert: "Equipment not saved: #{errors_of(@workout_exercise)}."
+      redirect_to workout_exercise_path(@workout_exercise, date:), alert: "Equipment not saved: #{errors_of(@workout_exercise)}."
     end
   end
 
   def destroy
     @workout_exercise.destroy
-    redirect_to @workout_exercise.workout_day, notice: "#{@workout_exercise.name} removed from this day.", status: :see_other
+    redirect_to workout_day_path(@workout_exercise.workout_day, date: text_param(:date).presence),
+                notice: "#{@workout_exercise.name} removed from this day.", status: :see_other
   end
 
   private
