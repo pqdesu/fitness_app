@@ -6,10 +6,11 @@ class NavigationFlowTest < FlowTest
     sign_in @user
     mine = Exercise.create!(name: "Cable fly", muscle_group: "Chest", user: @user)
     split = @user.splits.create!(name: "PPL")
-    day = split.workout_days.create!(day: "Push", weekday: 1)
+    day = split.workout_days.create!(day: "Push", weekday: Date.current.wday)
     planned = day.workout_exercises.create!(exercise: @bench)
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
     log = @user.workout_logs.sole
+    # an exercise page and a logged workout go back to their day on their date
     entry = log.workout_log_exercises.sole
 
     {
@@ -20,8 +21,8 @@ class NavigationFlowTest < FlowTest
       new_split_workout_day_path(split) => split_path(split),
       workout_day_path(day) => split_path(split),
       edit_workout_day_path(day) => workout_day_path(day),
-      workout_exercise_path(planned) => workout_day_path(day),
-      workout_log_path(log) => workout_day_path(day),
+      workout_exercise_path(planned) => workout_day_path(day, date: Date.current),
+      workout_log_path(log) => workout_day_path(day, date: log.date),
       edit_workout_log_exercise_path(entry) => workout_log_path(log)
     }.each do |path, parent|
       get path

@@ -62,7 +62,7 @@ class LoggingFlowTest < FlowTest
     assert_select "#exercise-picker label.is-taken", 3
     assert_select "#exercise-picker label", text: /Cable fly.*Yours/m
     # the day is only the program: each exercise can be removed on the spot, and no logged workouts are listed
-    assert_select ".list-rows li form[action='#{workout_exercise_path(day.workout_exercises.first)}'] button[aria-label='Remove Bench press']"
+    assert_select ".list-rows li form[action='#{workout_exercise_path(day.workout_exercises.first, date: day.date_in_week_of(Date.current))}'] button[aria-label='Remove Bench press']"
     assert_select "h2", text: "Logged workouts", count: 0
 
     # other users do not see it, the owner can delete it once it is out of every plan
@@ -90,7 +90,9 @@ class LoggingFlowTest < FlowTest
 
   test "opening an exercise and adding sets" do
     sign_in @user
-    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: Date.current.wday)
+    # the exercise page and its forms carry the date the sets go to
+    exercise_page = ->(planned) { workout_exercise_path(planned, date: Date.current) }
     planned = day.workout_exercises.create!(exercise: @bench)
 
     get workout_exercise_path(planned)
@@ -102,13 +104,13 @@ class LoggingFlowTest < FlowTest
 
     # an invalid set leaves no empty workout behind
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: "", weight_used: 80 } }
-    assert_redirected_to workout_exercise_path(planned)
+    assert_redirected_to exercise_page.(planned)
     assert_match "Reps completed can't be blank", flash[:alert]
     assert_equal 0, @user.workout_logs.count
 
     # sets are numbered automatically and go into today's workout
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
-    assert_redirected_to workout_exercise_path(planned)
+    assert_redirected_to exercise_page.(planned)
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 6, weight_used: 82.5 } }
     log = @user.workout_logs.sole
     assert_equal Date.current, log.date
@@ -129,7 +131,7 @@ class LoggingFlowTest < FlowTest
     # a recorded set can be corrected in place
     second = entry.workout_sets.find_by!(set_number: 2)
     # the forms say which exercise page they are on, so saving returns there without relying on the referer
-    on_exercise_page = workout_set_path(second, workout_exercise_id: planned.id)
+    on_exercise_page = workout_set_path(second, workout_exercise_id: planned.id, date: Date.current)
     assert_select "form#edit_set_#{second.id}[action='#{on_exercise_page}']"
     # deleting a set asks first, naming the set and what it held
     assert_select "form.button_to[action='#{on_exercise_page}'][data-turbo-confirm^='Delete set 2? '][data-turbo-confirm$=' reps.']"
@@ -137,7 +139,7 @@ class LoggingFlowTest < FlowTest
     assert_select "input[form='edit_set_#{second.id}']", 3
     assert_select "input[form='edit_set_#{second.id}'][name='workout_set[notes]']", 1
     patch on_exercise_page, params: { workout_set: { reps_completed: 5, weight_used: 85.125, notes: "  Paused   reps " } }
-    assert_redirected_to workout_exercise_path(planned)
+    assert_redirected_to exercise_page.(planned)
     assert_equal [2, 5, BigDecimal("85.125"), "Paused reps"],
                  second.reload.then { |s| [s.set_number, s.reps_completed, s.weight_used, s.notes] }
     follow_redirect!
@@ -158,7 +160,7 @@ class LoggingFlowTest < FlowTest
     assert_redirected_to workout_log_path(log, anchor: "entry-#{entry.id}")
 
     delete on_exercise_page
-    assert_redirected_to workout_exercise_path(planned)
+    assert_redirected_to exercise_page.(planned)
     assert_equal 1, entry.workout_sets.count
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 7 } }
     assert_equal [1, 2], entry.workout_sets.order(:set_number).pluck(:set_number)
@@ -167,7 +169,7 @@ class LoggingFlowTest < FlowTest
     patch workout_exercise_path(planned), params: { workout_exercise: { equipment: "machine", machine_brand: "" } }
     assert_match "Machine brand can't be blank", flash[:alert]
     patch workout_exercise_path(planned), params: { workout_exercise: { equipment: "machine", machine_brand: "Acme" } }
-    assert_redirected_to workout_exercise_path(planned)
+    assert_redirected_to exercise_page.(planned)
     assert_equal "Machine · Acme", planned.reload.equipment_label
     # the sets already recorded today were done on it, so today's entry follows
     assert_equal "Machine · Acme", entry.reload.equipment_label
@@ -178,7 +180,7 @@ class LoggingFlowTest < FlowTest
     get workout_day_path(day)
     assert_select ".chip", text: "2 sets"
     # removing an exercise that has sets asks first
-    assert_select "form[action='#{workout_exercise_path(planned)}'][data-turbo-confirm]"
+    assert_select "form[action='#{exercise_page.(planned)}'][data-turbo-confirm]"
 
     # removing the exercise from the day keeps what was logged
     delete workout_exercise_path(planned)
@@ -186,9 +188,63 @@ class LoggingFlowTest < FlowTest
     assert_equal 2, entry.workout_sets.count
   end
 
+  test "a workout day logs on its date this week: an earlier day fills that day in, a day to come takes no sets" do
+    sign_in @user
+    split = @user.splits.create!(name: "Upper lower")
+    lower = split.workout_days.create!(day: "Lower", weekday: 3)
+    upper = split.workout_days.create!(day: "Upper", weekday: 5)
+    squat = lower.workout_exercises.create!(exercise: @squat)
+    bench = upper.workout_exercises.create!(exercise: @bench)
+    wednesday = Date.new(2026, 11, 18)
+
+    # Thursday: Wednesday's Lower was trained but not logged
+    travel_to Time.zone.local(2026, 11, 19, 12) do
+      get workout_day_path(lower)
+      assert_select ".page-header p", "Wednesday, November 18"
+      assert_select ".list-rows a.row-link[href=?]", workout_exercise_path(squat, date: wednesday)
+      get workout_exercise_path(squat)
+      assert_select ".card-header h2", "Wednesday"
+      assert_select "form.set-form[action=?]", workout_exercise_workout_sets_path(squat, date: wednesday)
+
+      post workout_exercise_workout_sets_path(squat, date: wednesday), params: { workout_set: { reps_completed: 5, weight_used: 100 } }
+      assert_redirected_to workout_exercise_path(squat, date: wednesday)
+      # a page opened without a date uses the same day
+      post workout_exercise_workout_sets_path(squat), params: { workout_set: { reps_completed: 4, weight_used: 105 } }
+      log = @user.workout_logs.sole
+      assert_equal [wednesday, false], [log.date, log.rest_day?]
+      assert_equal 2, WorkoutSet.count
+      get workout_day_path(lower)
+      assert_select ".chip-done", "2 sets"
+
+      # Friday's Upper is planned, not done: no form, and a set sent anyway is refused
+      get workout_exercise_path(bench)
+      assert_select ".card-header h2", "Friday"
+      assert_select ".empty-state", /Upper is on Friday this week. Add sets on that day./
+      assert_select "form.set-form", 0
+      assert_no_difference ["WorkoutLog.count", "WorkoutSet.count"] do
+        post workout_exercise_workout_sets_path(bench), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
+      end
+      assert_match "Set not added: Date can't be in the future", flash[:alert]
+      # the plan itself can still be filled in ahead of the day
+      post workout_day_workout_exercises_path(upper), params: { exercise_ids: [@squat.id] }
+      assert_equal 2, upper.workout_exercises.count
+
+      # a date that is not one opens the day of this week
+      get workout_exercise_path(squat, date: "yesterday")
+      assert_select ".card-header h2", "Wednesday"
+    end
+
+    # a set added after midnight from a page opened before it stays on the day the workout started
+    travel_to Time.zone.local(2026, 11, 20, 0, 30) do
+      post workout_exercise_workout_sets_path(squat, date: wednesday), params: { workout_set: { reps_completed: 3, weight_used: 110 } }
+      assert_equal [wednesday], @user.workout_logs.pluck(:date)
+      assert_equal 3, WorkoutSet.count
+    end
+  end
+
   test "a logged workout can be reviewed and corrected" do
     sign_in @user
-    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: Date.current.wday)
     planned = day.workout_exercises.create!(exercise: @bench)
     unused = day.workout_exercises.create!(exercise: @squat)
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
@@ -253,8 +309,8 @@ class LoggingFlowTest < FlowTest
 
   test "the same workout from two splits on one day is one logged workout" do
     sign_in @user
-    ppl = @user.splits.create!(name: "PPL").workout_days.create!(day: "Legs", weekday: 1)
-    upper_lower = @user.splits.create!(name: "Upper lower").workout_days.create!(day: "Lower", weekday: 1)
+    ppl = @user.splits.create!(name: "PPL").workout_days.create!(day: "Legs", weekday: Date.current.wday)
+    upper_lower = @user.splits.create!(name: "Upper lower").workout_days.create!(day: "Lower", weekday: Date.current.wday)
     squat_a = ppl.workout_exercises.create!(exercise: @squat)
     squat_b = upper_lower.workout_exercises.create!(exercise: @squat)
     bench_b = upper_lower.workout_exercises.create!(exercise: @bench)
@@ -288,22 +344,23 @@ class LoggingFlowTest < FlowTest
   test "a second workout on the same day only comes from another split" do
     sign_in @user
     split = @user.splits.create!(name: "PPL")
-    push = split.workout_days.create!(day: "Push", weekday: 1)
-    pull = split.workout_days.create!(day: "Pull", weekday: 3)
+    push = split.workout_days.create!(day: "Push", weekday: Date.current.wday)
+    pull = split.workout_days.create!(day: "Pull", weekday: (Date.current.wday + 1) % 7)
     bench = push.workout_exercises.create!(exercise: @bench)
     row = pull.workout_exercises.create!(exercise: Exercise.create!(name: "Barbell row"))
     other_split = @user.splits.create!(name: "Upper lower")
-    lower = other_split.workout_days.create!(day: "Lower", weekday: 1)
+    lower = other_split.workout_days.create!(day: "Lower", weekday: Date.current.wday)
     squat = lower.workout_exercises.create!(exercise: @squat)
 
     post workout_exercise_workout_sets_path(bench), params: { workout_set: { reps_completed: 8, weight_used: 60 } }
     assert_equal ["Push"], @user.workout_logs.pluck(:workout)
 
-    # the same split already has today's workout: nothing is logged, and the page says why
+    # the same split already has today's workout: Pull trained today as well (opened with today's
+    # date, as "Train as extra" does) logs nothing, and the page says why
     assert_no_difference ["WorkoutLog.count", "WorkoutLogExercise.count", "WorkoutSet.count"] do
-      post workout_exercise_workout_sets_path(row), params: { workout_set: { reps_completed: 10, weight_used: 50 } }
+      post workout_exercise_workout_sets_path(row, date: Date.current), params: { workout_set: { reps_completed: 10, weight_used: 50 } }
     end
-    assert_redirected_to workout_exercise_path(row)
+    assert_redirected_to workout_exercise_path(row, date: Date.current)
     assert_match(/Set not added: Push is already logged on .* in PPL/, flash[:alert])
     # more sets of today's workout are still fine
     post workout_exercise_workout_sets_path(bench), params: { workout_set: { reps_completed: 7, weight_used: 60 } }
@@ -363,7 +420,7 @@ class LoggingFlowTest < FlowTest
       assert_no_difference -> { WorkoutSet.count } do
         post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: reps, weight_used: 60 } }
       end
-      assert_redirected_to workout_exercise_path(planned)
+      assert_redirected_to workout_exercise_path(planned, date: Date.current)
       assert_match "Reps completed must be less than or equal to #{WorkoutSet::MAX_REPS}", flash[:alert]
     end
     # the refused set did not leave an empty workout behind

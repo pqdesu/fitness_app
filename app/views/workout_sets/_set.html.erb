@@ -1,11 +1,11 @@
 <%#
   One recorded set, as a group of rows (a tbody) of a set table. The pen turns its weight and reps
   into fields and shows a field for a note, so a mistake is corrected in place instead of deleting
-  the set. Locals: set, and optionally workout_exercise when the table is on an exercise's page,
-  so saving or deleting returns there.
+  the set. Locals: set, and optionally workout_exercise and date when the table is on an exercise's
+  page, so saving or deleting returns there, on the same date.
 %>
 <% form_id = "edit_set_#{set.id}" %>
-<% set_path = workout_set_path(set, workout_exercise_id: local_assigns[:workout_exercise]&.id) %>
+<% set_path = workout_set_path(set, workout_exercise_id: local_assigns[:workout_exercise]&.id, date: local_assigns[:date]) %>
 <tbody data-controller="row-edit" data-action="keydown.esc->row-edit#cancel">
   <tr>
     <td><span class="order-badge"><%= set.set_number %></span></td>

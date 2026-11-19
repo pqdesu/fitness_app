@@ -337,26 +337,10 @@ users:
         reps: 7
         weight: '70.0'
   - date: '2026-11-18'
-    workout: Upper
-    split: U/R/L/U/L
-    weekday: 5
-    rest_day: false
-    exercises:
-    - name: Barbell curl
-      exercise: shared
-      equipment: free_weights
-      planned_in:
-        split: U/R/L/U/L
-        weekday: 5
-      sets:
-      - number: 1
-        reps: 13
-        weight: '100.0'
-  - date: '2026-11-19'
     workout: Lower
     split: U/R/L/U/L
     weekday: 3
-    rest_day: true
+    rest_day: false
     exercises:
     - name: Hip thrust
       exercise: own

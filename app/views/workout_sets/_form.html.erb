@@ -1,9 +1,11 @@
 <%#
   "Add set": weight, then reps, pre-filled with the last set so repeating it is a single tap.
-  Locals: parent (the planned exercise or the logged exercise the set is added to), last_set (or nil).
+  Locals: parent (the planned exercise or the logged exercise the set is added to), last_set (or nil),
+  and for a planned exercise date, the day the set is logged on (see LoggingDate).
 %>
 <% suffix = "#{parent.model_name.param_key}_#{parent.id}" %>
-<%= form_with model: [parent, WorkoutSet.new], class: "row g-2 align-items-end inline-form set-form" do |f| %>
+<% url = local_assigns[:date] ? polymorphic_path([parent, WorkoutSet], date: date) : polymorphic_path([parent, WorkoutSet]) %>
+<%= form_with model: [parent, WorkoutSet.new], url:, class: "row g-2 align-items-end inline-form set-form" do |f| %>
   <div class="col-4">
     <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{suffix}" %>
     <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", min: 0, placeholder: "–",

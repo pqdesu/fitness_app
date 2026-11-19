@@ -1,7 +1,7 @@
 <% if from_dashboard? %>
   <% back_to root_path %>
 <% elsif @workout_day %>
-  <% back_to workout_day_path(@workout_day) %>
+  <% back_to workout_day_path(@workout_day, date: @workout_log.date) %>
 <% else %>
   <% back_to workout_logs_path %>
 <% end %>

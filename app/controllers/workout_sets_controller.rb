@@ -1,6 +1,9 @@
 class WorkoutSetsController < ApplicationController
-  # Adds a set. From an exercise of a workout day it goes into today's workout,
-  # which is created on the first set; from a logged workout it goes into that entry.
+  include LoggingDate
+
+  # Adds a set. From an exercise of a workout day it goes into that workout's session of the
+  # page's date (see LoggingDate), which is created on the first set; never on a date to come.
+  # From a logged workout it goes into that entry.
   def create
     workout_set = nil
     back = nil
@@ -8,9 +11,11 @@ class WorkoutSetsController < ApplicationController
     WorkoutSet.transaction do
       if params[:workout_exercise_id]
         planned = current_user.workout_exercises.find(params[:workout_exercise_id])
-        back = workout_exercise_path(planned)
-        # One session per workout per day: this joins today's log of the workout if there is one.
-        entry = planned.entry_on!(Date.current)
+        date = logging_date(planned.workout_day)
+        back = workout_exercise_path(planned, date:)
+        # One session per workout per day: this joins that day's log of the workout if there is one.
+        # A date to come is refused by WorkoutLog, so nothing is logged ahead of the day.
+        entry = planned.entry_on!(date)
       else
         entry = current_user.workout_log_exercises.find(params[:workout_log_exercise_id])
         back = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
@@ -27,7 +32,8 @@ class WorkoutSetsController < ApplicationController
       redirect_to back, alert: "Set not added: #{errors_of(workout_set)}."
     end
   rescue ActiveRecord::RecordInvalid => e
-    # Today's workout could not be started: this split already has another workout logged today.
+    # The workout could not be started: the date is still to come, or this split already has
+    # another workout logged that day.
     redirect_to back, alert: "Set not added: #{errors_of(e.record)}."
   end
 
@@ -54,7 +60,7 @@ class WorkoutSetsController < ApplicationController
   # workout_exercise_id (see workout_sets/_set); otherwise it was the logged workout page.
   def page_of(workout_set)
     planned = current_user.workout_exercises.find_by(id: params[:workout_exercise_id]) if params[:workout_exercise_id].present?
-    return workout_exercise_path(planned) if planned
+    return workout_exercise_path(planned, date: text_param(:date).presence) if planned
 
     entry = workout_set.workout_log_exercise
     workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
