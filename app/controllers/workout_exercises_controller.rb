@@ -16,25 +16,23 @@ class WorkoutExercisesController < ApplicationController
                                         .order(created_at: :desc, id: :desc).first
   end
 
-  # Adds the exercises chosen (or the one created) in the "Add exercises" modal to the day.
+  # Plans the exercises chosen (or the one created) in a day's "Plan exercises" modal on the split
+  # page. Only the plan changes here: exercises added while training go into the workout instead
+  # (WorkoutLogExercisesController#create).
   def create
     workout_day = current_user.workout_days.find(params[:workout_day_id])
+    back = plan_path(workout_day)
     exercises, error = picked_exercises
 
     # An exercise is on a day once: the ones already there are left out.
     on_day = workout_day.workout_exercises.where(exercise_id: exercises.filter_map(&:id)).pluck(:exercise_id) unless error
     if error
-      redirect_to workout_day, alert: "Nothing added: #{error}."
+      redirect_to back, alert: "Nothing added: #{error}."
     elsif (exercises = exercises.reject { |exercise| on_day.include?(exercise.id) }).empty?
-      redirect_to workout_day, alert: "Nothing added: already on this day."
+      redirect_to back, alert: "Nothing added: already on this day."
     else
-      added = WorkoutExercise.transaction do
-        exercises.map { |exercise| workout_day.workout_exercises.create!(exercise:) }
-      end
-      # A single new exercise opens straight away, ready for its first set; several go back to the day.
-      date = text_param(:date).presence
-      to = added.one? ? workout_exercise_path(added.first, date:) : workout_day_path(workout_day, date:)
-      redirect_to to, notice: "#{exercises.map(&:name).to_sentence} added."
+      WorkoutExercise.transaction { exercises.each { |exercise| workout_day.workout_exercises.create!(exercise:) } }
+      redirect_to back, notice: "#{exercises.map(&:name).to_sentence} planned for #{workout_day.day}."
     end
   end
 
@@ -50,13 +48,18 @@ class WorkoutExercisesController < ApplicationController
     end
   end
 
+  # Takes an exercise off the plan (from the split page). Workouts already logged keep it.
   def destroy
     @workout_exercise.destroy
-    redirect_to workout_day_path(@workout_exercise.workout_day, date: text_param(:date).presence),
-                notice: "#{@workout_exercise.name} removed from this day.", status: :see_other
+    redirect_to plan_path(@workout_exercise.workout_day),
+                notice: "#{@workout_exercise.name} removed from #{@workout_exercise.workout_day.day}.", status: :see_other
   end
 
   private
+
+  def plan_path(workout_day)
+    split_path(workout_day.split, anchor: "day-#{workout_day.id}")
+  end
 
   def set_workout_exercise
     @workout_exercise = current_user.workout_exercises.find(params[:id])

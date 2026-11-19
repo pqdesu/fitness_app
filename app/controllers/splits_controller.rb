@@ -1,4 +1,6 @@
 class SplitsController < ApplicationController
+  include ExercisePicker
+
   before_action :set_split, only: [:show, :edit, :update, :destroy, :activate]
 
   def index
@@ -6,8 +8,9 @@ class SplitsController < ApplicationController
     @active_split = current_user.current_split
   end
 
+  # The plan: the split's workout days on the week, and the exercises planned for each.
   def show
-    @workout_days = @split.workout_days.order(:weekday, :id)
+    @workout_days = @split.workout_days.includes(workout_exercises: :exercise).order(:weekday, :id)
   end
 
   def new

@@ -5,14 +5,15 @@ class WorkoutDaysController < ApplicationController
   before_action :set_split, only: [:new, :create]
   before_action :set_workout_day, only: [:show, :edit, :update, :destroy]
 
+  # The workout: the exercises planned for the day, and those added to this session while training.
   def show
     @workout_exercises = @workout_day.workout_exercises.includes(:exercise).order(:id)
     @date = logging_date(@workout_day)
     # Sets recorded on that date per exercise, read from that day's session of this workout.
     log = current_user.workout_logs.with_sets.session_of(@workout_day.day, @date)
-    @sets_logged = @workout_exercises.to_h do |planned|
-      [planned.id, (log && planned.entry_in(log))&.workout_sets&.size.to_i]
-    end
+    entries = @workout_exercises.to_h { |planned| [planned.id, log && planned.entry_in(log)] }
+    @sets_logged = entries.transform_values { |entry| entry&.workout_sets&.size.to_i }
+    @extra_entries = log ? log.workout_log_exercises.sort_by(&:id) - entries.values : []
   end
 
   def new
@@ -25,7 +26,7 @@ class WorkoutDaysController < ApplicationController
   def create
     @workout_day = @split.workout_days.new(workout_day_params)
     if @workout_day.save
-      redirect_to @workout_day, notice: "Workout day created. Add its exercises."
+      redirect_to split_path(@split, anchor: "day-#{@workout_day.id}"), notice: "Workout day created. Plan its exercises."
     else
       render :new, status: :unprocessable_content
     end
@@ -37,7 +38,7 @@ class WorkoutDaysController < ApplicationController
 
   def update
     if @workout_day.update(workout_day_params)
-      redirect_to @workout_day, notice: "Workout day updated."
+      redirect_to split_path(@workout_day.split, anchor: "day-#{@workout_day.id}"), notice: "Workout day updated."
     else
       @split = @workout_day.split
       render :edit, status: :unprocessable_content

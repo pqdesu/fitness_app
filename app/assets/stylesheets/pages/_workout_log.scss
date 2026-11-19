@@ -6,16 +6,9 @@
 .set-table td > span { white-space: nowrap; }
 // A set being edited in place (see workout_sets/_set)
 .set-field { width: 100%; min-width: 4.75rem; max-width: 7rem; }
-.set-edit-bar {
-  display: flex;
-  align-items: center;
-  gap: .375rem;
-  // width 0: the note takes only the room Save and Cancel leave, never widening the set table
-  .form-control { flex: 1; min-width: 0; width: 0; }
-  .btn { flex-shrink: 0; }
-}
+.set-edit-bar { display: flex; justify-content: flex-end; gap: .375rem; }
 .set-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: .25rem; }
-// Each set is its own tbody: the row of numbers, then its note (or the note field while editing)
+// Each set is its own tbody: the row of numbers, its note field, then Save and Cancel while editing
 .set-table tbody { border-top: 1px solid $line; }
 .set-table tr:not(.set-note):has(+ .set-note:not([hidden])) td { border-bottom: 0; padding-bottom: .25rem; }
 .set-note td { padding-top: 0; border-bottom: 0; }

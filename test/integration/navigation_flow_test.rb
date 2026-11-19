@@ -19,8 +19,8 @@ class NavigationFlowTest < FlowTest
       split_path(split) => splits_path,
       edit_split_path(split) => split_path(split),
       new_split_workout_day_path(split) => split_path(split),
-      workout_day_path(day) => split_path(split),
-      edit_workout_day_path(day) => workout_day_path(day),
+      workout_day_path(day) => root_path,
+      edit_workout_day_path(day) => split_path(split, anchor: "day-#{day.id}"),
       workout_exercise_path(planned) => workout_day_path(day, date: Date.current),
       workout_log_path(log) => workout_day_path(day, date: log.date),
       edit_workout_log_exercise_path(entry) => workout_log_path(log)

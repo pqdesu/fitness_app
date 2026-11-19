@@ -30,10 +30,11 @@ module ApplicationHelper
     logs.one? ? workout_log_path(logs.first, from: "dashboard") : workout_logs_path(date: date.iso8601, from: "dashboard")
   end
 
-  # The button that opens the "Add exercises" modal (shared/_exercise_picker).
-  def exercise_picker_button(css)
-    tag.button safe_join([tag.i(class: "fa-solid fa-plus"), " Add exercise"]),
-               type: "button", class: "btn #{css}", data: { bs_toggle: "modal", bs_target: "#exercise-picker" }
+  # The button that opens the "Add exercises" modal (shared/_exercise_picker), the one of that key if given.
+  def exercise_picker_button(css, key: nil, label: "Add exercise")
+    target = ["#exercise-picker", key].compact.join("-")
+    tag.button safe_join([tag.i(class: "fa-solid fa-plus"), " #{label}"]),
+               type: "button", class: "btn #{css}", data: { bs_toggle: "modal", bs_target: target }
   end
 
   def nav_link_to(label, path, active:)

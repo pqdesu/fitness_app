@@ -1,13 +1,11 @@
+<%# Saving a set or its note comes back to this same page: Turbo morphs it in place and keeps the scroll, so it does not jump. %>
+<% turbo_refreshes_with method: :morph, scroll: :preserve %>
 <% back_to workout_day_path(@workout_day, date: @date) %>
 <% upcoming = @date > Date.current %>
 <div class="page-header">
   <div>
     <h1><%= @workout_exercise.name %></h1>
     <p class="text-muted mb-0"><%= @workout_exercise.equipment_label %></p>
-  </div>
-  <div class="header-actions">
-    <%= button_to "Remove", workout_exercise_path(@workout_exercise, date: @date), method: :delete, class: "btn btn-outline-danger",
-          form: { data: { turbo_confirm: "Remove #{@workout_exercise.name} from #{@workout_day.day}? Workouts already logged keep it." } } %>
   </div>
 </div>
 

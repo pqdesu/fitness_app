@@ -2,18 +2,23 @@ require "test_helper"
 
 # Planning a day and logging it: exercises, sets, and the one-workout-per-day rules.
 class LoggingFlowTest < FlowTest
-  test "adding exercises to a day from the catalogue or by creating one" do
+  test "planning a day's exercises on the split page, from the catalogue or by creating one" do
     sign_in @user
-    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    split = @user.splits.create!(name: "PPL")
+    day = split.workout_days.create!(day: "Push", weekday: 1)
+    plan = split_path(split, anchor: "day-#{day.id}")
+    picker = "#exercise-picker-#{day.id}"
     other_users_exercise = Exercise.create!(name: "Secret lift", muscle_group: "Chest", user: @admin)
 
-    # an empty day offers "Add exercise", which opens the catalogue grouped by muscle group
-    get workout_day_path(day)
-    assert_select ".empty-state button[data-bs-target='#exercise-picker']", text: /Add exercise/
-    assert_equal %w[Chest Legs], css_select("#exercise-picker-form .picker-group").map(&:text)
-    assert_select "#exercise-picker label", text: /Bench press/
-    assert_select "#exercise-picker label", text: /Secret lift/, count: 0
-    assert_select "#exercise-picker input[name='exercise[name]']"
+    # each day of the split has its card, whose "Plan exercises" opens the catalogue grouped by muscle group
+    get split_path(split)
+    assert_select "#day-#{day.id} .empty-state", text: /No exercises planned yet/
+    assert_select "#day-#{day.id} button[data-bs-target='#{picker}']", text: /Plan exercises/
+    assert_equal %w[Chest Legs], css_select("#{picker}-form .picker-group").map(&:text)
+    assert_select "#{picker} form[action=?]", workout_day_workout_exercises_path(day)
+    assert_select "#{picker} label", text: /Bench press/
+    assert_select "#{picker} label", text: /Secret lift/, count: 0
+    assert_select "#{picker} input[name='exercise[name]']"
 
     post workout_day_workout_exercises_path(day), params: { exercise_ids: [] }
     assert_match "Choose at least one exercise", flash[:alert]
@@ -22,7 +27,7 @@ class LoggingFlowTest < FlowTest
     assert_equal 0, day.workout_exercises.count
 
     post workout_day_workout_exercises_path(day), params: { exercise_ids: [@bench.id, @squat.id] }
-    assert_redirected_to day
+    assert_redirected_to plan
     assert_equal ["Bench press", "Squat"], day.workout_exercises.order(:id).pluck(:name)
     assert_equal ["free_weights"], day.workout_exercises.pluck(:equipment).uniq
 
@@ -43,8 +48,8 @@ class LoggingFlowTest < FlowTest
     assert_equal @user, Exercise.find_by!(name: "Pec deck").user
     delete workout_exercise_path(day.workout_exercises.order(:id).last)
     Exercise.find_by!(name: "Pec deck").destroy!
-    get workout_day_path(day)
-    assert_select "#exercise-picker input[name='exercise[shared]']", 0
+    get split_path(split)
+    assert_select "#{picker} input[name='exercise[shared]']", 0
     assert_difference "@user.exercises.count", 1 do
       post workout_day_workout_exercises_path(day), params: { exercise: { name: "Cable fly", muscle_group: "Chest" } }
     end
@@ -52,18 +57,17 @@ class LoggingFlowTest < FlowTest
     assert_equal ["Cable fly", "Chest"], [own.name, own.muscle_group]
     assert_equal own, day.workout_exercises.order(:id).last.exercise
     assert_equal 0, Exercise.shared.where(name: "Cable fly").count
-    # a single added exercise opens straight away, ready for its first set
-    assert_redirected_to workout_exercise_path(day.workout_exercises.order(:id).last)
+    assert_redirected_to plan
 
-    # the day lists its exercises; the modal marks them as added and shows the user's own exercise
-    get workout_day_path(day)
-    assert_select ".list-rows .row-title", text: "Cable fly"
-    assert_select ".empty-state", text: /No exercises for this day/, count: 0
-    assert_select "#exercise-picker label.is-taken", 3
-    assert_select "#exercise-picker label", text: /Cable fly.*Yours/m
-    # the day is only the program: each exercise can be removed on the spot, and no logged workouts are listed
-    assert_select ".list-rows li form[action='#{workout_exercise_path(day.workout_exercises.first, date: day.date_in_week_of(Date.current))}'] button[aria-label='Remove Bench press']"
-    assert_select "h2", text: "Logged workouts", count: 0
+    # the day's card lists its exercises; the modal marks them as added and shows the user's own exercise
+    get split_path(split)
+    assert_select "#day-#{day.id} .list-rows .row-title", text: "Cable fly"
+    assert_select "#day-#{day.id} .empty-state", count: 0
+    assert_select "#{picker} label.is-taken", 3
+    assert_select "#{picker} label", text: /Cable fly.*Yours/m
+    # the plan is only which exercises: each can be removed on the spot, and nothing about sets is there
+    assert_select "#day-#{day.id} form[action='#{workout_exercise_path(day.workout_exercises.first)}'] button[aria-label='Remove Bench press from Push']"
+    assert_select "#day-#{day.id} input[name^='workout_set']", 0
 
     # other users do not see it, the owner can delete it once it is out of every plan
     get exercises_path
@@ -71,7 +75,7 @@ class LoggingFlowTest < FlowTest
     delete exercise_path(own)
     assert_match "was not deleted", flash[:alert]
     delete workout_exercise_path(day.workout_exercises.find_by!(exercise: own))
-    assert_redirected_to day
+    assert_redirected_to plan
     delete exercise_path(own)
     assert_not Exercise.exists?(own.id)
 
@@ -79,8 +83,8 @@ class LoggingFlowTest < FlowTest
     sign_out @user
     sign_in @admin
     admin_day = @admin.splits.create!(name: "Admin").workout_days.create!(day: "Legs", weekday: 2)
-    get workout_day_path(admin_day)
-    assert_select "#exercise-picker input[type=checkbox][name='exercise[shared]']:not([checked])", 1
+    get split_path(admin_day.split)
+    assert_select "#exercise-picker-#{admin_day.id} input[type=checkbox][name='exercise[shared]']:not([checked])", 1
     post workout_day_workout_exercises_path(admin_day), params: { exercise: { name: "Leg curl", muscle_group: "Legs", shared: "0" } }
     assert_equal @admin, Exercise.find_by!(name: "Leg curl").user
     post workout_day_workout_exercises_path(admin_day), params: { exercise: { name: "Leg extension", muscle_group: "Legs", shared: "1" } }
@@ -143,7 +147,11 @@ class LoggingFlowTest < FlowTest
     assert_equal [2, 5, BigDecimal("85.125"), "Paused reps"],
                  second.reload.then { |s| [s.set_number, s.reps_completed, s.weight_used, s.notes] }
     follow_redirect!
-    assert_select "tr.set-note td", text: /Paused reps/
+    # the note field is always there, holding the note, and saves itself when changed
+    # saving comes back to this page morphed in place, at the same scroll, so it does not jump
+    assert_select "meta[name='turbo-refresh-method'][content='morph']"
+    assert_select "meta[name='turbo-refresh-scroll'][content='preserve']"
+    assert_select "tr.set-note:not([hidden]) input[name='workout_set[notes]'][value='Paused reps'][data-action='change->row-edit#save']"
     # three decimals are shown and pre-filled as typed
     assert_select "td span", text: "85.125 kg"
     assert_select "input[name='workout_set[weight_used]'][value='85.125']"
@@ -179,10 +187,10 @@ class LoggingFlowTest < FlowTest
 
     get workout_day_path(day)
     assert_select ".chip", text: "2 sets"
-    # removing an exercise that has sets asks first
-    assert_select "form[action='#{exercise_page.(planned)}'][data-turbo-confirm]"
+    # the workout page does not change the plan: a planned exercise has no remove button there
+    assert_select "form[action^='#{workout_exercise_path(planned)}']", 0
 
-    # removing the exercise from the day keeps what was logged
+    # removing the exercise from the plan (on the split page) keeps what was logged
     delete workout_exercise_path(planned)
     assert_nil entry.reload.workout_exercise
     assert_equal 2, entry.workout_sets.count
@@ -239,6 +247,65 @@ class LoggingFlowTest < FlowTest
       post workout_exercise_workout_sets_path(squat, date: wednesday), params: { workout_set: { reps_completed: 3, weight_used: 110 } }
       assert_equal [wednesday], @user.workout_logs.pluck(:date)
       assert_equal 3, WorkoutSet.count
+    end
+  end
+
+  test "an exercise added while training goes into that workout, never into the plan" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    day = split.workout_days.create!(day: "Push", weekday: Date.current.wday)
+    planned = day.workout_exercises.create!(exercise: @bench)
+    today = Date.current
+    page = workout_day_path(day, date: today)
+
+    # the workout page offers "Add exercise", which posts to the workout, not to the plan
+    get page
+    assert_select "#exercise-picker form[action=?]", workout_day_workout_log_exercises_path(day, date: today)
+    assert_select "#exercise-picker label.is-taken", 1
+
+    # the first exercise added starts the session; the plan keeps only Bench press
+    post workout_day_workout_log_exercises_path(day, date: today), params: { exercise_ids: [@squat.id] }
+    assert_redirected_to page
+    assert_equal "Squat added to this workout.", flash[:notice]
+    log = @user.workout_logs.sole
+    assert_equal [day, today, "Push"], [log.workout_day, log.date, log.workout]
+    assert_equal ["Squat"], log.workout_log_exercises.pluck(:name)
+    assert_equal [planned], day.workout_exercises.to_a
+    # one created on the spot joins the same session
+    post workout_day_workout_log_exercises_path(day, date: today), params: { exercise: { name: "Dips", muscle_group: "Triceps" } }
+    assert_equal %w[Squat Dips], log.workout_log_exercises.order(:id).pluck(:name)
+    assert_equal [planned], day.workout_exercises.to_a
+    # it is in the workout once
+    post workout_day_workout_log_exercises_path(day, date: today), params: { exercise_ids: [@squat.id] }
+    assert_match "Squat is already in this workout", flash[:alert]
+
+    # the workout page lists the plan, then what was added, which opens in the logged workout
+    get page
+    assert_equal ["Bench press", "Squat", "Dips"], css_select(".list-rows .row-title").map(&:text)
+    squat_entry = log.workout_log_exercises.find_by!(name: "Squat")
+    assert_select ".list-rows a.row-link[href=?]", workout_log_path(log, anchor: "entry-#{squat_entry.id}")
+    assert_select "#exercise-picker label.is-taken", 3
+    # the logged workout offers only what is planned and not in it yet
+    get workout_log_path(log)
+    assert_equal ["Bench press"], css_select(".list-rows .row-title").map(&:text)
+
+    # removing an added exercise from the workout page takes it out of the workout, and it is gone
+    delete workout_log_exercise_path(squat_entry, workout_day_id: day.id, date: today)
+    assert_redirected_to page
+    assert_equal ["Dips"], log.workout_log_exercises.pluck(:name)
+    assert_equal [planned], day.workout_exercises.to_a
+    get page
+    assert_select ".list-rows .row-title", text: "Squat", count: 0
+
+    # a workout later this week (Friday's, on a Thursday) takes nothing yet
+    later = @user.splits.create!(name: "Later").workout_days.create!(day: "Pull", weekday: 5)
+    travel_to Time.zone.local(2026, 11, 19, 12) do
+      get workout_day_path(later)
+      assert_select "#exercise-picker", 0
+      assert_no_difference ["WorkoutLog.count", "WorkoutLogExercise.count"] do
+        post workout_day_workout_log_exercises_path(later), params: { exercise_ids: [@squat.id] }
+      end
+      assert_match "Date can't be in the future", flash[:alert]
     end
   end
 
@@ -300,8 +367,16 @@ class LoggingFlowTest < FlowTest
     assert_select "p", /Machine · Beta/
     assert_select "p.entry-note", /Left shoulder tight/
 
+    # removing a planned exercise from the workout keeps it on the day, where it is offered again;
+    # one that was not planned is simply gone
     delete workout_log_exercise_path(entry)
-    assert_equal 2, log.workout_log_exercises.count
+    delete workout_log_exercise_path(log.workout_log_exercises.find_by!(name: "Dips"))
+    assert_equal ["Squat"], log.workout_log_exercises.pluck(:name)
+    assert_equal [planned, unused], day.workout_exercises.order(:id).to_a
+    get workout_log_path(log)
+    assert_select "h2", "From this day, not in this workout"
+    assert_select "ul.list-rows .row-title", text: "Bench press"
+    assert_select "ul.list-rows .row-title", text: "Dips", count: 0
     delete workout_log_path(log)
     assert_redirected_to workout_logs_path
     assert_equal 0, @user.workout_logs.count

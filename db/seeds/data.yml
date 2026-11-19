@@ -180,6 +180,10 @@ users:
         equipment: free_weights
     - day: Lower
       weekday: 6
+      exercises:
+      - name: Squat
+        exercise: shared
+        equipment: free_weights
   workouts:
   - date: '2026-11-16'
     workout: Upper

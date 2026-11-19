@@ -30,7 +30,7 @@ class SplitsFlowTest < FlowTest
     assert_response :unprocessable_content
     post split_workout_days_path(split), params: { workout_day: { day: "Push", weekday: 1 } }
     day = split.workout_days.last
-    assert_redirected_to day
+    assert_redirected_to split_path(split, anchor: "day-#{day.id}")
     assert_equal "Monday", day.weekday_name
 
     # one workout per weekday
@@ -40,10 +40,11 @@ class SplitsFlowTest < FlowTest
     assert_response :unprocessable_content
     assert_equal 1, split.workout_days.count
 
-    # Monday is now coloured and opens the day; the next free weekday is offered for a new day
+    # Monday is now coloured and goes to that day's plan; the next free weekday is offered for a new day
     get split_path(split)
     assert_select ".week .week-day.is-set", 1
-    assert_select ".week a.is-set[href=?]", workout_day_path(day)
+    assert_select ".week a.is-set[href=?]", split_path(split, anchor: "day-#{day.id}")
+    assert_select "#day-#{day.id} h2", "Push"
     assert_select ".week a.is-set .week-label", "Push"
     get new_split_workout_day_path(split)
     assert_select "select[name='workout_day[weekday]'] option[selected]", text: "Sunday"

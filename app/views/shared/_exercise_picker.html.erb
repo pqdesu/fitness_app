@@ -1,13 +1,17 @@
 <%#
   "Add exercises" modal: the catalogue and the user's own exercises, grouped by muscle group,
-  plus a form to create a new exercise. Open it with data-bs-toggle="modal" data-bs-target="#exercise-picker".
-  Locals: url (where both forms post), exercises, taken_ids (exercises already added, shown as such).
+  plus a form to create a new exercise. Open it with exercise_picker_button.
+  Locals: url (where both forms post), exercises, taken_ids (exercises already added, shown as such),
+  and optionally key, which tells apart several pickers on one page (one per workout day of a split).
+  Its forms load the next page in full (turbo_action advance): a page that morphs (turbo_refreshes_with)
+  would otherwise keep this modal's open state and it would not open again.
 %>
-<div class="modal fade" id="exercise-picker" tabindex="-1" aria-labelledby="exercise-picker-title" aria-hidden="true">
+<% id = ["exercise-picker", local_assigns[:key]].compact.join("-") %>
+<div class="modal fade" id="<%= id %>" tabindex="-1" aria-labelledby="<%= id %>-title" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 class="modal-title" id="exercise-picker-title">Add exercises</h2>
+        <h2 class="modal-title" id="<%= id %>-title">Add exercises</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
@@ -15,13 +19,13 @@
         <% if exercises.empty? %>
           <p class="text-muted">There are no exercises yet. Create your first one below.</p>
         <% else %>
-          <%= form_with url: url, id: "exercise-picker-form" do %>
+          <%= form_with url: url, id: "#{id}-form", data: { turbo_action: "advance" } do %>
             <% exercises.group_by(&:group).sort.each do |group, group_exercises| %>
               <h3 class="picker-group"><%= group %></h3>
               <% group_exercises.each do |exercise| %>
                 <% taken = taken_ids.include?(exercise.id) %>
                 <label class="picker-row <%= "is-taken" if taken %>">
-                  <%= check_box_tag "exercise_ids[]", exercise.id, false, id: "pick_exercise_#{exercise.id}", class: "form-check-input", disabled: taken %>
+                  <%= check_box_tag "exercise_ids[]", exercise.id, false, id: "#{id}_#{exercise.id}", class: "form-check-input", disabled: taken %>
                   <span class="picker-name"><%= exercise.name %></span>
                   <% if taken %><span class="text-muted small">Added</span><% end %>
                   <% unless exercise.shared? %><span class="chip">Yours</span><% end %>
@@ -32,7 +36,7 @@
         <% end %>
 
         <h3 class="picker-group">Create your own</h3>
-        <%= form_with url: url, scope: :exercise, class: "row g-2 align-items-end inline-form" do |f| %>
+        <%= form_with url: url, scope: :exercise, class: "row g-2 align-items-end inline-form", data: { turbo_action: "advance" } do |f| %>
           <div class="col-12 col-sm-6">
             <%= f.label :name, "Exercise name", class: "form-label" %>
             <%= f.text_field :name, placeholder: "Bench press", autocomplete: "off", required: true, class: "form-control" %>
@@ -48,8 +52,8 @@
             <%# An admin's new exercise is their own unless they share it with everyone. %>
             <div class="col-12">
               <div class="form-check">
-                <%= f.check_box :shared, { class: "form-check-input", id: "picker_exercise_shared" }, "1", "0" %>
-                <%= f.label :shared, "Add to the shared catalogue", class: "form-check-label", for: "picker_exercise_shared" %>
+                <%= f.check_box :shared, { class: "form-check-input", id: "#{id}_shared" }, "1", "0" %>
+                <%= f.label :shared, "Add to the shared catalogue", class: "form-check-label", for: "#{id}_shared" %>
               </div>
             </div>
           <% end %>
@@ -58,7 +62,7 @@
 
       <% if exercises.any? %>
         <div class="modal-footer">
-          <button type="submit" form="exercise-picker-form" class="btn btn-primary w-100">Add selected</button>
+          <button type="submit" form="<%= id %>-form" class="btn btn-primary w-100">Add selected</button>
         </div>
       <% end %>
     </div>
