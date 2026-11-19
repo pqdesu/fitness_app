@@ -2,9 +2,13 @@
 
 ## Exercises
 
-### Future workout logs have present days logged
+### No notes per set
 
 - on the workout_exercises page, each set has no note text field only when you edit it. I want the text field to always be present to add a quick note and have it saved when the text is added
+
+### Deleted exercise shows up in workout page
+
+- I added and delete one exercise as a test and the exercise appaeared under "From this day, not in this workout" why? When I delete an exercise I want it to be removed that's all
 
 ## Dropdowns
 
