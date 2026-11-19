@@ -88,16 +88,17 @@ Do not put passwords, tokens or other secrets in the doc, except development-onl
 These two files are the only existing files this skill may edit, and it edits them only to record the state of the work, in `HERE` so the change is committed on the branch:
 
 - `doc/Features/Features.md`: move each feature this branch finished from its section (for example "Home page") to the matching section under "Features added (DONE)", creating that section heading if it is missing. Keep the wording of the item as the owner wrote it, and keep the unfinished items where they are.
-- `doc/Issues/Issues.md`: move each issue this branch fixed to "Issues Resolved". Leave open issues alone.
+- `doc/Issues/Issues.md`: move each issue this branch fixed to "Issues resolved". Leave open issues alone.
+- `doc/Issues/Issues.md`, "Potential issues" section: whenever items move above (issues to resolved, or features to "Features added"), also record each risk the branch knowingly leaves behind: the change doc's "Known gaps" that could turn into a bug, and the risks the session reported to the user. Add each as a `###` item under an area heading (`## Exercise page`, `## General`, ...) in that section, creating the section above "Issues resolved" if it is missing. Each item says plainly what can go wrong, in which situation, starts with "From `BRANCH`:", and marks anything not verified as such. A potential issue this branch fixes moves to "Issues resolved" like any other issue.
 
 Rules for both:
 
-- Only move or tick items the diff really finishes. Do not add, reword, reorder or delete other items, and do not touch any other file, in any part of the repository, for this step.
+- Only move or tick items the diff really finishes. Do not add, reword, reorder or delete other items (new potential issues are the one addition allowed), and do not touch any other file, in any part of the repository, for this step.
 - If an item is only partly done, leave it in place and say so in the final report.
 - Edit the copies inside `HERE`, never the ones in the main folder.
 - If a file does not exist in the branch, skip it and say so in the final report.
 
-Mention in the change doc which items were moved.
+Mention in the change doc which items were moved and which potential issues were added.
 
 ## 3b. Update the seed data
 
@@ -154,6 +155,6 @@ Tell the user:
   1. merge the pull request on GitHub
   2. in the main folder: `git pull origin DEFAULT`
   3. optional cleanup once merged: `git branch -d BRANCH` and `git push origin --delete BRANCH`
-- which items moved in `Features.md` and `Issues.md`
+- which items moved in `Features.md` and `Issues.md`, and which potential issues were added
 - anything skipped, failed or not verified
 - when a worktree was removed: this session can no longer run commands, so further work needs a new session from the main folder

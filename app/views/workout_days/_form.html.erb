@@ -6,7 +6,7 @@
       <%= f.input :weekday, label: "Day of the week", collection: Date::DAYNAMES.each_with_index.to_a, include_blank: false %>
       <div class="form-actions">
         <%= f.button :submit, class: "btn-primary" %>
-        <%= link_to "Cancel", (workout_day.persisted? ? workout_day_path(workout_day) : split), class: "btn btn-light" %>
+        <%= link_to "Cancel", (workout_day.persisted? ? split_path(split, anchor: "day-#{workout_day.id}") : split), class: "btn btn-light" %>
       </div>
     <% end %>
   </div>

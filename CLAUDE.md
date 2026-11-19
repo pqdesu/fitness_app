@@ -12,13 +12,15 @@ The full project context (product brief, every decision, data model, page flows,
 - Users pick an exercise from the catalogue or create their own; only an admin changes the shared catalogue.
 - An admin is a normal user with two extras: managing the shared catalogue, and managing users (make or unmake an admin, delete a user). An admin can also create private exercises; one goes to the catalogue only when they tick "Add to the shared catalogue".
 - Equipment is chosen per lift: free weights, or a machine whose brand the user types.
-- A workout day lists only exercises. Sets (weight, then reps) are added when the user opens an exercise.
+- The split page is the plan: the workouts on the week and the exercises of each, nothing more. Only the split page changes the plan.
+- A workout day's page is the workout. It lists the planned exercises and those added while training; "Add exercise" there adds to that day's workout only, never to the plan. Sets (weight, then reps) are added when the user opens an exercise.
+- Removing an exercise from a workout keeps it on the plan if it was planned; if not, it is gone.
 - There is one logged workout per workout per day. Sets added from any split join it, and Legs and Lower count as the same workout.
 - A split has one logged workout per day. A second workout on the same day only comes from another split.
 - An exercise is on a workout day once and in a logged workout once.
 - A workout can be moved to another day for the current week only (today to Saturday). The split's plan is never changed by a move, and the next week follows the plan again. Moving onto a day that has a workout swaps the two.
 - Sets added from a workout day go to the date that workout falls on this week (its weekday, or the one it was moved to). Wednesday's workout opened on Thursday fills in Wednesday; a workout later this week takes no sets yet. "Start workout" and "Train as extra" open it on today.
-- "Start workout" creates nothing. A split's workout is logged when its first set is added; a workout that is not in the split is logged when its first exercise is added.
+- "Start workout" creates nothing. A split's workout is logged when its first set is added, or when an exercise is added to it from its page; a workout that is not in the split is logged when its first exercise is added.
 - A workout trained on a day its split has nothing on that week is a rest day workout. It is marked when logged (`workout_logs.rest_day`) and the mark is never recalculated.
 - Weights keep three decimals (1.125 kg).
 
@@ -34,7 +36,7 @@ The full project context (product brief, every decision, data model, page flows,
 - Branch names are a few plain lowercase words joined by dashes, with no digits and no `claude/` prefix.
 - Before committing or pushing a branch, update the base data with the `update-seed-data` skill (`.claude/skills/`), so `db/seeds/data.yml` carries the latest data and keeps the old. `finalize-branch` does this as one of its steps.
 - Change docs must be very detailed: every step, decision, file changed, the reason, and how it works now.
-- Open and resolved issues are tracked in [doc/Issues/Issues.md](doc/Issues/Issues.md). When an issue is fixed, move it under "Issues Resolved".
+- Open and resolved issues are tracked in [doc/Issues/Issues.md](doc/Issues/Issues.md). When an issue is fixed, move it under "Issues Resolved". Risks a branch knowingly leaves behind go under "Potential issues", saying which branch they come from.
 - When asked to read, investigate or explain issues from `Issues.md` (usually one section, on `master`), use the `investigate-issues` skill (`.claude/skills/`). It traces each issue to its cause and explains it without changing anything, then asks before fixing.
 
 ## Stack and commands
@@ -68,7 +70,8 @@ bin/rails mock:clear      # deletes the mock workouts and the plans the mock tas
 - `WeekMovesController` (`POST` and `DELETE /splits/:id/week_move`) moves a workout for this week and goes back to the plan. The Splits pages show the plan; only the dashboard passes `plan:` to `splits/_week`.
 - `WorkoutSummary` (plain Ruby, `app/models/workout_summary.rb`) totals loaded logs: workouts, exercises, sets, top weight. It needs logs loaded with `includes(workout_log_exercises: :workout_sets)`.
 - `LoggingDate` (controller concern) gives the date a workout day's pages log on: `?date=`, which those pages pass along, or else `WorkoutDay#date_in_week_of(today)`. A future date shows no add-set form, and `WorkoutLog` refuses it.
-- `WorkoutExercise#entry_on!(date)` is the one way sets of a split's workout reach a log: it finds or creates the user's session of that workout on that date, and the entry of that exercise in it.
+- `WorkoutExercise#entry_on!(date)` is the one way sets of a planned exercise reach a log: it finds or creates the user's session of that workout on that date, and the entry of that exercise in it.
+- The plan is edited on `splits#show`: one card per workout day (`#day-<id>`), each with its own picker (`shared/_exercise_picker` with `key:`, opened by `exercise_picker_button(css, key:)`), posting to `workout_exercises#create`; plan actions return to that card. `workout_days#show` is the workout: its picker posts to `workout_log_exercises#create` with `workout_day_id` and `date`, which adds entries to that date's session (creating it), and an extra entry links to its logged workout.
 - `ExercisePicker` (controller concern) reads the "Add exercises" modal and decides whether a new exercise is private or shared. `Paginated` (controller concern) with `shared/_pagination` pages History, the catalogue and the users list.
 - `Admin::UsersController` (`/admin/users`) is the admin's users page, linked from the user menu.
 - A set is a `<tbody>` of its own in a set table (`workout_sets/_set`): the row of numbers, then its note, or the note field with Save and Cancel while editing (`row_edit_controller.js`).

@@ -14,7 +14,10 @@ Rails.application.routes.draw do
     resource :week_move, only: [:create, :destroy]
   end
   resources :workout_days, only: [:show, :edit, :update, :destroy] do
+    # Planning an exercise for the day (from the split page)
     resources :workout_exercises, only: [:create]
+    # Adding an exercise to that day's workout while training; the plan stays as it is
+    resources :workout_log_exercises, only: [:create]
   end
   # Opening an exercise shows today's sets; adding a set there logs it under today's workout.
   resources :workout_exercises, only: [:show, :update, :destroy] do

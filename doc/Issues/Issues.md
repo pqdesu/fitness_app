@@ -1,24 +1,34 @@
 # Issues
 
-## Exercises
-
-### No notes per set
-
-- on the workout_exercises page, each set has no note text field only when you edit it. I want the text field to always be present to add a quick note and have it saved when the text is added
-
-### Deleted exercise shows up in workout page
-
-- I added and delete one exercise as a test and the exercise appaeared under "From this day, not in this workout" why? When I delete an exercise I want it to be removed that's all
-
 ## Dropdowns
 
 ### Dropdowns past visible screen
 
 - The dropdowns only go down which is an issue when the dropdown is at the end of the bottom of the page. for example here - /home/pedro_hosonode/personal-projects/fitness_app/doc/Features/Pics/Screenshot 2026-11-19 133850.png. I want the dropdowns to go up if the field they are showing go beyond past visible screen. This issue is only on Mobile with browser testing no actual Mobile device
 
+# Potential issues
+
+Risks a branch knowingly left behind: not seen as a bug yet, but they could become one. Each says which branch it comes from. When one is seen for real it moves up to the open issues; when it is fixed it moves to "Issues resolved".
+
+## Exercise page
+
+### Saving a set or a note can still jump to the top
+
+- From `set-notes-removed-exercises`: the exercise page and the logged workout page keep their scroll when a set or note is saved, because Turbo morphs the page in place (`turbo_refreshes_with method: :morph, scroll: :preserve`). That only happens when the save comes back to the exact same address. An exercise page opened without `?date=` comes back with the date added, so that first save reloads the page and jumps to the top. The links in the app always add the date, so this needs a typed or old link. Likely too, not verified: a logged workout page opened with an anchor (`#entry-…`, as "Added to this workout" on a workout day's page links) may jump once on its first save, since the address differs by the anchor.
+
 # Issues resolved (DONE)
 
 ## Exercises
+
+### No notes per set
+
+- on the workout_exercises page, each set has no note text field only when you edit it. I want the text field to always be present to add a quick note and have it saved when the text is added
+- Fixed on `set-notes-removed-exercises`: every set has its note field under it, always visible. Leaving the field or pressing Enter saves it. The pen now only edits weight and reps.
+
+### Deleted exercise shows up in workout page
+
+- I added and delete one exercise as a test and the exercise appaeared under "From this day, not in this workout" why? When I delete an exercise I want it to be removed that's all
+- Fixed on `set-notes-removed-exercises`. Cause: the workout day page was both the workout and the plan, and its "Add exercise" put the exercise on the day's plan (`WorkoutExercisesController#create`), so Triceps pushdown became a planned Lower exercise and was offered under "From this day, not in this workout". Now the split page is the plan (each workout day's card plans its exercises), and "Add exercise" on a workout day's page adds to that day's workout only. Removing an exercise from a workout keeps it on the plan if it was planned; one added while training is gone. Triceps pushdown is still on Lower's plan in the existing data: remove it with the × on the split page.
 
 ### Future workout logs have present days logged
 
