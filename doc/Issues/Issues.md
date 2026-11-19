@@ -8,12 +8,6 @@
 
 - on the workout_exercises page, each set has no note text field only when you edit it. I want the text field to always be present to add a quick note and have it saved when the text is added
 
-## History page
-
-### Table columns off-screen on a phone
-
-- At phone width (390 px) the History table (`/workout_logs`) is wider than the screen (about 595 px in a 364 px box). It scrolls sideways inside its own box, so the Exercises and Sets columns start off-screen and only Date, Workout and part of Split show until you swipe the table. Found in the phone-width browser check on 2026-11-17.
-
 ## Dropdowns
 
 ### Dropdowns past visible screen
@@ -65,3 +59,10 @@
 ### Muscle group typed when editing an exercise
 
 - When editing the name of the exercise I can also edit the muscle group by typing which should not be the case it should be via dropdown
+
+## History page
+
+### Table columns off-screen on a phone
+
+- At phone width (390 px) the History table (`/workout_logs`) is wider than the screen (about 595 px in a 364 px box). It scrolls sideways inside its own box, so the Exercises and Sets columns start off-screen and only Date, Workout and part of Split show until you swipe the table. Found in the phone-width browser check on 2026-11-17.
+- Fixed on `history-table-mobile-columns`: on a phone each workout is one cell (date, then workout with its Rest day and split chips, then "9 exercises · 27 sets") next to the Open button, so the table fits the screen; from tablet width up the six columns show as before. See [doc/history-table-mobile-columns.md](../history-table-mobile-columns.md).
