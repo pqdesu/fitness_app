@@ -50,6 +50,14 @@ users:
     muscle_group: Back
   - name: Curl
     muscle_group: Biceps
+  - name: Hip thrust
+    muscle_group: Legs
+  - name: Leg extension
+    muscle_group: Legs
+  - name: Adductor
+    muscle_group: Legs
+  - name: Crunch
+    muscle_group: Core
   splits:
   - name: PPL/UL
     days:
@@ -137,6 +145,33 @@ users:
         machine_brand: Bull
     - day: Lower
       weekday: 3
+      exercises:
+      - name: Hip thrust
+        exercise: own
+        equipment: machine
+        machine_brand: Bull
+      - name: Squat
+        exercise: shared
+        equipment: machine
+        machine_brand: Bull
+      - name: Romanian deadlift
+        exercise: shared
+        equipment: free_weights
+      - name: Leg extension
+        exercise: own
+        equipment: machine
+        machine_brand: Bull
+      - name: Adductor
+        exercise: own
+        equipment: machine
+        machine_brand: Bull
+      - name: Calf raise
+        exercise: shared
+        equipment: machine
+        machine_brand: Bull
+      - name: Crunch
+        exercise: own
+        equipment: free_weights
     - day: Upper
       weekday: 5
       exercises:
@@ -317,3 +352,120 @@ users:
       - number: 1
         reps: 13
         weight: '100.0'
+  - date: '2026-11-19'
+    workout: Lower
+    split: U/R/L/U/L
+    weekday: 3
+    rest_day: true
+    exercises:
+    - name: Hip thrust
+      exercise: own
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 3
+      sets:
+      - number: 1
+        reps: 5
+        weight: '130.0'
+      - number: 2
+        reps: 9
+        weight: '230.0'
+      - number: 3
+        reps: 9
+        weight: '230.0'
+    - name: Squat
+      exercise: shared
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 3
+      sets:
+      - number: 1
+        reps: 3
+        weight: '40.0'
+      - number: 2
+        reps: 2
+        weight: '120.0'
+      - number: 3
+        reps: 7
+        weight: '150.0'
+    - name: Romanian deadlift
+      exercise: shared
+      equipment: free_weights
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 3
+      sets:
+      - number: 1
+        reps: 3
+        weight: '60.0'
+      - number: 2
+        reps: 8
+        weight: '120.0'
+      - number: 3
+        reps: 8
+        weight: '120.0'
+    - name: Leg extension
+      exercise: own
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 3
+      sets:
+      - number: 1
+        reps: 2
+        weight: '60.0'
+      - number: 2
+        reps: 8
+        weight: '90.0'
+      - number: 3
+        reps: 8
+        weight: '90.0'
+    - name: Adductor
+      exercise: own
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 3
+      sets:
+      - number: 1
+        reps: 5
+        weight: '40.0'
+      - number: 2
+        reps: 7
+        weight: '85.0'
+      - number: 3
+        reps: 5
+        weight: '85.0'
+    - name: Calf raise
+      exercise: shared
+      equipment: machine
+      machine_brand: Bull
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 3
+      sets:
+      - number: 1
+        reps: 10
+        weight: '150.0'
+      - number: 2
+        reps: 8
+        weight: '150.0'
+    - name: Crunch
+      exercise: own
+      equipment: free_weights
+      planned_in:
+        split: U/R/L/U/L
+        weekday: 3
+      sets:
+      - number: 1
+        reps: 4
+        weight: '50.0'
+      - number: 2
+        reps: 10
+        weight: '80.0'

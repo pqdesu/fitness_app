@@ -20,3 +20,10 @@
 .set-note td { padding-top: 0; border-bottom: 0; }
 .set-table .set-note td:first-child { width: auto; }
 .entry-note { color: $muted; margin-top: .125rem; }
+// History list on a phone: date, workout, split and counts in one cell (workout_logs/index)
+.history-table .history-summary { padding-right: .5rem; }
+.history-line { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .375rem; margin-top: .125rem; }
+.history-counts { margin-top: .125rem; font-size: .8rem; color: $muted; }
+@media (max-width: 767.98px) {
+  .history-table td:last-child { padding-left: 0; padding-right: 1rem; }
+}

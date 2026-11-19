@@ -24,18 +24,36 @@
       <%= link_to "Go to splits", splits_path, class: "btn btn-primary" %>
     </div>
   <% else %>
+    <%# On a phone the date, workout, split and counts share one cell (.history-summary); from md up each has its column. %>
+    <% wide = "d-none d-md-table-cell" %>
     <div class="table-responsive">
-      <table class="table app-table">
-        <thead><tr><th>Date</th><th>Workout</th><th>Split</th><th>Exercises</th><th>Sets</th><th></th></tr></thead>
+      <table class="table app-table history-table">
+        <thead>
+          <tr>
+            <th class="d-md-none">Workout</th>
+            <th class="<%= wide %>">Date</th><th class="<%= wide %>">Workout</th><th class="<%= wide %>">Split</th>
+            <th class="<%= wide %>">Exercises</th><th class="<%= wide %>">Sets</th><th></th>
+          </tr>
+        </thead>
         <tbody>
           <% @workout_logs.each do |log| %>
+            <% path = workout_log_path(log, from: from) %>
+            <% exercises = log.workout_log_exercises.size %>
+            <% sets = log.workout_log_exercises.sum { |e| e.workout_sets.size } %>
+            <% rest_chip = capture do %><% if log.rest_day? %> <span class="chip chip-rest">Rest day</span><% end %><% end %>
+            <% split_chip = capture do %><% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% else %><span class="text-muted small">Deleted</span><% end %><% end %>
             <tr>
-              <td class="fw-semibold"><%= link_to l(log.date, format: :long), workout_log_path(log, from: from) %></td>
-              <td><%= log.workout %><% if log.rest_day? %> <span class="chip chip-rest">Rest day</span><% end %></td>
-              <td><% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% else %><span class="text-muted small">Deleted</span><% end %></td>
-              <td><%= log.workout_log_exercises.size %></td>
-              <td><%= log.workout_log_exercises.sum { |e| e.workout_sets.size } %></td>
-              <td class="text-end"><%= link_to "Open", workout_log_path(log, from: from), class: "btn btn-light btn-sm" %></td>
+              <td class="history-summary d-md-none">
+                <%= link_to l(log.date, format: :long), path, class: "fw-semibold" %>
+                <div class="history-line"><%= log.workout %><%= rest_chip %> <%= split_chip %></div>
+                <div class="history-counts"><%= pluralize(exercises, "exercise") %> · <%= pluralize(sets, "set") %></div>
+              </td>
+              <td class="fw-semibold <%= wide %>"><%= link_to l(log.date, format: :long), path %></td>
+              <td class="<%= wide %>"><%= log.workout %><%= rest_chip %></td>
+              <td class="<%= wide %>"><%= split_chip %></td>
+              <td class="<%= wide %>"><%= exercises %></td>
+              <td class="<%= wide %>"><%= sets %></td>
+              <td class="text-end"><%= link_to "Open", path, class: "btn btn-light btn-sm" %></td>
             </tr>
           <% end %>
         </tbody>

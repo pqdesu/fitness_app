@@ -52,6 +52,26 @@ class NavigationFlowTest < FlowTest
     assert_select "a.back-link[href=?]", exercises_path, count: 1
   end
 
+  test "on a phone the history puts date, workout, split and counts in one cell" do
+    sign_in @user
+    planned = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+                   .workout_exercises.create!(exercise: @bench, name: "Bench press")
+    entry = planned.entry_on!(Date.new(2026, 11, 16))
+    entry.workout_sets.create!(reps_completed: 8, weight_used: 60)
+    entry.workout_sets.create!(reps_completed: 6, weight_used: 65)
+
+    get workout_logs_path
+    assert_select "td.history-summary.d-md-none" do
+      assert_select "a", text: "November 16, 2026"
+      assert_select ".history-line", text: /Push/
+      assert_select ".history-line .chip", text: "PPL"
+      assert_select ".history-counts", text: "1 exercise · 2 sets"
+    end
+    # the separate columns are only for wider screens
+    assert_select "th.d-none.d-md-table-cell", 5
+    assert_select "td.d-none.d-md-table-cell", 5
+  end
+
   test "long lists are split into pages" do
     sign_in @user
     day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
