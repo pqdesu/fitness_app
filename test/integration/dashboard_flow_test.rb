@@ -141,6 +141,9 @@ class DashboardFlowTest < FlowTest
       # and each is a link to what was recorded that day
       assert_equal %w[2 9 16], css_select(".calendar-day.has-workout").map(&:text)
       assert_select "a.calendar-day.has-workout[href=?]", workout_log_path(last, from: "dashboard"), text: "9"
+      # a table of cells, not a grid (which promises arrow-key moves); a logged day's link sits inside its cell
+      assert_select ".calendar[role=table] [role=row] [role=cell] > a.calendar-day", 3
+      assert_select ".calendar[role=grid], .calendar [role=gridcell], .calendar a[role]", 0
       assert_select "a.calendar-day.has-workout[href=?]", workout_log_path(older, from: "dashboard"), text: "2"
       assert_select "a.calendar-day.has-workout.is-today[aria-current=date]", text: "16"
       assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push workout"

@@ -131,6 +131,8 @@ class LoggingFlowTest < FlowTest
     # the forms say which exercise page they are on, so saving returns there without relying on the referer
     on_exercise_page = workout_set_path(second, workout_exercise_id: planned.id)
     assert_select "form#edit_set_#{second.id}[action='#{on_exercise_page}']"
+    # deleting a set asks first, naming the set and what it held
+    assert_select "form.button_to[action='#{on_exercise_page}'][data-turbo-confirm^='Delete set 2? '][data-turbo-confirm$=' reps.']"
     # weight, reps and a note
     assert_select "input[form='edit_set_#{second.id}']", 3
     assert_select "input[form='edit_set_#{second.id}'][name='workout_set[notes]']", 1
