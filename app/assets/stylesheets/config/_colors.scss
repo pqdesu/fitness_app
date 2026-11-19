@@ -1,7 +1,10 @@
-// Color scheme
-$red: #E5484D;
+// Color scheme: every colour the app's styles use is named here, by what it is for.
+
+// Danger (Delete, Remove, errors). Dark enough to be read as text: 5.2:1 on white and 4.9:1 on
+// the page background, and white on it reads at 5.2:1 too (WCAG AA asks 4.5:1).
+$red: #CE2C31;
 $blue: #4F46E5;      // primary (indigo)
-$yellow: #3E63DD;    // used for notices
+$notice: #3E63DD;    // notices (Bootstrap's "info")
 $orange: #F76B15;
 $green: #12A594;
 $gray: #1C2024;      // body text
@@ -10,3 +13,22 @@ $light-gray: #F6F7F9; // page background
 $muted: #646B78;
 $line: #E6E8EC;
 $primary-soft: #EEF0FF;
+
+// Neutrals
+$surface-subtle: #FAFBFC; // table heads and card footers, a step off white
+$line-strong: #D5D9E0;    // field borders, and a light button's border on hover
+$icon-faint: #B4BAC4;     // the icon of an empty state
+$shadow: #101828;         // every shadow, at a low opacity
+
+// Chips: a plain one, a done one (sets logged today) and a rest day workout
+$chip-bg: #EEF0F3;
+$chip-text: #3F4651;
+$done-bg: #DDF3EE;
+$done-text: #0B6B60;
+$rest-bg: #FFF1D6;
+$rest-text: #8A5A00;
+
+// Dashboard calendar: the days of the months before and after, and the ring of one a workout was
+// logged on. The muted text grey, so they still read (4.7:1 even on this week's tinted row); a
+// lighter weight than the month's own days keeps them secondary.
+$outside-day: $muted;

@@ -1,5 +1,5 @@
 .app-navbar {
-  background: rgba(255, 255, 255, .92);
+  background: rgba(white, .92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid $line;
   padding-top: .625rem;
@@ -48,13 +48,6 @@
   background: $blue;
   color: white;
   font-size: .9rem;
-}
-
-.brand-mark-lg {
-  width: 64px;
-  height: 64px;
-  border-radius: 1.125rem;
-  font-size: 1.6rem;
 }
 
 .user-initial {

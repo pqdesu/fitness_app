@@ -4,7 +4,7 @@
   text-align: center;
   color: $muted;
 
-  > i { font-size: 1.6rem; color: #B4BAC4; margin-bottom: .75rem; }
+  > i { font-size: 1.6rem; color: $icon-faint; margin-bottom: .75rem; }
   p { max-width: 420px; margin: 0 auto 1rem; }
   p:last-child { margin-bottom: 0; }
   &.compact { padding: 1.5rem; }

@@ -1,7 +1,7 @@
 # Be sure to restart your server when you modify this file.
 
 # What the browser may load on the app's pages: the app's own files, the two Google Fonts hosts
-# the stylesheet imports its fonts from (config/_fonts.scss), and nothing else. Scripts run only
+# the layout links its fonts from (layouts/application), and nothing else. Scripts run only
 # from the app, with a nonce for the inline import map. Bootstrap's icons (the close button, the
 # navbar toggler, the select arrow) are data: images in its CSS.
 # See https://guides.rubyonrails.org/security.html#content-security-policy-header

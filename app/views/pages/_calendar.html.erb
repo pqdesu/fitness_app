@@ -7,7 +7,7 @@
 <div class="card calendar-card">
   <div class="card-header"><h2><%= l today, format: "%B %Y" %></h2></div>
   <div class="card-body">
-    <div class="calendar" role="grid" aria-label="<%= l today, format: "%B %Y" %>">
+    <div class="calendar" role="table" aria-label="<%= l today, format: "%B %Y" %>">
       <div class="calendar-week calendar-head" role="row">
         <% Date::DAYNAMES.each do |name| %><span role="columnheader" aria-label="<%= name %>"><%= name.first %></span><% end %>
       </div>
@@ -17,14 +17,17 @@
             <% logs = logs_by_date.fetch(date, []) %>
             <% classes = class_names("calendar-day", "is-today": date == today, "is-outside": date.month != today.month, "has-workout": logs.any?) %>
             <% current = ("date" if date == today) %>
-            <% if logs.any? %>
-              <% workouts = "#{logs.map(&:workout).to_sentence} #{'workout'.pluralize(logs.size)}" %>
-              <%= link_to date.day, day_logs_path(logs, date),
-                    role: "gridcell", class: classes, "aria-current": current,
-                    title: workouts, "aria-label": "#{l date, format: '%A, %B %-d'}: #{workouts}" %>
-            <% else %>
-              <%= tag.span date.day, role: "gridcell", class: classes, "aria-current": current %>
-            <% end %>
+            <%# A table, read cell by cell; a logged day keeps its link inside its cell, so it is still announced as a link. %>
+            <div role="cell">
+              <% if logs.any? %>
+                <% workouts = "#{logs.map(&:workout).to_sentence} #{'workout'.pluralize(logs.size)}" %>
+                <%= link_to date.day, day_logs_path(logs, date),
+                      class: classes, "aria-current": current,
+                      title: workouts, "aria-label": "#{l date, format: '%A, %B %-d'}: #{workouts}" %>
+              <% else %>
+                <%= tag.span date.day, class: classes, "aria-current": current %>
+              <% end %>
+            </div>
           <% end %>
         </div>
       <% end %>

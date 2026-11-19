@@ -6,19 +6,25 @@ class AccountsFlowTest < FlowTest
     get root_path
     assert_response :success
     assert_select "h1", /Plan your training/
+    # the heading opens the page, with no icon tile above it
+    assert_select ".hero .brand-mark", 0
 
     get splits_path
     assert_redirected_to new_user_session_path
   end
 
-  test "devise pages render" do
-    [new_user_session_path, new_user_registration_path, new_user_password_path].each do |path|
+  test "devise pages render, each titled by its h1" do
+    { new_user_session_path => "Log in", new_user_registration_path => "Sign up",
+      new_user_password_path => "Forgot your password?" }.each do |path, title|
       get path
       assert_response :success
+      assert_select "h1", title
     end
     sign_in @user
     get edit_user_registration_path
     assert_response :success
+    assert_select "h1", "Edit User"
+    assert_select "h2", "Cancel my account"
   end
 
   test "users cannot reach another user's records" do
