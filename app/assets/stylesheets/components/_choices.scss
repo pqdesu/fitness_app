@@ -1,0 +1,22 @@
+// Options as pills to tap (shared/_choices), in place of a <select>
+.choices-field legend {
+  float: none;
+  font-size: inherit;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr)); // two options share the row
+  gap: .5rem;
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem; // 44px touch target
+    padding: .375rem .5rem;
+  }
+}
+
+// Bootstrap's legend size wins over the inline form's small label without this
+.inline-form .choices-field legend { font-size: .78rem; }

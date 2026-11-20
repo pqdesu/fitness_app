@@ -1,11 +1,11 @@
 <%# Equipment of a lift: free weights, or a machine whose brand the user types. Locals: f. %>
 <div class="row g-2" data-controller="reveal" data-reveal-when-value="machine">
-  <div class="col">
-    <%= f.label :equipment, "Equipment", class: "form-label" %>
-    <%= f.select :equipment, Lift::EQUIPMENT.invert.to_a, {},
-          class: "form-select", data: { reveal_target: "source", action: "reveal#toggle" } %>
+  <div class="col-12">
+    <%= render "shared/choices", f:, field: :equipment, label: "Equipment", selected: f.object.equipment,
+          id: "#{f.object_name}_#{f.object.id}_equipment", choices: Lift::EQUIPMENT.invert.to_a,
+          data: { reveal_target: "source", action: "reveal#toggle" } %>
   </div>
-  <div class="col" data-reveal-target="panel">
+  <div class="col-12" data-reveal-target="panel">
     <%= f.label :machine_brand, "Machine brand", class: "form-label" %>
     <%= f.text_field :machine_brand, placeholder: "Brand name", class: "form-control" %>
   </div>

@@ -5,7 +5,10 @@
       <% if @return_day %><%= hidden_field_tag :workout_day_id, @return_day.id, id: nil %><% end %>
       <%= f.input :name, placeholder: "Bench press", autofocus: true %>
       <%# Chosen from the list, as in the "Add exercises" modal; empty is listed under "Other". %>
-      <%= f.input :muscle_group, collection: Exercise::MUSCLE_GROUPS, include_blank: "Other" %>
+      <div class="mb-3">
+        <%= render "shared/choices", f:, field: :muscle_group, label: "Muscle group", selected: exercise.muscle_group,
+              id: "exercise_muscle_group", choices: [["Other", ""], *Exercise::MUSCLE_GROUPS.map { |group| [group, group] }] %>
+      </div>
       <% if exercise.new_record? %>
         <%# Only an admin reaches this form: the exercise goes to the catalogue, or stays the admin's own. %>
         <div class="form-check mb-3">
