@@ -39,6 +39,7 @@ The full project context (product brief, every decision, data model, page flows,
 - Change docs must be very detailed: every step, decision, file changed, the reason, and how it works now.
 - Open and resolved issues are tracked in [doc/Issues/Issues.md](doc/Issues/Issues.md). When an issue is fixed, move it under "Issues Resolved". Risks a branch knowingly leaves behind go under "Potential issues", saying which branch they come from.
 - When asked to read, investigate or explain issues from `Issues.md` (usually one section, on `master`), use the `investigate-issues` skill (`.claude/skills/`). It traces each issue to its cause and explains it without changing anything, then asks before fixing.
+- When asked to read, plan or explain how to build features from [doc/Features/Features.md](doc/Features/Features.md), use the `plan-features` skill (`.claude/skills/`). It reads the code each feature touches and explains how to build it without changing anything, then asks before building.
 
 ## Stack and commands
 
