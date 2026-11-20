@@ -101,9 +101,11 @@ class ExercisesFlowTest < FlowTest
   test "the muscle group is chosen from the list, not typed" do
     sign_in @admin
     get edit_exercise_path(@bench)
-    assert_equal ["Other", *Exercise::MUSCLE_GROUPS], css_select("select[name='exercise[muscle_group]'] option").map(&:text)
-    assert_select "select[name='exercise[muscle_group]'] option[selected]", text: "Chest"
-    assert_select "input[name='exercise[muscle_group]']", 0
+    # Pills to tap, not a <select>, whose list can open past the bottom of a phone's screen
+    assert_equal ["Other", *Exercise::MUSCLE_GROUPS], css_select(".choices label").map(&:text)
+    assert_select "input[type=radio][name='exercise[muscle_group]'][checked][value=Chest]"
+    assert_select "input[type=text][name='exercise[muscle_group]']", 0
+    assert_select "select", 0
 
     patch exercise_path(@bench), params: { exercise: { name: "Bench press", muscle_group: "Pecs" } }
     assert_response :unprocessable_content

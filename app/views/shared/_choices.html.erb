@@ -1,0 +1,15 @@
+<%# A short list of options as pills to tap, in place of a <select>: a select's list is drawn by the
+    browser and can open past the bottom of the screen. Locals: f, field, label, choices ([text, value]),
+    selected, id (unique on the page), data (optional, on every radio). %>
+<fieldset class="choices-field">
+  <legend class="form-label"><%= label %></legend>
+  <div class="choices">
+    <% choices.each do |text, value| %>
+      <% input_id = "#{id}_#{value.presence || 'none'}" %>
+      <%= f.radio_button field, value, id: input_id, class: "btn-check", checked: value.to_s == selected.to_s,
+            data: local_assigns[:data] %>
+      <%= label_tag input_id, text, class: "btn btn-outline-primary" %>
+    <% end %>
+  </div>
+  <% if (error = f.object.try(:errors)&.full_messages_for(field)&.first) %><div class="invalid-feedback d-block"><%= error %></div><% end %>
+</fieldset>

@@ -1,11 +1,5 @@
 # Issues
 
-## Dropdowns
-
-### Dropdowns past visible screen
-
-- The dropdowns only go down which is an issue when the dropdown is at the end of the bottom of the page. for example here - /home/pedro_hosonode/personal-projects/fitness_app/doc/Features/Pics/Screenshot 2026-11-19 133850.png. I want the dropdowns to go up if the field they are showing go beyond past visible screen. This issue is only on Mobile with browser testing no actual Mobile device
-
 # Potential issues
 
 Risks a branch knowingly left behind: not seen as a bug yet, but they could become one. Each says which branch it comes from. When one is seen for real it moves up to the open issues; when it is fixed it moves to "Issues resolved".
@@ -16,7 +10,20 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `set-notes-removed-exercises`: the exercise page and the logged workout page keep their scroll when a set or note is saved, because Turbo morphs the page in place (`turbo_refreshes_with method: :morph, scroll: :preserve`). That only happens when the save comes back to the exact same address. An exercise page opened without `?date=` comes back with the date added, so that first save reloads the page and jumps to the top. The links in the app always add the date, so this needs a typed or old link. Likely too, not verified: a logged workout page opened with an anchor (`#entry-…`, as "Added to this workout" on a workout day's page links) may jump once on its first save, since the address differs by the anchor.
 
+## General
+
+### Muscle group and equipment pills not tried on a real phone
+
+- From `dropdowns-off-screen`: the muscle group and equipment fields are now pills to tap instead of dropdowns. They were checked only in headless Chrome at 390 px, not on a phone. Not verified: how a tap feels, whether a pill keeps a focus ring after it is tapped on iOS, and that the 44 px pills are easy to hit with a thumb. If more muscle groups are added later, the "Add exercises" pop-up grows one row of pills for every three.
+
 # Issues resolved (DONE)
+
+## Dropdowns
+
+### Dropdowns past visible screen
+
+- The dropdowns only go down which is an issue when the dropdown is at the end of the bottom of the page. for example here - /home/pedro_hosonode/personal-projects/fitness_app/doc/Features/Pics/Screenshot 2026-11-19 133850.png. I want the dropdowns to go up if the field they are showing go beyond past visible screen. This issue is only on Mobile with browser testing no actual Mobile device
+- Fixed on `dropdowns-off-screen`. Cause: the fields were native `<select>`s, whose option list the browser draws itself; a page cannot make it open upward. On a real phone it opens the system picker, but desktop Chrome's device mode draws its desktop list, which ran past the screen. The muscle group (the "Add exercises" modal and the exercise form) and the equipment (the exercise page and the logged exercise's edit page) are now pills to tap (`shared/_choices`), with no list to open. The workout and weekday selects on the workout day form, at the top of the page, and the user menu, which already flips up, are unchanged.
 
 ## Exercises
 
