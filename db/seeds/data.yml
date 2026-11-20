@@ -457,3 +457,8 @@ users:
       - number: 2
         reps: 10
         weight: '80.0'
+  - date: '2026-11-20'
+    workout: Upper
+    split: U/R/L/U/L
+    weekday: 5
+    rest_day: false
