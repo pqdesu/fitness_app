@@ -1,5 +1,11 @@
 # Issues
 
+## Home page
+
+### Calendar and week
+
+- Currently on calendar the workout days appeared to be missed (white color on calendar) and week appears to be done (filled with blue), but yesterday I missed the workoutday and still is colored as if I did the workout - Check /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074724.png and /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074728.png. I want on calendat to be filled wtih blue if a workout was logged and white like it is now if the workout has no logs. ON the week do the same. Also have a different way to show whihc day of the week it is by having a circle around the day.
+
 # Potential issues
 
 Risks a branch knowingly left behind: not seen as a bug yet, but they could become one. Each says which branch it comes from. When one is seen for real it moves up to the open issues; when it is fixed it moves to "Issues resolved".
