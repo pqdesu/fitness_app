@@ -1,0 +1,65 @@
+<%#
+  The workout timer, on a workout day's page and a logged workout's page. Each state leads with
+  its status (Running, Paused, Finished) and the time: running, the clock counts with Pause and
+  Stop; paused, it stands still (dimmed) while the paused time counts, with Resume and Stop;
+  finished, from when to when, how long, and how long it was paused, to the second. Only today's
+  workout starts; once started it pauses, resumes and stops on any day, past midnight too.
+  Locals: log (the session, or nil when nothing is logged yet), start_path (where Start posts; nil
+  when the timer cannot start here), autostart (true when the account's automatic timer presses
+  Start as the page opens).
+%>
+<% started = log&.started_at %>
+<% if started || start_path %>
+  <%# Stop ends the timer for good, so it asks first; Pause beside it can be undone. %>
+  <% if started %>
+    <% stop = capture do %>
+      <%= button_to workout_log_timer_path(log), method: :delete, class: "btn btn-outline-danger",
+            form: { data: { turbo_confirm: "Stop the timer? It can't be resumed after." } } do %><i class="fa-solid fa-stop" aria-hidden="true"></i> Stop<% end %>
+    <% end %>
+  <% end %>
+  <% state = if log&.timer_running? then "running" elsif log&.timer_paused? then "paused" elsif log&.ended_at then "finished" else "idle" end %>
+  <section class="card timer-card is-<%= state %>" aria-label="Workout timer">
+    <div class="timer-body">
+      <% if state == "running" %>
+        <div class="timer-main">
+          <p class="timer-meta"><span class="timer-status">Running</span> <span class="timer-detail"><%= workout_time(log) %></span></p>
+          <strong class="timer-clock" role="timer" data-controller="timer" data-timer-start-value="<%= started.iso8601 %>"
+                  data-timer-offset-value="<%= -log.paused_seconds %>"><%= clock_duration(log.recorded_seconds) %></strong>
+        </div>
+        <div class="timer-actions">
+          <%= button_to pause_workout_log_timer_path(log), class: "btn btn-light" do %><i class="fa-solid fa-pause" aria-hidden="true"></i> Pause<% end %>
+          <%= stop %>
+        </div>
+      <% elsif state == "paused" %>
+        <%# The recorded time stands still; the time paused (this pause and the earlier ones) counts up,
+            and Resume adds this pause to the total. Paused on an earlier day, the pause shows its date. %>
+        <div class="timer-main">
+          <p class="timer-meta"><span class="timer-status">Paused</span>
+            <span class="timer-detail">
+              <span class="time-part">for <span class="timer-paused" role="timer" data-controller="timer" data-timer-start-value="<%= log.paused_at.iso8601 %>"
+                    data-timer-offset-value="<%= log.paused_seconds %>"><%= clock_duration(log.paused_seconds + (Time.current - log.paused_at).to_i) %></span> ·</span>
+              <span class="time-part">since <%= clock_time(log.paused_at) %><% unless log.paused_at.to_date == Date.current %> <%= day_badge(log.paused_at) %><% end %></span>
+            </span>
+          </p>
+          <strong class="timer-clock"><%= clock_duration(log.recorded_seconds) %></strong>
+        </div>
+        <div class="timer-actions">
+          <%= button_to workout_log_timer_path(log), class: "btn btn-primary" do %><i class="fa-solid fa-play" aria-hidden="true"></i> Resume<% end %>
+          <%= stop %>
+        </div>
+      <% elsif state == "finished" %>
+        <div class="timer-main">
+          <p class="timer-meta"><span class="timer-status">Finished</span></p>
+          <p class="timer-summary"><%= workout_time(log) %></p>
+        </div>
+      <% else %>
+        <div class="timer-main">
+          <p class="timer-prompt">How long is this workout?</p>
+        </div>
+        <div class="timer-actions">
+          <%= button_to start_path, class: "btn btn-primary", form: { data: ({ controller: "auto-submit" } if autostart) } do %><i class="fa-solid fa-play" aria-hidden="true"></i> Start timer<% end %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>

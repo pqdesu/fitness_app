@@ -18,8 +18,13 @@
   </div>
 </div>
 
+<%= render "workout_logs/timer", log: @workout_log, start_path: (workout_log_timer_path(@workout_log) if @workout_log.timer_today?),
+      autostart: current_user.timer_auto_start? %>
+<%= render "workout_logs/timer_alert", log: @workout_log, leave: true %>
+
 <div class="row g-4">
-  <div class="col-lg-8">
+  <%# Its exercises and sets are this workout: their links are not leaving it (workout_logs/_timer_alert). %>
+  <div class="col-lg-8" data-stays-in-workout>
     <% if @log_exercises.empty? %>
       <div class="card">
         <div class="empty-state">
@@ -63,7 +68,8 @@
           <% @unlogged_exercises.each do |we| %>
             <li>
               <span class="row-title"><%= we.name %></span>
-              <%= button_to "Add", workout_log_workout_log_exercises_path(@workout_log), params: { workout_exercise_id: we.id }, class: "btn btn-light btn-sm" %>
+              <%= button_to "Add", workout_log_workout_log_exercises_path(@workout_log), params: { workout_exercise_id: we.id }, class: "btn btn-light btn-sm",
+                    form: { data: { alert_when_paused: "add" } } %>
             </li>
           <% end %>
         </ul>

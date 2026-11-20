@@ -2,6 +2,7 @@
 <% turbo_refreshes_with method: :morph, scroll: :preserve %>
 <% back_to workout_day_path(@workout_day, date: @date) %>
 <% upcoming = @date > Date.current %>
+<%= render "workout_logs/timer_alert", log: @log, leave: false %>
 <div class="page-header">
   <div>
     <h1><%= @workout_exercise.name %></h1>

@@ -12,7 +12,11 @@
   </div>
 </div>
 
-<div class="card">
+<%= render "workout_logs/timer", log: @log, start_path: (workout_day_timer_path(@workout_day, date: @date) if @date == Date.current), autostart: @autostart %>
+<%= render "workout_logs/timer_alert", log: @log, leave: true %>
+
+<%# Its exercises are part of this workout: opening one is not leaving it (workout_logs/_timer_alert). %>
+<div class="card" data-stays-in-workout>
   <div class="card-header">
     <h2>Exercises</h2>
     <% if !upcoming && (@workout_exercises.any? || @extra_entries.any?) %>

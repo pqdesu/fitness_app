@@ -11,6 +11,8 @@ class WorkoutExercisesController < ApplicationController
     @date = logging_date(@workout_day)
     @entry = @workout_exercise.entry_on(@date)
     @sets = @entry ? @entry.workout_sets.order(:set_number).to_a : []
+    # That date's session, for its paused-timer alert, even before this exercise has a set.
+    @log = @entry&.workout_log || @workout_day.log_on(@date)
     # Pre-fills the form, so repeating the last set is a single tap.
     @last_set = @sets.last || WorkoutSet.where(workout_log_exercise: @workout_exercise.workout_log_exercises)
                                         .order(created_at: :desc, id: :desc).first

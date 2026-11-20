@@ -24,6 +24,7 @@
 
   <div class="collapse recent-panel" id="<%= panel_id %>">
     <p class="recent-counts"><%= pluralize(lifts.count { |lift| lift.workout_sets.any? }, "exercise") %> · <%= pluralize(set_count, "set") %></p>
+    <% if (time = workout_time(log)) %><p class="recent-counts"><i class="fa-regular fa-clock" aria-hidden="true"></i> <%= time %></p><% end %>
 
     <% if lifts.empty? %>
       <p class="text-muted small">No exercises in this workout.</p>

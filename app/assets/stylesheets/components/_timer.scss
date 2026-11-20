@@ -1,0 +1,148 @@
+// The workout timer (workout_logs/_timer), on a workout day's page and a logged workout's page:
+// a status pill and the time on the left, the buttons on the right. On a phone the buttons take a
+// row of their own, full width and side by side, for a thumb.
+.timer-card { margin-bottom: 1rem; }
+
+.timer-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.timer-main {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.timer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .5rem;
+  margin: 0;
+  font-size: .8125rem;
+  color: $muted;
+}
+
+// Running (green, its dot breathing), Paused (amber), Finished (grey): the colours the app's
+// chips already use for done today and for a rest day.
+.timer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .125rem .625rem;
+  border-radius: 999px;
+  background: $chip-bg;
+  color: $chip-text;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+.is-running .timer-status {
+  background: $done-bg;
+  color: $done-text;
+
+  &::before {
+    content: "";
+    width: .375rem;
+    height: .375rem;
+    border-radius: 50%;
+    background: currentColor;
+    animation: timer-live 2s ease-in-out infinite;
+  }
+}
+
+.is-paused .timer-status { background: $rest-bg; color: $rest-text; }
+
+@keyframes timer-live {
+  50% { opacity: .3; }
+}
+
+.timer-clock {
+  display: block;
+  margin-top: .25rem;
+  font-family: $headers-font;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  color: $gray;
+}
+
+// Paused, the recorded time stands still: dimmed, so it does not read as running.
+.is-paused .timer-clock { color: $muted; }
+
+.timer-paused {
+  font-weight: 600;
+  color: $rest-text;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-summary {
+  margin: .375rem 0 0;
+  font-weight: 500;
+}
+
+.timer-prompt { margin: 0; color: $muted; font-weight: 500; }
+
+.timer-actions {
+  display: flex;
+  flex: 1 1 100%;
+  gap: .5rem;
+
+  form { flex: 1; }
+  .btn { width: 100%; }
+
+  @include media-breakpoint-up(sm) {
+    flex: 0 0 auto;
+
+    form { flex: none; }
+    .btn { width: auto; }
+  }
+}
+
+// Not started yet, the timer is the page's second choice after its exercises: the question and
+// Start share one row, so Start does not stack as a second full-width blue button.
+.is-idle .timer-actions {
+  flex: 0 0 auto;
+
+  form { flex: none; }
+  .btn { width: auto; }
+}
+
+// A press answers at once: the button gives a little under the thumb, and lets go with an
+// ease-out, never waiting on the page that follows.
+.timer-card .btn {
+  transition: color .15s, background-color .15s, border-color .15s, box-shadow .15s,
+              transform .16s cubic-bezier(.23, 1, .32, 1);
+
+  &:active { transform: scale(.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-running .timer-status::before { animation: none; }
+  .timer-card .btn:active { transform: none; }
+}
+
+// A time line ("6:02 PM ~ 7:15 PM · 1 h 3 min · paused 10 min", ApplicationHelper#time_parts): each
+// part stays whole with the "·" after it, so a wrapped line never starts with a separator. The
+// length recorded is the line's one bold figure.
+.time-part { white-space: nowrap; }
+.time-length { font-weight: 600; color: $gray; }
+
+// The date beside a time when a workout went past midnight: 11:30 PM [20/11] ~ 1:00 AM [21/11].
+.chip-day {
+  padding: 0 .4rem;
+  font-size: .7rem;
+  background: $primary-soft;
+  color: $blue;
+}
+
+// The paused-timer alert (workout_logs/_timer_alert) is the confirm box with the app's blue.
+.timer-alert-icon {
+  color: $blue;
+  background: $primary-soft;
+}

@@ -18,6 +18,8 @@ Rails.application.routes.draw do
     resources :workout_exercises, only: [:create]
     # Adding an exercise to that day's workout while training; the plan stays as it is
     resources :workout_log_exercises, only: [:create]
+    # Starting the timer before anything is logged logs the workout
+    resource :timer, only: [:create], controller: "workout_timers"
   end
   # Opening an exercise shows today's sets; adding a set there logs it under today's workout.
   resources :workout_exercises, only: [:show, :update, :destroy] do
@@ -27,6 +29,10 @@ Rails.application.routes.draw do
   # Recording: log -> logged exercises -> sets. new and create start a workout that is not in a split.
   resources :workout_logs, only: [:index, :show, :new, :create, :update, :destroy] do
     resources :workout_log_exercises, only: [:create]
+    # The workout timer: start or resume (create), pause, stop (destroy), correct the finish (edit, update)
+    resource :timer, only: [:create, :edit, :update, :destroy], controller: "workout_timers" do
+      post :pause
+    end
   end
   resources :workout_log_exercises, only: [:edit, :update, :destroy] do
     resources :workout_sets, only: [:create]
