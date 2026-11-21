@@ -19,7 +19,8 @@ module SeedData
 
     def load_user(item)
       user = User.find_by(email: item["email"]) ||
-             User.create!(email: item["email"], password: user_password, admin: item["admin"] || false)
+             User.create!(email: item["email"], password: user_password, admin: item["admin"] || false,
+                          timer_auto_start: item["timer_auto_start"] || false)
       user.update_column(:time_zone, item["time_zone"]) if user.time_zone.blank? && item["time_zone"].present?
 
       # "Today" of the date rules is the user's own day.
@@ -101,8 +102,10 @@ module SeedData
     def create_workout(user, item, date)
       log = user.workout_logs.create!(workout_day: day_of(user, item["split"], item["weekday"]),
                                       workout: item["workout"], date:, notes: item["notes"])
-      # Kept as it was decided when the workout was logged, not worked out again here.
-      log.update_column(:rest_day, item["rest_day"] || false)
+      # Kept as it was decided when the workout was logged, not worked out again here, and the
+      # timer's times as they were (an automatic start would have stamped the loading time).
+      times = %w[started_at ended_at paused_at].to_h { |key| [key, item[key] && Time.iso8601(item[key].to_s)] }
+      log.update_columns(times.merge("rest_day" => item["rest_day"] || false, "paused_seconds" => item["paused_seconds"].to_i))
       log
     end
 

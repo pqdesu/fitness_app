@@ -9,6 +9,7 @@ class WorkoutLog < ApplicationRecord
 
   before_validation :copy_from_workout_day, on: :create
   before_validation :mark_rest_day, on: :create
+  before_create :start_timer_automatically
 
   # A workout is logged on the day it is done, so its date is never after today; the earliest
   # date only stops a typo in the year (0001, 20026) from sending a workout where no page shows it.
@@ -16,6 +17,7 @@ class WorkoutLog < ApplicationRecord
   validates :date, presence: true
   validate :date_in_range, if: -> { new_record? || date_changed? }
   validates :notes, length: { maximum: 2000 }
+  validate :ends_after_start
   validates :workout, inclusion: { in: WorkoutDay::NAMES }
   # One session per workout per day: sets added from any split go into the same log.
   validate :only_session_of_workout_that_day, if: -> { new_record? || date_changed? || workout_changed? }
@@ -33,7 +35,84 @@ class WorkoutLog < ApplicationRecord
     of_workout(workout).where(date:).order(:id).first
   end
 
+  # The timer starts on the day the workout is done, so only on today's workout. Once started it
+  # pauses, resumes and stops on any day, and the workout keeps its own date.
+  def timer_today?
+    date == Date.current
+  end
+
+  # The timer: started_at is the first start, paused_at when it is paused (empty while it runs),
+  # ended_at when it was stopped for good. paused_seconds adds up the time between each Pause and
+  # Resume. It runs until Pause or Stop, past midnight too, on the workout's own date. Every
+  # time is kept to the second, and shown so, never rounded.
+  def timer_running?
+    started_at.present? && paused_at.nil? && ended_at.nil?
+  end
+
+  def timer_paused?
+    paused_at.present? && ended_at.nil?
+  end
+
+  # The workout's end by its timer: when it stopped, or else when it was paused (a timer paused
+  # and never stopped ends there).
+  def timer_end
+    ended_at || paused_at
+  end
+
+  # The time the timer counted: from start to its end (or now while it runs), less the pauses.
+  def recorded_seconds
+    ((timer_end || Time.current) - started_at).to_i - paused_seconds if started_at
+  end
+
+  def pause_timer
+    self.paused_at = Time.current
+  end
+
+  # The time since the pause is left out of the workout's time.
+  def resume_timer
+    self.paused_seconds += (Time.current - paused_at).to_i
+    self.paused_at = nil
+  end
+
+  # Stopped while paused, it ended when it was paused; the pause after the end is not counted.
+  def stop_timer
+    self.ended_at = paused_at || Time.current
+    self.paused_at = nil
+  end
+
+  # Corrects when the workout finished (a timer left running), from a clock time "HH:MM" with the
+  # seconds at 0: the first such moment after the start, so 1:00 AM after an 11:16 PM start is the
+  # next day. A timer still running or paused stops there. Returns the finish, or nil when the
+  # time is not a clock time.
+  def finish_at(clock)
+    hour, min = clock.to_s.match(/\A([01]?\d|2[0-3]):([0-5]\d)\z/)&.captures&.map(&:to_i)
+    return if hour.nil? || started_at.nil?
+
+    finished = started_at.change(hour:, min:)
+    finished += 1.day if finished < started_at
+    self.paused_at = nil
+    self.ended_at = finished
+  end
+
   private
+
+  # With the automatic timer on, opening today's workout already starts it (see WorkoutTimersController);
+  # this covers a workout logged another way, such as a set added straight from an exercise page.
+  def start_timer_automatically
+    self.started_at ||= Time.current if timer_today? && user.timer_auto_start?
+  end
+
+  def ends_after_start
+    return if ended_at.nil?
+
+    errors.add(:ended_at, "needs a start") if started_at.nil?
+    errors.add(:ended_at, "can't be before the start") if started_at && ended_at < started_at
+    errors.add(:ended_at, "can't be in the future") if ended_at > Time.current
+    # Pauses are kept as a total, so an end that leaves less time than was paused cannot be right.
+    return unless started_at && ended_at >= started_at && recorded_seconds.negative?
+
+    errors.add(:ended_at, "leaves less time than was paused")
+  end
 
   def date_in_range
     return if date.nil?

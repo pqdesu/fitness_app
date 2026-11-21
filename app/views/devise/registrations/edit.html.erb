@@ -17,6 +17,8 @@
     <%= f.input :password_confirmation,
                 required: false,
                 input_html: { autocomplete: "new-password" } %>
+    <%= f.input :timer_auto_start, as: :boolean, label: "Start the workout timer automatically",
+                hint: "Opening today's workout starts it and its timer. Off, you press Start timer yourself." %>
     <%= f.input :current_password,
                 hint: "we need your current password to confirm your changes",
                 required: true,

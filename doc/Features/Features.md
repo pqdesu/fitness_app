@@ -2,8 +2,6 @@
 
 ### General
 
-- Add a timer of when workout started and then ended, the timer can be set to start automatically when you start a workout or start when I press the timer start button. Then the data shoould be displayed with the day, show how long it was and from what time to the end time.
-
 - Make a bottom navigation bar instead of the hamburger menu on the top left for Mobile. I want a navigation with icons and small text underneath them just like a mobile app. FOr example Instagram's bottom NAV bar
 
 ### Home page
@@ -81,6 +79,8 @@
 
 - No back button to the previous page. Only the back button of the browser which goes back to the previous page the user interacted. I want a back button to the page he was in, for example:
   - User create a exercise, he goes back to the list of exercise.
+
+- Add a timer of when workout started and then ended, the timer can be set to start automatically when you start a workout or start when I press the timer start button. Then the data shoould be displayed with the day, show how long it was and from what time to the end time.
 
 ### Home page
 

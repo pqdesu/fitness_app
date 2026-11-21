@@ -23,6 +23,26 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `dropdowns-off-screen`: the muscle group and equipment fields are now pills to tap instead of dropdowns. They were checked only in headless Chrome at 390 px, not on a phone. Not verified: how a tap feels, whether a pill keeps a focus ring after it is tapped on iOS, and that the 44 px pills are easy to hit with a thumb. If more muscle groups are added later, the "Add exercises" pop-up grows one row of pills for every three.
 
+### Workout timer not tried on a real phone
+
+- From `workout-timer`: the timer box, its live clock and paused counter, the paused-timer alert and Edit timer were checked only in headless Chrome at 390 px and 1280 px, not on a phone. Not verified: the clock after the phone sleeps for a long time, the press and pop-up motion on a device, and the alert reopening "Add exercises" after Resume in a private window (it uses sessionStorage; if blocked, the list does not reopen, but the timer still resumes).
+
+### Opening today's workout logs it when the automatic timer is on
+
+- From `workout-timer`: with "Start the workout timer automatically" on, opening today's workout (even just to look at it) logs it with no exercises and starts its timer. It stays in History, as an empty workout, until it is deleted.
+
+### A forgotten timer keeps counting
+
+- From `workout-timer`: a timer left running or paused keeps counting until it is stopped, even days later; History then shows a very long workout until it is corrected with Edit timer. Edit timer changes only the finish (not the start or the pauses) and refuses a finish that leaves less time than the paused total.
+
+### Times to the minute beside a length to the second
+
+- From `workout-timer`: the start and end on a time line show hours and minutes, while the length is to the second, so "11:09 PM ~ 11:50 PM" can sit next to "30 min 10 s" and not add up at a glance.
+
+### The paused-timer alert only covers the app's own links
+
+- From `workout-timer`: leaving the workout with the browser's back button, a swipe back or by closing the tab does not ask about a paused timer; only the app's links (the back arrow, the menu, Plan) do.
+
 # Issues resolved (DONE)
 
 ## Dropdowns

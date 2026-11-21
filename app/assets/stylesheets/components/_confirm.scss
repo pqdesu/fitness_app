@@ -48,5 +48,18 @@
   .btn { padding-top: .625rem; padding-bottom: .625rem; }
 }
 
+// The box comes in from just under full size as it fades, quickly and with an ease-out, rather than
+// Bootstrap's slide down from 50px above; it closes the same way. Without motion, it simply appears.
+.confirm-modal.fade .modal-dialog {
+  transform: scale(.96);
+  transition: transform .2s cubic-bezier(.23, 1, .32, 1);
+}
+
+.confirm-modal.show .modal-dialog { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-modal.fade .modal-dialog { transform: none; transition: none; }
+}
+
 // The tint over the page behind any modal.
 .modal-backdrop.show { backdrop-filter: blur(2px); }
