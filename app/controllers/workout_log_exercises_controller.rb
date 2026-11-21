@@ -2,7 +2,7 @@ class WorkoutLogExercisesController < ApplicationController
   include ExercisePicker
   include LoggingDate
 
-  before_action :set_entry, only: [:edit, :update, :destroy]
+  before_action :set_entry, only: [:edit, :update, :move, :destroy]
 
   # Adds to a workout: an exercise planned for the day (workout_exercise_id), or the exercises
   # chosen (or the one created) in the "Add exercises" modal. From a workout day's page
@@ -52,6 +52,13 @@ class WorkoutLogExercisesController < ApplicationController
     else
       render :edit, status: :unprocessable_content
     end
+  end
+
+  # Moves an exercise up or down this workout (from its page). The plan keeps its own order.
+  def move
+    @entry.move!(params[:direction])
+    flash[:moved] = @entry.id # lights the card up on the page (.just-moved)
+    redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), status: :see_other
   end
 
   # Takes an exercise out of a workout. One planned for the day stays on the plan (and is offered

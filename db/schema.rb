@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -102,6 +102,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_090000) do
     t.string "machine_brand"
     t.string "equipment_name"
     t.string "machine_type"
+    t.integer "position"
     t.index ["exercise_id"], name: "index_workout_exercises_on_exercise_id"
     t.index ["workout_day_id", "exercise_id"], name: "index_workout_exercises_on_workout_day_id_and_exercise_id", unique: true, where: "(exercise_id IS NOT NULL)"
     t.index ["workout_day_id"], name: "index_workout_exercises_on_workout_day_id"
@@ -119,6 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_090000) do
     t.bigint "exercise_id"
     t.string "equipment_name"
     t.string "machine_type"
+    t.integer "position"
     t.index ["exercise_id"], name: "index_workout_log_exercises_on_exercise_id"
     t.index ["workout_exercise_id"], name: "index_workout_log_exercises_on_workout_exercise_id"
     t.index ["workout_log_id", "exercise_id"], name: "index_workout_log_exercises_on_workout_log_id_and_exercise_id", unique: true, where: "(exercise_id IS NOT NULL)"

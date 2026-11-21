@@ -15,6 +15,10 @@ module ActionsMenuHelper
     tag.li(link_to(safe_join([icon_tag(icon), label], " "), path, class: "dropdown-item", **))
   end
 
+  def menu_button(label, path, icon:, method: :patch)
+    tag.li(button_to(path, method:, class: "dropdown-item") { safe_join([icon_tag(icon), label], " ") })
+  end
+
   # Deleting is an × everywhere, and asks first when confirm is given.
   def menu_delete(label, path, confirm: nil, **)
     form = { data: { turbo_confirm: confirm }.compact }

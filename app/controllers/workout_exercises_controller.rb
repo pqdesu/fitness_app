@@ -2,7 +2,7 @@ class WorkoutExercisesController < ApplicationController
   include ExercisePicker
   include LoggingDate
 
-  before_action :set_workout_exercise, only: [:show, :update, :destroy]
+  before_action :set_workout_exercise, only: [:show, :update, :move, :destroy]
 
   # Opening an exercise: the sets of the date its workout is logged on (see LoggingDate), and the
   # form to add the next one, unless that date is still to come.
@@ -48,6 +48,13 @@ class WorkoutExercisesController < ApplicationController
     else
       redirect_to workout_exercise_path(@workout_exercise, date:), alert: "Equipment not saved: #{errors_of(@workout_exercise)}."
     end
+  end
+
+  # Moves an exercise up or down the day's plan (from the split page); the workout day follows it.
+  def move
+    @workout_exercise.move!(params[:direction])
+    flash[:moved] = @workout_exercise.id # lights the row up on the page (.just-moved)
+    redirect_to plan_path(@workout_exercise.workout_day), status: :see_other
   end
 
   # Takes an exercise off the plan (from the split page). Workouts already logged keep it.

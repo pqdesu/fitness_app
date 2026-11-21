@@ -1,5 +1,6 @@
 class WorkoutLogExercise < ApplicationRecord
   include Lift
+  include Positioned
 
   belongs_to :workout_log
   # Optional: an exercise can be logged without having been planned.
@@ -22,6 +23,8 @@ class WorkoutLogExercise < ApplicationRecord
   end
 
   private
+
+  def siblings = WorkoutLogExercise.where(workout_log_id:)
 
   # An entry started from the plan takes the plan's exercise and equipment,
   # so nothing has to be retyped at the gym.

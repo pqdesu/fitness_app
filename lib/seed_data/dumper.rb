@@ -70,7 +70,7 @@ module SeedData
       {
         "day" => day.day,
         "weekday" => day.weekday,
-        "exercises" => day.workout_exercises.sort_by(&:id).map { |planned| lift_data(planned) },
+        "exercises" => day.workout_exercises.map { |planned| lift_data(planned) },
         "moves" => day.workout_day_moves.sort_by(&:week_start)
                       .map { |move| { "week_start" => move.week_start.iso8601, "weekday" => move.weekday } }
       }
@@ -101,7 +101,7 @@ module SeedData
         "ended_at" => log.ended_at&.iso8601,
         "paused_at" => log.paused_at&.iso8601,
         "paused_seconds" => log.paused_seconds,
-        "exercises" => log.workout_log_exercises.sort_by(&:id).map { |entry| entry_data(entry) }
+        "exercises" => log.workout_log_exercises.map { |entry| entry_data(entry) }
       }
     end
 

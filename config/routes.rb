@@ -26,6 +26,8 @@ Rails.application.routes.draw do
   end
   # Opening an exercise shows today's sets; adding a set there logs it under today's workout.
   resources :workout_exercises, only: [:show, :update, :destroy] do
+    # Move up or down in the day's plan (from the split page)
+    patch :move, on: :member
     resources :workout_sets, only: [:create]
   end
 
@@ -38,6 +40,8 @@ Rails.application.routes.draw do
     end
   end
   resources :workout_log_exercises, only: [:edit, :update, :destroy] do
+    # Move up or down in that workout (from its page); the plan keeps its order
+    patch :move, on: :member
     resources :workout_sets, only: [:create]
   end
   resources :workout_sets, only: [:update, :destroy]

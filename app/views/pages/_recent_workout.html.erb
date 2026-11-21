@@ -4,7 +4,7 @@
   link out. Locals: log (loaded with its exercises and sets).
 %>
 <% panel_id = "recent-log-#{log.id}" %>
-<% lifts = log.workout_log_exercises.sort_by(&:id) %>
+<% lifts = log.workout_log_exercises.to_a %>
 <% set_count = lifts.sum { |lift| lift.workout_sets.size } %>
 <li class="recent-row">
   <button type="button" class="recent-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"

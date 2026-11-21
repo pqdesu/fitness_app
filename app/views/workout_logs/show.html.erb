@@ -34,13 +34,13 @@
       </div>
     <% end %>
 
-    <% @log_exercises.each do |entry| %>
+    <% @log_exercises.each_with_index do |entry, i| %>
       <% sets = entry.workout_sets.sort_by(&:set_number) %>
       <% top = entry.top_set %>
       <% panel_id = "entry-#{entry.id}-sets" %>
       <%# Each exercise starts folded: its name, sets and heaviest set; the arrow opens its sets and
           the add-set form (fold_controller.js keeps it open when a save refreshes the page). %>
-      <div class="card entry-card" id="entry-<%= entry.id %>" data-controller="fold" data-action="turbo:before-morph-attribute->fold#keep">
+      <div class="<%= class_names("card entry-card", "just-moved": flash[:moved] == entry.id) %>" id="entry-<%= entry.id %>" data-controller="fold" data-action="turbo:before-morph-attribute->fold#keep">
         <div class="card-header">
           <div>
             <h2><%= entry.name %></h2>
@@ -51,6 +51,8 @@
             <span class="chip"><%= pluralize(sets.size, "set") %></span>
             <%= actions_menu entry.name do %>
               <%= menu_link "Edit", edit_workout_log_exercise_path(entry) %>
+              <% if i.positive? %><%= menu_button "Move up", move_workout_log_exercise_path(entry, direction: "up"), icon: "arrow-up" %><% end %>
+              <% if i < @log_exercises.size - 1 %><%= menu_button "Move down", move_workout_log_exercise_path(entry, direction: "down"), icon: "arrow-down" %><% end %>
               <%= menu_delete "Remove from workout", workout_log_exercise_path(entry), confirm: "Remove #{entry.name} and its sets from this workout?" %>
             <% end %>
             <button type="button" class="btn btn-light btn-sm entry-toggle fold-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"

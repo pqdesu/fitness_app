@@ -55,3 +55,8 @@ a.chip:hover { background: $primary-soft; color: $blue; }
   font-weight: 600;
 }
 .card-link .order-badge { float: right; }
+
+// A row or card just moved up or down lights up for a moment, so the eye follows it and the next
+// tap does not land on the row that took its place.
+.just-moved { animation: just-moved 1.6s ease-out; }
+@keyframes just-moved { from { background-color: $primary-soft; } }

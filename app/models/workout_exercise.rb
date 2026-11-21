@@ -2,6 +2,7 @@
 # sets, reps and weight are recorded when the user trains (see WorkoutSet).
 class WorkoutExercise < ApplicationRecord
   include Lift
+  include Positioned
 
   belongs_to :workout_day
   # Removing an exercise from the plan keeps what was already logged for it.
@@ -32,6 +33,8 @@ class WorkoutExercise < ApplicationRecord
   end
 
   private
+
+  def siblings = WorkoutExercise.where(workout_day_id:)
 
   def not_already_on_day
     return if workout_day.nil? || exercise_id.nil?
