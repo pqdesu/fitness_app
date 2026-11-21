@@ -70,7 +70,7 @@ class WorkoutLogsController < ApplicationController
   def destroy
     @workout_log.destroy
     # Opened from the dashboard, deleting goes back to the dashboard rather than to History.
-    redirect_to (from_dashboard? ? root_path : workout_logs_path), notice: "Workout deleted.", status: :see_other
+    redirect_to (from_dashboard? ? dashboard_path : workout_logs_path), notice: "Workout deleted.", status: :see_other
   end
 
   private

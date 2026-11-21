@@ -11,7 +11,7 @@ class WeekMovesFlowTest < FlowTest
 
     # Tuesday: nothing planned
     travel_to Time.zone.local(2026, 11, 17, 12) do
-      get root_path
+      get dashboard_path
       assert_select ".today-title", "Rest day"
       assert_select ".today-header button.btn-primary[data-bs-target='#rest-day-start']", "Start workout"
       # one pill per workout of the split, by name only; its pop-up trains it as an extra
@@ -29,7 +29,7 @@ class WeekMovesFlowTest < FlowTest
       assert log.rest_day?
       assert_equal 2, split.workout_days.reload.count
 
-      get root_path
+      get dashboard_path
       assert_select ".today", /Logged today · Pull, 1 set/
       assert_select ".today .chip-rest", "Rest day"
       assert_select ".recent-row .chip-rest", "Rest day"
@@ -191,5 +191,59 @@ class WeekMovesFlowTest < FlowTest
       get new_workout_log_path(workout: "Chest day")
       assert_redirected_to root_path
     end
+  end
+
+  test "the Today page is today's workout, or on a rest day the choices already open, and moves return to it" do
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+    pull = split.workout_days.create!(day: "Pull", weekday: 5)
+    @user.update!(active_split: split)
+
+    # "/" and signing in open Today; signed out "/" is the landing page
+    get root_path
+    assert_select ".hero"
+    post user_session_path, params: { user: { email: @user.email, password: "secret123" } }
+    assert_redirected_to root_path
+
+    # Monday: Push, one tap to start it
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      get root_path
+      assert_response :success
+      assert_select "h1", "Monday, November 16"
+      assert_select ".today-title", "Push day"
+      assert_select ".today a.btn-primary[href=?]", workout_day_path(push, date: Date.current), text: "Start workout"
+      assert_select ".today .eyebrow", false # the page heading has the date
+    end
+
+    # Tuesday: a rest day, with the choices shown, not behind a button
+    travel_to Time.zone.local(2026, 11, 17, 12) do
+      get root_path
+      assert_select ".today-title", "Rest day"
+      assert_select ".today-header button[data-bs-target='#rest-day-start']", false
+      assert_equal %w[Push Pull], css_select("#rest-day-start.collapse.show button[data-bs-toggle='modal']").map(&:text)
+      assert_select "#rest-start-1 a[href=?]", workout_day_path(pull, date: Date.current), text: "Train as extra"
+      assert_select "#rest-day-start a[href=?]", new_workout_log_path(workout: "Legs")
+
+      # this week's plan with "Move a workout"; a move made here comes back here
+      assert_select ".week-moves button[data-bs-target='#move-workout']"
+      assert_select "#move-workout form[action=?]", split_week_move_path(split)
+      post split_week_move_path(split), params: { workout_day_id: pull.id, weekday: 3 }, headers: { "HTTP_REFERER" => root_url }
+      assert_redirected_to root_url
+      assert_equal pull, split.week_plan(Date.current)[3]
+      delete split_week_move_path(split), headers: { "HTTP_REFERER" => root_url }
+      assert_redirected_to root_url
+      assert_equal pull, split.week_plan(Date.current)[5]
+
+      # without a page to go back to, a move goes to Today
+      post split_week_move_path(split), params: { workout_day_id: pull.id, weekday: 3 }
+      assert_redirected_to root_path
+    end
+  end
+
+  test "the Today page without a split asks for one" do
+    sign_in @user
+    get root_path
+    assert_select ".today", false
+    assert_select ".empty-state a[href=?]", new_split_path
   end
 end

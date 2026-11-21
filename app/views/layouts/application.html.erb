@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <title>FitnessApp</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -33,5 +33,7 @@
         <%= yield %>
       <% end %>
     </main>
+
+    <%= render "shared/bottom_nav" if user_signed_in? %>
   </body>
 </html>

@@ -2,7 +2,7 @@
   background: rgba(white, .92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid $line;
-  padding-top: .625rem;
+  padding-top: calc(.625rem + env(safe-area-inset-top));
   padding-bottom: .625rem;
 
   .navbar-brand {
@@ -23,6 +23,18 @@
     &:hover { color: $gray; }
     &.active { color: $blue; background: $primary-soft; }
   }
+
+  // A phone's top bar names the page beside the logo, or beside the back arrow on a sub-page. Its
+  // line is as tall as the arrow (2.75rem), so the bar keeps its height without the logo.
+  .navbar-page-title {
+    font-family: $headers-font;
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 2.75rem;
+    color: $gray;
+  }
+
+  &.has-back .navbar-page-title { margin-left: 3.25rem; }
 
   .user-chip {
     display: flex;
