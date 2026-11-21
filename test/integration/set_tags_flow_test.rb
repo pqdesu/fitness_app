@@ -105,6 +105,10 @@ class SetTagsFlowTest < FlowTest
     note_path = workout_log_exercise_path(entry, workout_exercise_id: @planned.id, date: Date.current)
     get @page
     assert_select ".exercise-note form[action=?] textarea[name='workout_log_exercise[notes]']", note_path
+    # saved with a blue arrow beside it, as a set's note is
+    assert_select ".exercise-note .input-group button.btn-primary.note-save[type=submit][aria-label='Save note'] .fa-arrow-right", 1
+    set = entry.workout_sets.sole
+    assert_select ".set-note .input-group button.note-save[type=submit][form='edit_set_#{set.id}'] .fa-arrow-right", 1
 
     patch note_path, params: { workout_log_exercise: { notes: "  Seat on 4  " } }
     assert_redirected_to @page

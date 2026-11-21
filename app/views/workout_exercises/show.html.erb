@@ -45,9 +45,11 @@
           <%= form_with model: @entry, url: workout_log_exercise_path(@entry, workout_exercise_id: @workout_exercise.id, date: @date),
                 class: "inline-form" do |f| %>
             <%= f.label :notes, "Note on #{@workout_exercise.name}", class: "visually-hidden" %>
-            <%= f.text_area :notes, rows: 2, maxlength: 500, placeholder: "Anything to remember about this exercise today",
-                  class: "form-control" %>
-            <%= f.submit "Save note", class: "btn btn-light w-100 mt-2" %>
+            <div class="input-group">
+              <%= f.text_area :notes, rows: 2, maxlength: 500, placeholder: "Anything to remember about this exercise today",
+                    class: "form-control" %>
+              <button type="submit" class="btn btn-primary note-save" aria-label="Save note"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
           <% end %>
         </div>
       </div>

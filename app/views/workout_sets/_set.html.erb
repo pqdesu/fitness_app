@@ -1,7 +1,7 @@
 <%#
   One recorded set, as a group of rows (a tbody) of a set table. Edit (in its ⋯ menu) turns its weight and reps
   into fields, so a mistake is corrected in place instead of deleting the set. The note field is
-  always there and saves when it is left or Enter is pressed; the Tag button beside
+  always there and saves when it is left, Enter is pressed or its arrow tapped; the Tag button beside
   the set's tag chips opens the tags, and ticking one saves. Locals: set, and optionally workout_exercise and date when the table is on an exercise's
   page, so saving or deleting returns there, on the same date.
 %>
@@ -71,9 +71,15 @@
           </div>
         </div>
       <% end %>
-      <%= text_field_tag "workout_set[notes]", set.notes, id: "notes_set_#{set.id}", form: form_id, maxlength: 200,
-            placeholder: "Add a note", autocomplete: "off", class: "form-control form-control-sm",
-            "aria-label": "Note on set #{set.set_number}", data: { action: "change->row-edit#save" } %>
+      <%# The note saves when it is left, or with its blue arrow. %>
+      <div class="input-group input-group-sm">
+        <%= text_field_tag "workout_set[notes]", set.notes, id: "notes_set_#{set.id}", form: form_id, maxlength: 200,
+              placeholder: "Add a note", autocomplete: "off", class: "form-control",
+              "aria-label": "Note on set #{set.set_number}", data: { action: "change->row-edit#save" } %>
+        <button type="submit" form="<%= form_id %>" class="btn btn-primary note-save" aria-label="Save the note of set <%= set.set_number %>">
+          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
     </td>
   </tr>
   <%# While editing: Save and Cancel, on a row of their own so the number fields keep their width on a phone. %>
