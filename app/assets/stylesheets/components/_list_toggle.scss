@@ -49,3 +49,8 @@
 }
 .exercise-group-list { border-bottom: 1px solid $line; }
 
+// A card that folds under its header (fold_controller.js): a logged exercise, a day of a split.
+// The arrow turns when open, and a folded card has no line under its header, as nothing follows it.
+.fold-toggle .fa-chevron-down { transition: transform .2s; }
+.fold-toggle[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+[data-controller~="fold"] > .card-header:has(+ .collapse:not(.show)) { border-bottom: 0; }

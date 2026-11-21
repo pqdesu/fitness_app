@@ -24,40 +24,51 @@
   </div>
 </div>
 
-<%# The plan of each workout day: only which exercises. Sets are added when the workout is trained. %>
+<%# The plan of each workout day: only which exercises. Sets are added when the workout is trained.
+    Each day is folded but today's: its arrow, its circle in the week above, or an address ending in
+    #day-<id> (where planning returns) opens it (fold_controller.js). %>
 <% @workout_days.each do |day| %>
   <% planned = day.workout_exercises.sort_by(&:id) %>
-  <div class="card day-plan mt-3" id="day-<%= day.id %>">
+  <% open = day.weekday == Date.current.wday %>
+  <% panel_id = "day-#{day.id}-plan" %>
+  <div class="card day-plan mt-3" id="day-<%= day.id %>" data-controller="fold" data-action="click@document->fold#openFromLink">
     <div class="card-header">
       <div>
         <h2><%= day.day %></h2>
-        <p class="text-muted small mb-0"><%= day.weekday_name %></p>
+        <p class="text-muted small mb-0"><%= day.weekday_name %><% if open %> · Today<% end %></p>
       </div>
       <div class="entry-meta">
+        <span class="chip"><%= pluralize(planned.size, "exercise") %></span>
         <%= actions_menu day.day do %>
           <%= menu_link "Edit", edit_workout_day_path(day) %>
           <%= menu_delete "Delete #{day.day}", workout_day_path(day), confirm: "Delete #{day.day} and its planned exercises? Your logged workouts are kept." %>
         <% end %>
+        <button type="button" class="btn btn-light btn-sm fold-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
+                aria-expanded="<%= open %>" aria-controls="<%= panel_id %>" aria-label="Exercises of <%= day.day %>" data-fold-target="toggle">
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
-    <% if planned.any? %>
-      <ul class="list-rows">
-        <% planned.each do |we| %>
-          <li>
-            <div>
-              <span class="row-title"><%= we.name %></span>
-              <% if we.exercise&.muscle_group.present? %><span class="text-muted small"><%= we.exercise.muscle_group %></span><% end %>
-            </div>
-            <%= button_to workout_exercise_path(we), method: :delete, class: "btn btn-link btn-sm text-danger",
-                  "aria-label": "Remove #{we.name} from #{day.day}", title: "Remove #{we.name} from #{day.day}" do %><i class="fa-solid fa-xmark"></i><% end %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <div class="empty-state compact"><p>No exercises planned yet.</p></div>
-    <% end %>
-    <div class="card-footer d-grid">
-      <%= exercise_picker_button "btn-light", key: day.id, label: "Plan exercises" %>
+    <div class="<%= class_names("collapse", show: open) %>" id="<%= panel_id %>" data-fold-target="panel">
+      <% if planned.any? %>
+        <ul class="list-rows">
+          <% planned.each do |we| %>
+            <li>
+              <div>
+                <span class="row-title"><%= we.name %></span>
+                <% if we.exercise&.muscle_group.present? %><span class="text-muted small"><%= we.exercise.muscle_group %></span><% end %>
+              </div>
+              <%= button_to workout_exercise_path(we), method: :delete, class: "btn btn-link btn-sm text-danger",
+                    "aria-label": "Remove #{we.name} from #{day.day}", title: "Remove #{we.name} from #{day.day}" do %><i class="fa-solid fa-xmark"></i><% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="empty-state compact"><p>No exercises planned yet.</p></div>
+      <% end %>
+      <div class="card-footer d-grid">
+        <%= exercise_picker_button "btn-light", key: day.id, label: "Plan exercises" %>
+      </div>
     </div>
   </div>
   <%= render "shared/exercise_picker", url: workout_day_workout_exercises_path(day), exercises: picker_exercises,

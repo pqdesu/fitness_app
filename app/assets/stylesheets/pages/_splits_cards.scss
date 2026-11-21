@@ -18,3 +18,6 @@ div.card-link {
 }
 .split-active-badge { float: right; }
 .header-actions .split-active-badge { float: none; padding: .5rem .75rem; }
+
+// A day opened from its week circle (#day-<id>) stops below the top bar, its name in view
+.day-plan { scroll-margin-top: 5rem; }

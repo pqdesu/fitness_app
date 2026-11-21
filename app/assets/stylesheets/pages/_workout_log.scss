@@ -68,9 +68,3 @@
 @include media-breakpoint-up(lg) {
   .log-details { position: sticky; top: 5rem; }
 }
-
-// A logged exercise folds (workout_logs/show): the arrow turns when open, and a folded card has
-// no line under its header, as nothing follows it.
-.entry-toggle .fa-chevron-down { transition: transform .2s; }
-.entry-toggle[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
-.entry-card .card-header:has(+ .collapse:not(.show)) { border-bottom: 0; }
