@@ -459,6 +459,11 @@ users:
         reps: 10
         weight: '80.0'
     paused_seconds: 0
+  - date: '2026-11-20'
+    workout: Upper
+    split: U/R/L/U/L
+    weekday: 5
+    rest_day: false
   - date: '2026-11-21'
     workout: Lower
     split: U/R/L/U/L
@@ -468,8 +473,3 @@ users:
     ended_at: '2026-11-20T22:58:01Z'
     paused_seconds: 0
   timer_auto_start: false
-  - date: '2026-11-20'
-    workout: Upper
-    split: U/R/L/U/L
-    weekday: 5
-    rest_day: false
