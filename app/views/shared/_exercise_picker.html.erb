@@ -20,8 +20,11 @@
           <p class="text-muted">There are no exercises yet. Create your first one below.</p>
         <% else %>
           <%= form_with url: url, id: "#{id}-form", data: { turbo_action: "advance" } do %>
+            <%# Each muscle group starts closed: its heading opens its exercises. %>
             <% exercises.group_by(&:group).sort.each do |group, group_exercises| %>
-              <h3 class="picker-group"><%= group %></h3>
+              <% group_id = "#{id}-group-#{group.parameterize}" %>
+              <button type="button" class="picker-group group-toggle" data-bs-toggle="collapse" data-bs-target="#<%= group_id %>" aria-expanded="false" aria-controls="<%= group_id %>"><span class="group-name"><%= group %></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+              <div class="collapse" id="<%= group_id %>">
               <% group_exercises.each do |exercise| %>
                 <% taken = taken_ids.include?(exercise.id) %>
                 <label class="picker-row <%= "is-taken" if taken %>">
@@ -31,6 +34,7 @@
                   <% unless exercise.shared? %><span class="chip">Yours</span><% end %>
                 </label>
               <% end %>
+              </div>
             <% end %>
           <% end %>
         <% end %>

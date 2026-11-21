@@ -1,0 +1,51 @@
+// "Show …" / "Hide …": a full-width button that opens and closes a list (shared/_list_toggle),
+// 44px tall for a thumb. The weekly overview's days, the Today box's lifts, a workout's exercises.
+.toggle-days {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: .5rem;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid $line;
+  background: none;
+  color: $blue;
+  font-size: .85rem;
+  font-weight: 600;
+
+  .fa-chevron-down { transition: transform .2s; }
+  &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+  .when-open, &[aria-expanded="true"] .when-closed { display: none; }
+  &[aria-expanded="true"] .when-open { display: inline; }
+}
+
+// Inside a card, under its header: the card's own padding, and the header's line above is enough
+.toggle-days.in-card { width: auto; margin: 0 1.25rem; border-top: 0; }
+
+// A muscle group's heading that opens and closes its exercises (the Exercises page, "Add exercises")
+.group-toggle {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  border: 0;
+  background: none;
+  text-align: left;
+
+  .group-name { flex: 1; }
+  .fa-chevron-down { color: $muted; font-size: .75rem; transition: transform .2s; }
+  &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+}
+
+// The Exercises page: a muscle group per row of the card, its exercises under it
+.exercise-group {
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid $line;
+  font-weight: 700;
+  color: $gray;
+}
+.exercise-group-list { border-bottom: 1px solid $line; }
+

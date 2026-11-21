@@ -34,7 +34,9 @@
       <% unless upcoming %><%= exercise_picker_button "btn-primary" %><% end %>
     </div>
   <% else %>
-    <ul class="list-rows">
+    <%# Open while training, and it can be folded away like the other lists of exercises. %>
+    <%= render "shared/list_toggle", target: "day-exercises", label: "exercises", open: true, css: "in-card" %>
+    <ul class="list-rows collapse show" id="day-exercises">
       <% @workout_exercises.each do |we| %>
         <% sets_logged = @sets_logged.fetch(we.id, 0) %>
         <li>

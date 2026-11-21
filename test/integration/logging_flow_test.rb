@@ -15,6 +15,9 @@ class LoggingFlowTest < FlowTest
     assert_select "#day-#{day.id} .empty-state", text: /No exercises planned yet/
     assert_select "#day-#{day.id} button[data-bs-target='#{picker}']", text: /Plan exercises/
     assert_equal %w[Chest Legs], css_select("#{picker}-form .picker-group").map(&:text)
+    # each muscle group starts closed and opens its exercises
+    assert_select "#{picker}-form button.picker-group[aria-expanded=false][data-bs-target='#{picker}-group-chest']", 1
+    assert_select "#{picker}-group-chest.collapse:not(.show) label", text: /Bench press/
     assert_select "#{picker} form[action=?]", workout_day_workout_exercises_path(day)
     assert_select "#{picker} label", text: /Bench press/
     assert_select "#{picker} label", text: /Secret lift/, count: 0

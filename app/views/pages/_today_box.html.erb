@@ -78,12 +78,15 @@
     <p class="today-last today-done">
       Logged today · <%= pluralize(dashboard.today_summary.exercises, "exercise") %> · <%= link_to pluralize(dashboard.today_summary.sets, "set"), workout_log_path(today_log, from: "dashboard") %><% if dashboard.today_summary.top_weight %> · top <%= format_weight(dashboard.today_summary.top_weight) %><% end %>
     </p>
-    <%= render "lifts", lifts: today_lifts, list_class: "today-lifts" %>
+    <%# The exercises start closed, like the weekly overview's days: the line above sums them up. %>
+    <%= render "shared/list_toggle", target: "today-lifts-list", label: "exercises" %>
+    <div class="collapse" id="today-lifts-list"><%= render "lifts", lifts: today_lifts, list_class: "today-lifts" %></div>
     <% if last_log %><p class="today-last today-previous"><%= last_time %></p><% end %>
   <% elsif last_log.nil? %>
     <p class="text-muted small mb-0">You have not logged a <%= today_workout.day %> session before today. Your heaviest sets will show here next time.</p>
   <% else %>
     <p class="today-last"><%= last_time %></p>
-    <%= render "lifts", lifts: last_log.workout_log_exercises, list_class: "last-lifts" %>
+    <%= render "shared/list_toggle", target: "last-lifts-list", label: "exercises" %>
+    <div class="collapse" id="last-lifts-list"><%= render "lifts", lifts: last_log.workout_log_exercises, list_class: "last-lifts" %></div>
   <% end %>
 </div>

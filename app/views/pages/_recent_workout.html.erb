@@ -29,7 +29,8 @@
     <% if lifts.empty? %>
       <p class="text-muted small">No exercises in this workout.</p>
     <% else %>
-      <ul class="lift-pills">
+      <%= render "shared/list_toggle", target: "#{panel_id}-lifts", label: "exercises", css: "mb-2" %>
+      <ul class="lift-pills collapse" id="<%= panel_id %>-lifts">
         <% lifts.each do |lift| %>
           <% top = lift.top_set %>
           <li>

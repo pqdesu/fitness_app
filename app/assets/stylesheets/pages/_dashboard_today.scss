@@ -24,4 +24,7 @@
 // "Last time" as a closing line, under the sets logged today
 .today > .today-previous { padding: .75rem 1.25rem 1rem; border-top: 1px solid $line; }
 
+// The "Show exercises" toggle sits inside the card's padding
+.today > .toggle-days { width: auto; margin: .5rem 1.25rem 0; }
+
 .top-set { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }

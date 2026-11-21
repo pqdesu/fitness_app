@@ -14,11 +14,7 @@
     <div><dt>Top weight</dt><dd><%= summary.top_weight ? weight_number(summary.top_weight) : "–" %><% if summary.top_weight %><small> kg</small><% end %></dd></div>
   </dl>
 
-  <button type="button" class="toggle-days" data-bs-toggle="collapse" data-bs-target="#week-days"
-          aria-expanded="false" aria-controls="week-days">
-    <span class="toggle-days-label"><span class="when-closed">Show days</span><span class="when-open">Hide days</span></span>
-    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-  </button>
+  <%= render "shared/list_toggle", target: "week-days", label: "days" %>
 
   <div class="collapse" id="week-days">
     <ul class="week-overview-days">

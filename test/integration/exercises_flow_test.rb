@@ -34,6 +34,9 @@ class ExercisesFlowTest < FlowTest
     # the admin manages both; another user does not see the private one
     get exercises_path
     assert_select "td", text: /Jefferson curl.*Yours/m
+    # one closed heading per muscle group, with how many exercises it has, that opens them
+    assert_select "button.exercise-group[aria-expanded=false][data-bs-target='#exercises-back']", text: /Back\s+2/
+    assert_select "#exercises-back.collapse:not(.show) td", text: /Jefferson curl/
     assert_select "a[href=?]", edit_exercise_path(private_lift)
     assert_select "a[href=?]", edit_exercise_path(deadlift)
     patch exercise_path(private_lift), params: { exercise: { muscle_group: "Core" } }
