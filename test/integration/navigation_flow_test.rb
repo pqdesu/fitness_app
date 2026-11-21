@@ -147,5 +147,68 @@ class NavigationFlowTest < FlowTest
       assert_select "button[data-confirm-accept]", 1
     end
   end
-end
 
+  test "on a phone the sections are a bottom tab bar, the top bar names the page, and there is no hamburger" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    day = split.workout_days.create!(day: "Push", weekday: Date.current.wday)
+    other = split.workout_days.create!(day: "Pull", weekday: (Date.current.wday + 1) % 7)
+    planned = day.workout_exercises.create!(exercise: @bench)
+    post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
+    log = @user.workout_logs.sole
+
+    # Today first, Account last; Exercises is a desktop link and, on a phone, a button on the dashboard
+    {
+      root_path => %w[Today Today], dashboard_path => %w[Dashboard Dashboard], exercises_path => %w[Exercises Dashboard],
+      splits_path => %w[Splits Splits], split_path(split) => %w[Split Splits],
+      # today's workout, its exercises and its log light Today; another day's workout lights Splits
+      workout_day_path(day) => %w[Workout Today], workout_exercise_path(planned) => %w[Exercise Today],
+      workout_log_path(log) => %w[Workout Today], new_workout_log_path(workout: "Legs") => %w[Workout Today],
+      workout_day_path(other, date: Date.current + 1) => %w[Workout Splits],
+      workout_logs_path => %w[History History], edit_user_registration_path => %w[Account Account]
+    }.each do |path, (title, tab)|
+      get path
+      assert_select ".navbar-page-title.d-md-none", { text: title, count: 1 }, "#{path} title"
+      assert_select "nav.bottom-nav.fixed-bottom.d-md-none a.bottom-nav-item > span:not(.bottom-nav-icon)" do |labels|
+        assert_equal %w[Today Dashboard Splits History Account], labels.map(&:text)
+      end
+      assert_select "nav.bottom-nav a.bottom-nav-item.active[aria-current=page]", { count: 1 }, "#{path} tab"
+      assert_select "nav.bottom-nav a.active > span:not(.bottom-nav-icon)", tab
+      assert_select ".navbar-toggler", false
+    end
+    assert_select "nav.bottom-nav a[href=?]", edit_user_registration_path
+    assert_select "nav.bottom-nav .dropdown-menu", false
+    assert_select "nav.bottom-nav .bottom-nav-icon[aria-hidden=true] .user-initial", "L"
+    assert_equal %w[Today Dashboard Splits History Exercises], css_select(".app-navbar .navbar-collapse a.nav-link:not(.dropdown-toggle)").map(&:text)
+    get dashboard_path
+    assert_select ".page-header a.d-md-none[href=?]", exercises_path, text: "Exercises"
+
+    # the bar comes after the page in the document, so a keyboard reaches the page first
+    assert_operator response.body.index("<main"), :<, response.body.index('class="bottom-nav')
+
+    # on a sub-page the back arrow takes the logo's corner of the top bar
+    get split_path(split)
+    assert_select ".app-navbar.has-back a.navbar-brand.d-none.d-md-flex"
+    get splits_path
+    assert_select ".app-navbar.has-back", false
+
+    # the account page holds what was the user menu: who is signed in, Users for an admin, Log out
+    get edit_user_registration_path
+    assert_select "p", /Signed in as\s+#{Regexp.escape(@user.email)}/
+    assert_select "main a[href=?][data-turbo-method=delete]", destroy_user_session_path, text: "Log out"
+    assert_select "main a[href=?]", admin_users_path, false
+    sign_in @admin
+    get edit_user_registration_path
+    assert_select "main a[href=?]", admin_users_path, text: "Users"
+    assert_select "main .badge", "Admin"
+
+    # signed out: no tab bar, Log in and Sign up sit in the top bar
+    sign_out @admin
+    get root_path
+    assert_select "nav.bottom-nav", false
+    assert_select ".navbar-toggler", false
+    assert_select ".navbar-page-title", false
+    assert_select ".app-navbar a[href=?]", new_user_session_path
+    assert_select ".app-navbar a[href=?]", new_user_registration_path
+  end
+end

@@ -1,4 +1,16 @@
-<h1>Edit <%= resource_name.to_s.humanize %></h1>
+<h1>Account</h1>
+
+<%# Who is signed in, and what was in the user menu: on a phone this page is the bar's Account tab. %>
+<p class="text-muted mb-2">
+  Signed in as <strong><%= current_user.email %></strong>
+  <% if current_user.admin? %><span class="badge badge-soft">Admin</span><% end %>
+</p>
+<div class="d-flex flex-wrap gap-2 mb-4">
+  <% if current_user.admin? %>
+    <%= link_to admin_users_path, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-users"></i> Users<% end %>
+  <% end %>
+  <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-right-from-bracket"></i> Log out<% end %>
+</div>
 
 <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
   <%= f.error_notification %>

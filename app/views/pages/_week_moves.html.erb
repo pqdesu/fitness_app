@@ -1,0 +1,12 @@
+<% if dashboard.week_moved? || dashboard.movable_days.any? %>
+  <%# Moving a workout counts for this week only; the split keeps its plan. %>
+  <div class="week-moves">
+    <% if dashboard.week_moved? %>
+      <span class="week-moves-note">Moved this week</span>
+      <%= button_to "Back to the plan", split_week_move_path(split), method: :delete, class: "btn btn-link btn-sm" %>
+    <% end %>
+    <% if dashboard.movable_days.any? %>
+      <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#move-workout"><i class="fa-solid fa-arrows-left-right"></i> Move a workout</button>
+    <% end %>
+  </div>
+<% end %>

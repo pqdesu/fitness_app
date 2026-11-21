@@ -1,4 +1,6 @@
-// Dashboard: today's workout and what was lifted last time
+// Dashboard: today's workout and what was lifted last time. The Today page shows the same box.
+
+.today-page { max-width: 40rem; }
 
 .today-header {
   display: flex;

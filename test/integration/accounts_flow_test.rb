@@ -23,7 +23,7 @@ class AccountsFlowTest < FlowTest
     sign_in @user
     get edit_user_registration_path
     assert_response :success
-    assert_select "h1", "Edit User"
+    assert_select "h1", "Account"
     assert_select "h2", "Cancel my account"
   end
 

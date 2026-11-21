@@ -43,6 +43,18 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `workout-timer`: leaving the workout with the browser's back button, a swipe back or by closing the tab does not ask about a paused timer; only the app's links (the back arrow, the menu, Plan) do.
 
+### Deleting a workout opened from Today goes to the dashboard
+
+- From `bottom-navbar-mobile`: the Today page's box shares its links with the dashboard's, and they carry `?from=dashboard`. Opening a logged workout from Today and deleting it returns to the dashboard (`/dashboard`), not to Today. Its back arrow follows the pages visited, so it still returns to Today.
+
+### Bottom bar not tried on a real phone
+
+- From `bottom-navbar-mobile`: the bottom tab bar, the back arrow in the top bar's corner and the iPhone safe-area padding (`viewport-fit=cover`) were checked only in desktop Chrome inside a 390 px frame. Not verified: that the tabs clear the iPhone home indicator, that a phone turned sideways keeps the page clear of the notch, the tap feel, and the fixed back arrow while Safari's toolbar slides. A flash card can also cover the back arrow for up to 5 seconds.
+
+### A week move without a Referer lands on Today
+
+- From `bottom-navbar-mobile`: "Move a workout" and "Back to the plan" return to the page they were sent from by its Referer. A browser that sends none (a strict privacy setting) lands on Today even when the move was made on the dashboard. The move is still saved. Not verified on such a browser.
+
 # Issues resolved (DONE)
 
 ## Dropdowns

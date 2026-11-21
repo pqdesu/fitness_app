@@ -1,0 +1,61 @@
+// The phone's tab bar (shared/_bottom_nav): five equal tabs, an icon over a small label. It is
+// hidden from tablet width up by d-md-none, so these rules only show below it. On an iPhone the bar
+// grows by the home indicator's inset (viewport-fit=cover in the layout), keeping the tabs above it.
+$bottom-nav-height: 3.75rem;
+
+.bottom-nav {
+  display: flex;
+  height: calc(#{$bottom-nav-height} + env(safe-area-inset-bottom));
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: white;
+  border-top: 1px solid $line;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .1875rem;
+  font-size: .6875rem;
+  font-weight: 500;
+  color: $muted;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .15s, transform .1s;
+
+  &:active { transform: scale(.94); }
+
+  &:focus-visible {
+    outline: 2px solid $blue;
+    outline-offset: -4px;
+    border-radius: .75rem;
+  }
+
+  // The active tab: blue, a bolder label, and its icon on a soft pill (the top navbar's active look),
+  // so it stands out by shape and weight as well as colour.
+  &.active {
+    font-weight: 600;
+    color: $blue;
+    .bottom-nav-icon { background: $primary-soft; }
+    .user-initial { background: $blue; color: white; }
+  }
+}
+
+.bottom-nav-icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 1.875rem;
+  border-radius: 999px;
+  font-size: 1.15rem;
+  transition: background-color .15s;
+
+  .user-initial { width: 1.5rem; height: 1.5rem; font-size: .7rem; }
+}
+
+// Room under each page for the bar, so its last button is not hidden behind it.
+@include media-breakpoint-down(md) {
+  .app-main { padding-bottom: calc(2rem + #{$bottom-nav-height} + env(safe-area-inset-bottom)); }
+}

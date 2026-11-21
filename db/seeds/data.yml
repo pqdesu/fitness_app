@@ -464,6 +464,7 @@ users:
     split: U/R/L/U/L
     weekday: 5
     rest_day: false
+    paused_seconds: 0
   - date: '2026-11-21'
     workout: Lower
     split: U/R/L/U/L
