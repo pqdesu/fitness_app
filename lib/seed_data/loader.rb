@@ -12,6 +12,7 @@ module SeedData
       data = SeedData.read(@path)
       ActiveRecord::Base.transaction do
         Array(data["equipment"]).each { |item| find_or_create_equipment(item) }
+        Array(data["set_tags"]).each { |item| named(SetTag.all, item["name"]) || SetTag.create!(name: item["name"]) }
         Array(data["exercises"]).each { |item| find_or_create_exercise(Exercise.where(user_id: nil), item) }
         Array(data["users"]).each { |item| load_user(item) }
       end
@@ -108,8 +109,9 @@ module SeedData
       Array(item["sets"]).each do |set|
         next if entry.workout_sets.exists?(set_number: set["number"])
 
-        entry.workout_sets.create!(set_number: set["number"], reps_completed: set["reps"],
-                                   weight_used: set["weight"] && BigDecimal(set["weight"].to_s), notes: set["notes"])
+        entry.workout_sets.create!(set_number: set["number"], reps_completed: set["reps"], notes: set["notes"],
+                                   weight_used: set["weight"] && BigDecimal(set["weight"].to_s),
+                                   set_tags: SetTag.where(name: Array(set["tags"])))
       end
     end
 

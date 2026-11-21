@@ -10,6 +10,7 @@ module SeedData
       "exercises" => ->(item) { item["name"].to_s.downcase },
       "users" => ->(item) { item["email"].to_s.downcase },
       "equipment" => ->(item) { [item["kind"], item["name"].to_s.downcase] },
+      "set_tags" => ->(item) { item["name"].to_s.downcase },
       "splits" => ->(item) { item["name"] },
       "days" => ->(item) { item["weekday"] },
       "moves" => ->(item) { item["week_start"].to_s },

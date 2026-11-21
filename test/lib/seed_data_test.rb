@@ -17,6 +17,7 @@ class SeedDataTest < ActiveSupport::TestCase
     EquipmentItem.create!(name: "Pec deck", kind: "machine")
     @fly.update!(unilateral: true, equipment: "machine", machine_brand: "Hammer")
     @user.update!(active_split: @split)
+    @warm_up = SetTag.create!(name: "Warm-up")
   end
 
   teardown { FileUtils.rm_rf(@path.dirname) }
@@ -25,7 +26,7 @@ class SeedDataTest < ActiveSupport::TestCase
     log = @upper.workout_logs.create!(date:, notes:)
     @upper.workout_exercises.each do |planned|
       entry = log.workout_log_exercises.create!(workout_exercise: planned)
-      entry.workout_sets.create!(reps_completed: 8, weight_used: "62.125")
+      entry.workout_sets.create!(reps_completed: 8, weight_used: "62.125", set_tags: [@warm_up])
       entry.workout_sets.create!(reps_completed: 6, notes: "Bodyweight")
     end
     log
@@ -37,7 +38,7 @@ class SeedDataTest < ActiveSupport::TestCase
     SeedData.dump(@path)
     first = @path.read
 
-    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem].each { |model| model.find_each(&:destroy!) }
+    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem, SetTag].each { |model| model.find_each(&:destroy!) }
     assert_equal 0, WorkoutSet.count
 
     2.times { SeedData.load(@path) }
@@ -54,6 +55,7 @@ class SeedDataTest < ActiveSupport::TestCase
     assert entry.exercise.unilateral?
     assert_equal "Machine · Hammer", entry.exercise.equipment_label
     assert_equal [["Pec deck", "machine"]], EquipmentItem.pluck(:name, :kind)
+    assert_equal [["Warm-up"]] * 2, user.workout_sets.where(weight_used: "62.125").map { |set| set.set_tags.map(&:name) }
     assert_equal user, entry.exercise.user
     assert_equal entry.workout_exercise.workout_day, log.workout_day
     assert_equal [[Date.new(2026, 11, 15), 5]], WorkoutDayMove.pluck(:week_start, :weekday)

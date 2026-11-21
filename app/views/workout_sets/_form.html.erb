@@ -33,4 +33,13 @@
   <div class="col-4 d-grid">
     <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add set<% end %>
   </div>
+  <%# Tags the admin keeps (warm-up, assisted…), one tap each, none by default. %>
+  <% if set_tags.any? %>
+    <div class="col-12 set-tag-choices" role="group" aria-label="Tags for the new set">
+      <% set_tags.each do |tag| %>
+        <%= check_box_tag "workout_set[set_tag_ids][]", tag.id, false, id: "tag_#{suffix}_#{tag.id}", class: "btn-check" %>
+        <%= label_tag "tag_#{suffix}_#{tag.id}", tag.name, class: "btn btn-outline-secondary btn-sm rounded-pill" %>
+      <% end %>
+    </div>
+  <% end %>
 <% end %>

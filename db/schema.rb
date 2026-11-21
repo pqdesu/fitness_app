@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_21_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_21_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -36,6 +36,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_100000) do
     t.index "lower((name)::text)", name: "index_exercises_on_shared_name", unique: true, where: "(user_id IS NULL)"
     t.index "user_id, lower((name)::text)", name: "index_exercises_on_own_name", unique: true, where: "(user_id IS NOT NULL)"
     t.index ["user_id"], name: "index_exercises_on_user_id"
+  end
+
+  create_table "set_tags", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((name)::text)", name: "index_set_tags_on_name", unique: true
   end
 
   create_table "splits", force: :cascade do |t|
@@ -135,6 +142,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_100000) do
     t.index ["workout_day_id"], name: "index_workout_logs_on_workout_day_id"
   end
 
+  create_table "workout_set_tags", force: :cascade do |t|
+    t.bigint "workout_set_id", null: false
+    t.bigint "set_tag_id", null: false
+    t.index ["set_tag_id"], name: "index_workout_set_tags_on_set_tag_id"
+    t.index ["workout_set_id", "set_tag_id"], name: "index_workout_set_tags_on_workout_set_id_and_set_tag_id", unique: true
+    t.index ["workout_set_id"], name: "index_workout_set_tags_on_workout_set_id"
+  end
+
   create_table "workout_sets", force: :cascade do |t|
     t.bigint "workout_log_exercise_id", null: false
     t.integer "set_number", null: false
@@ -159,5 +174,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_21_100000) do
   add_foreign_key "workout_log_exercises", "workout_logs"
   add_foreign_key "workout_logs", "users"
   add_foreign_key "workout_logs", "workout_days", on_delete: :nullify
+  add_foreign_key "workout_set_tags", "set_tags", on_delete: :cascade
+  add_foreign_key "workout_set_tags", "workout_sets", on_delete: :cascade
   add_foreign_key "workout_sets", "workout_log_exercises"
 end

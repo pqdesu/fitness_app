@@ -48,6 +48,12 @@ puts "Exercises in catalogue: #{Exercise.count}"
 end
 puts "Equipment in catalogue: #{EquipmentItem.count}"
 
+# Starter set tags (an admin adds more on /admin/tags)
+["Warm-up", "Assisted", "Drop set"].each do |name|
+  SetTag.where("LOWER(name) = ?", name.downcase).first || SetTag.create!(name:)
+end
+puts "Set tags: #{SetTag.count}"
+
 # The base data: users' plans and logged workouts, kept in db/seeds/data.yml (lib/seed_data.rb).
 if SeedData::PATH.exist?
   puts "Base data: #{SeedData.describe(SeedData.load)}"

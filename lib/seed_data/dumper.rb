@@ -27,6 +27,7 @@ module SeedData
     def database_data
       {
         "equipment" => EquipmentItem.order(:id).map { |item| { "name" => item.name, "kind" => item.kind } },
+        "set_tags" => SetTag.order(:id).map { |tag| { "name" => tag.name } },
         "exercises" => Exercise.where(user_id: nil).order(:id).map { |exercise| exercise_data(exercise) },
         "users" => User.order(:id).map { |user| user_data(user) }
       }
@@ -57,7 +58,7 @@ module SeedData
     def real_workouts(user)
       user.workout_logs.where("notes IS NULL OR notes NOT LIKE ?", MOCK_NOTES).order(:date, :id)
           .includes(workout_day: :split,
-                    workout_log_exercises: [:workout_sets, :exercise, { workout_exercise: { workout_day: :split } }])
+                    workout_log_exercises: [:exercise, { workout_sets: :set_tags, workout_exercise: { workout_day: :split } }])
     end
 
     def split_data(split)
@@ -110,7 +111,7 @@ module SeedData
         "notes" => entry.notes,
         "sets" => entry.workout_sets.sort_by(&:set_number).map do |set|
           { "number" => set.set_number, "reps" => set.reps_completed,
-            "weight" => set.weight_used&.to_s("F"), "notes" => set.notes }
+            "weight" => set.weight_used&.to_s("F"), "notes" => set.notes, "tags" => set.set_tags.map(&:name) }
         end
       )
     end

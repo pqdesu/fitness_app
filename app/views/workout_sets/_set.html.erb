@@ -1,7 +1,8 @@
 <%#
   One recorded set, as a group of rows (a tbody) of a set table. Edit (in its ⋯ menu) turns its weight and reps
   into fields, so a mistake is corrected in place instead of deleting the set. The note field is
-  always there and saves when it is left or Enter is pressed. Locals: set, and optionally workout_exercise and date when the table is on an exercise's
+  always there and saves when it is left or Enter is pressed; the Tag button beside
+  the set's tag chips opens the tags, and ticking one saves. Locals: set, and optionally workout_exercise and date when the table is on an exercise's
   page, so saving or deleting returns there, on the same date.
 %>
 <% form_id = "edit_set_#{set.id}" %>
@@ -49,6 +50,27 @@
   </tr>
   <tr class="set-note">
     <td colspan="4">
+      <%# Its tags as chips, and the Tag button that opens the admin's tags: ticking one saves at once. %>
+      <% if set_tags.any? %>
+        <% tags_id = "set-#{set.id}-tags" %>
+        <div class="set-tags">
+          <% set.set_tags.each do |tag| %><span class="chip chip-tag"><%= tag.name %></span><% end %>
+          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill set-tag-toggle" data-bs-toggle="collapse"
+                  data-bs-target="#<%= tags_id %>" aria-expanded="false" aria-controls="<%= tags_id %>"
+                  aria-label="Tags of set <%= set.set_number %>"><i class="fa-solid fa-tag" aria-hidden="true"></i> Tag</button>
+        </div>
+        <div class="collapse" id="<%= tags_id %>">
+          <div class="set-tag-choices mb-2" role="group" aria-label="Tags of set <%= set.set_number %>">
+            <%# The empty value lets the last tag be taken off. %>
+            <%= hidden_field_tag "workout_set[set_tag_ids][]", "", form: form_id, id: nil %>
+            <% set_tags.each do |tag| %>
+              <%= check_box_tag "workout_set[set_tag_ids][]", tag.id, set.set_tags.include?(tag), form: form_id,
+                    id: "tag_set_#{set.id}_#{tag.id}", class: "btn-check", data: { action: "change->row-edit#save" } %>
+              <%= label_tag "tag_set_#{set.id}_#{tag.id}", tag.name, class: "btn btn-outline-secondary btn-sm rounded-pill" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
       <%= text_field_tag "workout_set[notes]", set.notes, id: "notes_set_#{set.id}", form: form_id, maxlength: 200,
             placeholder: "Add a note", autocomplete: "off", class: "form-control form-control-sm",
             "aria-label": "Note on set #{set.set_number}", data: { action: "change->row-edit#save" } %>

@@ -47,6 +47,8 @@ Rails.application.routes.draw do
     resources :users, only: [:index, :update, :destroy]
     # The equipment catalogue users pick a lift's equipment from
     resources :equipment_items, path: "equipment", except: [:show, :new]
+    # The tags users mark sets with
+    resources :set_tags, path: "tags", except: [:show, :new]
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -24,7 +24,7 @@ class WorkoutLogsController < ApplicationController
   def show
     @workout_day = @workout_log.workout_day
     @log_exercises = @workout_log.workout_log_exercises
-                                 .includes(:workout_sets, :workout_exercise, :exercise).order(:id)
+                                 .includes({ workout_sets: :set_tags }, :workout_exercise, :exercise).order(:id)
     # Nothing is planned any more once the day (or its split) has been deleted.
     # An exercise already in the workout is not offered again, whichever way it got there.
     @unlogged_exercises = if @workout_day

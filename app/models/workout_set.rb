@@ -1,5 +1,8 @@
 class WorkoutSet < ApplicationRecord
   belongs_to :workout_log_exercise
+  # Tags an admin keeps (warm-up, assisted…), picked for the set; shown in name order.
+  has_many :workout_set_tags, dependent: :delete_all
+  has_many :set_tags, -> { order(:name) }, through: :workout_set_tags
 
   # "Add set" does not ask for a number: a new set is the next one for its exercise.
   before_validation :number_set, on: :create

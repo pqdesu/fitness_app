@@ -75,3 +75,9 @@
 @media (pointer: coarse) { .sign-toggle { min-width: 2.75rem; } }
 .input-group.set-field[hidden] { display: none; }
 .input-group.set-field { max-width: 9rem; flex-wrap: nowrap; }
+
+// A set's tags (warm-up, assisted…): chips above its note, and pills to tick when adding or editing it
+.set-tags { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-bottom: .375rem; }
+.chip-tag { background: $primary-soft; color: $blue; }
+.set-tag-choices { display: flex; flex-wrap: wrap; gap: .375rem; }
+.set-tag-toggle { color: $muted; }
