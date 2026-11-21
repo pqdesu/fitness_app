@@ -49,6 +49,16 @@
             <%= render "shared/choices", f:, field: :muscle_group, label: "Muscle group", selected: nil, id: "#{id}_muscle_group",
                   choices: [["Other", ""], *Exercise::MUSCLE_GROUPS.map { |group| [group, group] }] %>
           </div>
+          <div class="col-12">
+            <%# What its lifts start with: here, in the plan or the workout it is added to, and later. %>
+            <%= render "shared/equipment_fields", f:, object: Exercise.new, id: "#{id}_new" %>
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <%= f.check_box :unilateral, { class: "form-check-input", id: "#{id}_unilateral" }, "1", "0" %>
+              <%= f.label :unilateral, "Unilateral: one arm or one leg at a time", class: "form-check-label", for: "#{id}_unilateral" %>
+            </div>
+          </div>
           <div class="col-12 d-grid">
             <%= f.submit "Create", class: "btn btn-light" %>
           </div>

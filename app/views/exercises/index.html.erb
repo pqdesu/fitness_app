@@ -33,7 +33,7 @@
           <tbody>
             <% group_exercises.each do |exercise| %>
               <tr>
-                <td class="fw-semibold"><%= exercise.name %><% unless exercise.shared? %> <span class="chip ms-1">Yours</span><% end %></td>
+                <td class="fw-semibold"><%= exercise.name %><% unless exercise.shared? %> <span class="chip ms-1">Yours</span><% end %><% if exercise.unilateral? %> <span class="chip ms-1">Unilateral</span><% end %></td>
                 <td><%= @usage.fetch(exercise.id, 0) %></td>
                 <td class="text-end">
                   <% if current_user.admin? || !exercise.shared? %>

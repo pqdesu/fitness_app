@@ -37,6 +37,17 @@ puts "Admin user: #{admin.email}"
 end
 puts "Exercises in catalogue: #{Exercise.count}"
 
+# Starter equipment catalogue: what users pick for a lift (an admin adds more on /admin/equipment)
+{
+  "free_weights" => ["Dumbbell", "Barbell", "Kettlebell", "EZ bar", "Weight plate"],
+  "machine" => ["Smith machine", "Chest press", "Pec deck", "Shoulder press", "Lat pulldown", "Seated row",
+                "Leg press", "Leg extension", "Leg curl", "Hack squat", "Cable crossover"],
+  "machine_type" => ["Plate loaded", "Pin loaded", "Cable"]
+}.each do |kind, names|
+  names.each { |name| EquipmentItem.where(kind:).where("LOWER(name) = ?", name.downcase).first || EquipmentItem.create!(kind:, name:) }
+end
+puts "Equipment in catalogue: #{EquipmentItem.count}"
+
 # The base data: users' plans and logged workouts, kept in db/seeds/data.yml (lib/seed_data.rb).
 if SeedData::PATH.exist?
   puts "Base data: #{SeedData.describe(SeedData.load)}"

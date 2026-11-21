@@ -64,6 +64,6 @@ class WorkoutLogExercisesController < ApplicationController
   end
 
   def entry_params
-    params.expect(workout_log_exercise: [:equipment, :machine_brand, :notes])
+    params.expect(workout_log_exercise: [*Equipped::ATTRIBUTES, :notes])
   end
 end

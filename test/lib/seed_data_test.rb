@@ -12,7 +12,10 @@ class SeedDataTest < ActiveSupport::TestCase
     @upper = @split.workout_days.create!(day: "Upper", weekday: 1)
     @lower = @split.workout_days.create!(day: "Lower", weekday: 3)
     @upper.workout_exercises.create!(exercise: @bench)
-    @upper.workout_exercises.create!(exercise: @fly, equipment: "machine", machine_brand: "Hammer")
+    @upper.workout_exercises.create!(exercise: @fly, equipment: "machine", machine_type: "Plate loaded", equipment_name: "Pec deck",
+                                     machine_brand: "Hammer")
+    EquipmentItem.create!(name: "Pec deck", kind: "machine")
+    @fly.update!(unilateral: true, equipment: "machine", machine_brand: "Hammer")
     @user.update!(active_split: @split)
   end
 
@@ -34,7 +37,7 @@ class SeedDataTest < ActiveSupport::TestCase
     SeedData.dump(@path)
     first = @path.read
 
-    [WorkoutLog, WorkoutDayMove, Split, Exercise, User].each { |model| model.find_each(&:destroy!) }
+    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem].each { |model| model.find_each(&:destroy!) }
     assert_equal 0, WorkoutSet.count
 
     2.times { SeedData.load(@path) }
@@ -47,7 +50,10 @@ class SeedDataTest < ActiveSupport::TestCase
     assert_equal 4, user.workout_sets.count
     assert_equal BigDecimal("62.125"), user.workout_sets.maximum(:weight_used)
     entry = log.workout_log_exercises.find_by(name: "Pec fly")
-    assert_equal ["Machine · Hammer", "Pec fly"], [entry.equipment_label, entry.exercise.name]
+    assert_equal ["Plate loaded Pec deck · Hammer", "Pec fly"], [entry.equipment_label, entry.exercise.name]
+    assert entry.exercise.unilateral?
+    assert_equal "Machine · Hammer", entry.exercise.equipment_label
+    assert_equal [["Pec deck", "machine"]], EquipmentItem.pluck(:name, :kind)
     assert_equal user, entry.exercise.user
     assert_equal entry.workout_exercise.workout_day, log.workout_day
     assert_equal [[Date.new(2026, 11, 15), 5]], WorkoutDayMove.pluck(:week_start, :weekday)

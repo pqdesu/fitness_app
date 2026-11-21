@@ -30,8 +30,7 @@ class WorkoutLogExercise < ApplicationRecord
 
     self.exercise = workout_exercise.exercise
     self.name = workout_exercise.name
-    self.equipment = workout_exercise.equipment
-    self.machine_brand = workout_exercise.machine_brand
+    copy_equipment_from(workout_exercise)
   end
 
   # A log is one session of a workout, so it only links to exercises planned for that workout:

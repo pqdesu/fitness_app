@@ -1,4 +1,5 @@
-# How a lift's sets are written: weights ("80 kg", "Bodyweight + 10 kg") and a set in one line.
+# How a lift's sets and equipment are written and offered: weights ("80 kg", "Bodyweight + 10 kg"),
+# a set in one line, and the admin's equipment names for the forms.
 module LiftsHelper
   # "80 kg", or "Bodyweight" for a set without a weight. On a bodyweight exercise (bodyweight: true)
   # the weight is added or taken off: "Bodyweight + 10 kg", "Bodyweight − 10 kg", with "BW" in place
@@ -28,4 +29,9 @@ module LiftsHelper
     safe_join([format_weight(set.weight_used, bodyweight: set.bodyweight?, plain:), " × #{pluralize(set.reps_completed, 'rep')}"])
   end
 
+  # The names of a kind of equipment in the admin's catalogue, read once per page (a split page
+  # has an "Add exercises" form per day).
+  def equipment_names(kind)
+    (@equipment_names ||= EquipmentItem.order(:name).pluck(:kind, :name).group_by(&:first)).fetch(kind, []).map(&:last)
+  end
 end

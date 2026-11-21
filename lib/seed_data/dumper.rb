@@ -26,13 +26,18 @@ module SeedData
 
     def database_data
       {
+        "equipment" => EquipmentItem.order(:id).map { |item| { "name" => item.name, "kind" => item.kind } },
         "exercises" => Exercise.where(user_id: nil).order(:id).map { |exercise| exercise_data(exercise) },
         "users" => User.order(:id).map { |user| user_data(user) }
       }
     end
 
+    # Only what differs from a new exercise: free weights, not unilateral.
     def exercise_data(exercise)
-      { "name" => exercise.name, "muscle_group" => exercise.muscle_group }
+      { "name" => exercise.name, "muscle_group" => exercise.muscle_group,
+        "equipment" => (exercise.equipment unless exercise.equipment == "free_weights"),
+        "equipment_name" => exercise.equipment_name, "machine_type" => exercise.machine_type,
+        "machine_brand" => exercise.machine_brand, "unilateral" => (true if exercise.unilateral?) }
     end
 
     def user_data(user)
@@ -76,6 +81,8 @@ module SeedData
         "name" => lift.name,
         "exercise" => lift.exercise && (lift.exercise.user_id ? "own" : "shared"),
         "equipment" => lift.equipment,
+        "equipment_name" => lift.equipment_name,
+        "machine_type" => lift.machine_type,
         "machine_brand" => lift.machine_brand
       }
     end

@@ -20,3 +20,7 @@
 
 // Bootstrap's legend size wins over the inline form's small label without this
 .inline-form .choices-field legend { font-size: .78rem; }
+
+// The equipment's groups of pills (shared/_equipment_fields): room above each group's label
+.equipment-fields [data-reveal-target="panel"] .choices-field { margin-top: .875rem; }
+

@@ -42,7 +42,7 @@
         <li>
           <%= link_to workout_exercise_path(we, date: @date), class: "row-link" do %>
             <span class="row-title"><%= we.name %></span>
-            <span class="text-muted small"><%= we.equipment_label %><% if we.exercise&.muscle_group.present? %> · <%= we.exercise.muscle_group %><% end %></span>
+            <span class="text-muted small"><%= we.equipment_label %><% if we.exercise&.unilateral? %> · Unilateral<% end %><% if we.exercise&.muscle_group.present? %> · <%= we.exercise.muscle_group %><% end %></span>
           <% end %>
           <% if sets_logged.positive? %><span class="chip chip-done"><%= pluralize(sets_logged, "set") %></span><% end %>
           <%# An admin renames the exercise from here. The name is the exercise's own, so it changes everywhere. %>

@@ -44,7 +44,7 @@
         <div class="card-header">
           <div>
             <h2><%= entry.name %></h2>
-            <p class="text-muted small mb-0"><%= entry.equipment_label %><% if top %>&nbsp;· <span class="text-nowrap">Top <span class="top-set"><%= weight_and_reps(top) %></span></span><% end %></p>
+            <p class="text-muted small mb-0"><%= entry.equipment_label %><% if entry.exercise&.unilateral? %> · Unilateral<% end %><% if top %>&nbsp;· <span class="text-nowrap">Top <span class="top-set"><%= weight_and_reps(top) %></span></span><% end %></p>
             <% if entry.notes.present? %><p class="entry-note small mb-0"><i class="fa-regular fa-note-sticky"></i> <%= entry.notes %></p><% end %>
           </div>
           <div class="entry-meta">

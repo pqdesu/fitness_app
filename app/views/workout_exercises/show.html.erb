@@ -6,7 +6,7 @@
 <div class="page-header">
   <div>
     <h1><%= @workout_exercise.name %></h1>
-    <p class="text-muted mb-0"><%= @workout_exercise.equipment_label %></p>
+    <p class="text-muted mb-0"><%= @workout_exercise.equipment_label %><% if @workout_exercise.exercise&.unilateral? %> · Unilateral<% end %></p>
   </div>
 </div>
 

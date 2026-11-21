@@ -68,6 +68,6 @@ class WorkoutExercisesController < ApplicationController
   end
 
   def equipment_params
-    params.expect(workout_exercise: [:equipment, :machine_brand])
+    params.expect(workout_exercise: Equipped::ATTRIBUTES)
   end
 end

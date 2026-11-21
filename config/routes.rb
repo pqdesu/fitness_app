@@ -45,6 +45,8 @@ Rails.application.routes.draw do
   # Admin only: the accounts (make or unmake an admin, delete a user)
   namespace :admin do
     resources :users, only: [:index, :update, :destroy]
+    # The equipment catalogue users pick a lift's equipment from
+    resources :equipment_items, path: "equipment", except: [:show, :new]
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

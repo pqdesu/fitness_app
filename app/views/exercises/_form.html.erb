@@ -10,6 +10,17 @@
               id: "exercise_muscle_group", choices: [["Other", ""], *Exercise::MUSCLE_GROUPS.map { |group| [group, group] }] %>
       </div>
       <% if exercise.new_record? %>
+        <%# What its planned and logged lifts start with, set when it is created; each lift can change it. %>
+        <div class="mb-3">
+          <%= render "shared/equipment_fields", f:, id: "exercise" %>
+          <div class="form-text">Plans and workouts of this exercise start with this equipment.</div>
+        </div>
+      <% end %>
+      <div class="form-check mb-3">
+        <%= f.check_box :unilateral, class: "form-check-input", id: "exercise_unilateral" %>
+        <%= f.label :unilateral, "Unilateral: one arm or one leg at a time", class: "form-check-label", for: "exercise_unilateral" %>
+      </div>
+      <% if exercise.new_record? %>
         <%# Only an admin reaches this form: the exercise goes to the catalogue, or stays the admin's own. %>
         <div class="form-check mb-3">
           <%= hidden_field_tag "exercise[shared]", "0", id: nil %>

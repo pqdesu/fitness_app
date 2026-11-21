@@ -2,42 +2,36 @@
 #
 # The exercise is picked from the shared catalogue or from the user's own exercises (exercise_id).
 # Its name is also stored on the row, so logged history survives the exercise being deleted.
-# The equipment is free weights, a machine with a brand the user types, or bodyweight (a set's
-# weight is then what is added to the body, or taken off it when negative: see WorkoutSet).
+# The equipment (Equipped) starts as the exercise's own, and each lift can change it.
 module Lift
   extend ActiveSupport::Concern
 
-  EQUIPMENT = { "free_weights" => "Free weights", "machine" => "Machine", "bodyweight" => "Bodyweight" }.freeze
-
   included do
+    include Equipped
+
     belongs_to :exercise, optional: true
 
+    # Before Equipped's tidying, so the copied values are the ones that get checked.
+    before_validation :start_with_exercise_equipment, on: :create, prepend: true
     before_validation :normalize_lift
 
     validates :name, presence: true, length: { maximum: 80 }
     validates :exercise, presence: { message: "is not available" }, if: -> { exercise_id.present? }
-    validates :equipment, inclusion: { in: EQUIPMENT.keys }
-    validates :machine_brand, presence: true, length: { maximum: 60 }, if: :machine?
-  end
-
-  def machine?
-    equipment == "machine"
-  end
-
-  def bodyweight?
-    equipment == "bodyweight"
-  end
-
-  def equipment_label
-    machine? ? "Machine · #{machine_brand}" : EQUIPMENT.fetch(equipment, equipment)
   end
 
   private
+
+  # A new lift takes the equipment its exercise starts with, unless it was given its own, or it
+  # comes from the plan (a logged exercise then takes the plan's: WorkoutLogExercise#copy_from_plan).
+  def start_with_exercise_equipment
+    return if exercise.nil? || try(:workout_exercise) || equipment_came_from_user?
+
+    copy_equipment_from(exercise)
+  end
 
   def normalize_lift
     # The linked exercise decides the name.
     self.name = exercise.name if exercise
     self.name = name.to_s.squish.presence
-    self.machine_brand = machine? ? machine_brand.to_s.squish.presence : nil
   end
 end

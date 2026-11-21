@@ -2,6 +2,8 @@ module SeedData
   # Creates every record of db/seeds/data.yml that the database does not have yet. Records that
   # are already there are left as they are, so running it again changes nothing.
   class Loader
+    include Catalogue
+
     def initialize(path)
       @path = Pathname(path)
     end
@@ -9,6 +11,7 @@ module SeedData
     def load
       data = SeedData.read(@path)
       ActiveRecord::Base.transaction do
+        Array(data["equipment"]).each { |item| find_or_create_equipment(item) }
         Array(data["exercises"]).each { |item| find_or_create_exercise(Exercise.where(user_id: nil), item) }
         Array(data["users"]).each { |item| load_user(item) }
       end
@@ -42,14 +45,6 @@ module SeedData
       end
     end
 
-    def find_or_create_exercise(scope, item)
-      named(scope, item["name"]) || scope.create!(name: item["name"], muscle_group: item["muscle_group"])
-    end
-
-    def named(scope, name)
-      scope.where("LOWER(name) = ?", name.to_s.downcase).order(:id).first
-    end
-
     def split_named(user, name)
       user.splits.order(:id).find_by(name:)
     end
@@ -62,8 +57,7 @@ module SeedData
     end
 
     def lift_attributes(user, item)
-      { name: item["name"], exercise: exercise_for(user, item),
-        equipment: item["equipment"] || "free_weights", machine_brand: item["machine_brand"] }
+      equipment_attributes(item).merge(name: item["name"], exercise: exercise_for(user, item))
     end
 
     def day_of(user, split_name, weekday)
