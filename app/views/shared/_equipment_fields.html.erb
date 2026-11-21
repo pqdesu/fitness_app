@@ -2,7 +2,8 @@
   Equipment of a lift, or the one an exercise starts with (Equipped): free weights and which one,
   a machine (its type, which machine, and the brand the user types), or bodyweight. The names are
   pills from the admin's catalogue (EquipmentItem); a name no longer in it stays offered while the
-  lift has it. Only the kind's own pills are shown and sent (reveal_controller.js).
+  lift has it. Only the kind's own pills are shown and sent (reveal_controller.js), and each list of
+  names is folded to its current choice until it is opened.
   Locals: f, and optionally object (when the form has none, as the "Add exercises" create form) and id.
 %>
 <% object = local_assigns[:object] || f.object %>
@@ -20,17 +21,17 @@
   <div data-reveal-target="panel" data-reveal-value="free_weights" <%= "hidden" unless object.equipment == "free_weights" %>>
     <% if (choices = pills.("free_weights", :equipment_name)) %>
       <%= render "shared/choices", f:, field: :equipment_name, label: "Free weight", selected: object.equipment_name.to_s,
-            id: "#{base}_free_weight", choices: %>
+            id: "#{base}_free_weight", choices:, fold: true %>
     <% end %>
   </div>
   <div data-reveal-target="panel" data-reveal-value="machine" <%= "hidden" unless object.machine? %>>
     <% if (choices = pills.("machine_type", :machine_type)) %>
       <%= render "shared/choices", f:, field: :machine_type, label: "Type of machine", selected: object.machine_type.to_s,
-            id: "#{base}_machine_type", choices: %>
+            id: "#{base}_machine_type", choices:, fold: true %>
     <% end %>
     <% if (choices = pills.("machine", :equipment_name)) %>
       <%= render "shared/choices", f:, field: :equipment_name, label: "Machine", selected: object.equipment_name.to_s,
-            id: "#{base}_machine", choices: %>
+            id: "#{base}_machine", choices:, fold: true %>
     <% end %>
     <%= f.label :machine_brand, "Machine brand", class: "form-label mt-3", for: "#{base}_machine_brand" %>
     <%= f.text_field :machine_brand, value: object.machine_brand, placeholder: "Brand name", class: "form-control", id: "#{base}_machine_brand" %>

@@ -1,13 +1,27 @@
 <%# A short list of options as pills to tap, in place of a <select>: a select's list is drawn by the
     browser and can open past the bottom of the screen. Locals: f, field, label, choices ([text, value]),
-    selected, id (unique on the page), data (optional, on every radio). %>
-<fieldset class="choices-field">
-  <legend class="form-label"><%= label %></legend>
-  <div class="choices">
+    selected, id (unique on the page), data (optional, on every radio), and fold (optional): a long
+    list starts folded, as a row with the label and the current choice that opens the pills; picking
+    one folds them again (choice_fold_controller.js). %>
+<% fold = local_assigns[:fold] %>
+<% current = choices.find { |_text, value| value.to_s == selected.to_s }&.first %>
+<% data = (local_assigns[:data] || {}).dup %>
+<% data[:action] = [data[:action], "choice-fold#pick"].compact.join(" ") if fold %>
+<fieldset class="<%= class_names("choices-field", "is-folded": fold) %>" <%= tag.attributes(data: { controller: "choice-fold" }) if fold %>>
+  <legend class="<%= class_names("form-label", "visually-hidden": fold) %>"><%= label %></legend>
+  <% if fold %>
+    <button type="button" class="choice-summary" data-bs-toggle="collapse" data-bs-target="#<%= id %>_list"
+            aria-expanded="false" aria-controls="<%= id %>_list">
+      <span class="form-label mb-0"><%= label %></span>
+      <span class="choice-current" data-choice-fold-target="current"><%= current || "Not set" %></span>
+      <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+    </button>
+  <% end %>
+  <div class="<%= class_names("choices", collapse: fold) %>" id="<%= id %>_list" <%= tag.attributes(data: { choice_fold_target: "list" }) if fold %>>
     <% choices.each do |text, value| %>
-      <% input_id = "#{id}_#{value.presence || 'none'}" %>
-      <%= f.radio_button field, value, id: input_id, class: "btn-check", checked: value.to_s == selected.to_s,
-            data: local_assigns[:data] %>
+      <%# One id, safe for HTML, for the radio and its label: a value such as "Plate loaded" has a space. %>
+      <% input_id = "#{id}_#{(value.presence || 'none').to_s.gsub(/\W/, '_')}" %>
+      <%= f.radio_button field, value, id: input_id, class: "btn-check", checked: value.to_s == selected.to_s, data: %>
       <%= label_tag input_id, text, class: "btn btn-outline-primary" %>
     <% end %>
   </div>

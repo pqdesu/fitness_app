@@ -53,8 +53,20 @@ class EquipmentFlowTest < FlowTest
     assert_select "[data-reveal-value=machine] input[type=radio][name='workout_exercise[equipment_name]'][value='Pec Deck']", 1
     assert_select "[data-reveal-value=machine] input[name='workout_exercise[machine_brand]']", 1
 
+    # every pill can be tapped: its label points at its radio, names with a space ("Plate loaded") too
+    radio_ids = css_select(".choices input[type=radio]").map { |radio| radio["id"] }
+    assert_equal radio_ids, css_select(".choices label").map { |label| label["for"] }
+    assert_select ".choices input[type=radio][value='Plate loaded'][id$=_Plate_loaded]", 1
+    # the names are folded to a row with the current choice, opened by tapping it; picking one folds them again
+    assert_select "fieldset.is-folded[data-controller=choice-fold]", 3
+    assert_select "fieldset.is-folded .choice-summary .choice-current", text: "Not set", count: 3
+    assert_select "fieldset.is-folded .choices.collapse:not(.show) input[data-action~='choice-fold#pick']", 2 + 2 + 2
+    assert_select "fieldset.is-folded legend.visually-hidden", 3
+
     patch page, params: { workout_exercise: { equipment: "free_weights", equipment_name: "Dumbbell" } }
     assert_equal "Dumbbell", planned.reload.equipment_label
+    get page
+    assert_select "[data-reveal-value=free_weights] .choice-current", "Dumbbell"
     patch page, params: { workout_exercise: { equipment: "machine", machine_type: "Plate loaded", equipment_name: "Pec Deck", machine_brand: "MTorture" } }
     assert_equal "Plate loaded Pec Deck · MTorture", planned.reload.equipment_label
     # the first set's entry takes the plan's equipment
