@@ -50,9 +50,9 @@ class WorkoutExercisesController < ApplicationController
     end
   end
 
-  # Moves an exercise up or down the day's plan (from the split page); the workout day follows it.
+  # Moves an exercise to where it was dropped in the day's plan (split page); the workout day follows it.
   def move
-    @workout_exercise.move!(params[:direction])
+    @workout_exercise.move!(params[:to])
     flash[:moved] = @workout_exercise.id # lights the row up on the page (.just-moved)
     redirect_to plan_path(@workout_exercise.workout_day), status: :see_other
   end

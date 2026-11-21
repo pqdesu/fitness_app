@@ -60,3 +60,32 @@ a.chip:hover { background: $primary-soft; color: $blue; }
 // tap does not land on the row that took its place.
 .just-moved { animation: just-moved 1.6s ease-out; }
 @keyframes just-moved { from { background-color: $primary-soft; } }
+
+// Reordering by drag and drop (sortable_controller.js): a row or card is pressed and dragged by its
+// grip, which sits at the start and takes the swipe itself (touch-action: none) so the page does
+// not scroll under the finger. While dragged, its place in the list shows as an empty tinted gap.
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-left: -.875rem;
+  color: $muted;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.drag-handle + div { flex: 1; min-width: 0; }
+.sortable-ghost { background: $primary-soft; }
+.sortable-ghost > * { visibility: hidden; }
+// The copy that follows the finger (or the mouse) is lifted off the list.
+.sortable-drag {
+  opacity: 1 !important; // SortableJS sets the finger's copy to .8 inline, which greys its text
+  background: #fff;
+  border-radius: .75rem;
+  box-shadow: 0 .75rem 1.75rem rgba($shadow, .18);
+  .drag-handle { color: $blue; cursor: grabbing; }
+}

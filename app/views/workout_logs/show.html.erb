@@ -34,14 +34,17 @@
       </div>
     <% end %>
 
+    <%# Reordered by dragging a card by its handle (sortable_controller.js), or Move up / Move down in its ⋯ menu. %>
+    <div class="entry-list" data-controller="sortable">
     <% @log_exercises.each_with_index do |entry, i| %>
       <% sets = entry.workout_sets.sort_by(&:set_number) %>
       <% top = entry.top_set %>
       <% panel_id = "entry-#{entry.id}-sets" %>
       <%# Each exercise starts folded: its name, sets and heaviest set; the arrow opens its sets and
           the add-set form (fold_controller.js keeps it open when a save refreshes the page). %>
-      <div class="<%= class_names("card entry-card", "just-moved": flash[:moved] == entry.id) %>" id="entry-<%= entry.id %>" data-controller="fold" data-action="turbo:before-morph-attribute->fold#keep">
+      <div class="<%= class_names("card entry-card", "just-moved": flash[:moved] == entry.id) %>" id="entry-<%= entry.id %>" data-sortable-url="<%= move_workout_log_exercise_path(entry) %>" data-controller="fold" data-action="turbo:before-morph-attribute->fold#keep">
         <div class="card-header">
+          <span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span>
           <div>
             <h2><%= entry.name %></h2>
             <p class="text-muted small mb-0"><%= entry.equipment_label %><% if entry.exercise&.unilateral? %> · Unilateral<% end %><% if top %>&nbsp;· <span class="text-nowrap">Top <span class="top-set"><%= weight_and_reps(top) %></span></span><% end %></p>
@@ -51,8 +54,8 @@
             <span class="chip"><%= pluralize(sets.size, "set") %></span>
             <%= actions_menu entry.name do %>
               <%= menu_link "Edit", edit_workout_log_exercise_path(entry) %>
-              <% if i.positive? %><%= menu_button "Move up", move_workout_log_exercise_path(entry, direction: "up"), icon: "arrow-up" %><% end %>
-              <% if i < @log_exercises.size - 1 %><%= menu_button "Move down", move_workout_log_exercise_path(entry, direction: "down"), icon: "arrow-down" %><% end %>
+              <% if i.positive? %><%= menu_button "Move up", move_workout_log_exercise_path(entry, to: "up"), icon: "arrow-up" %><% end %>
+              <% if i < @log_exercises.size - 1 %><%= menu_button "Move down", move_workout_log_exercise_path(entry, to: "down"), icon: "arrow-down" %><% end %>
               <%= menu_delete "Remove from workout", workout_log_exercise_path(entry), confirm: "Remove #{entry.name} and its sets from this workout?" %>
             <% end %>
             <button type="button" class="btn btn-light btn-sm entry-toggle fold-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
@@ -73,6 +76,7 @@
         </div>
       </div>
     <% end %>
+    </div>
 
     <% if @unlogged_exercises.any? %>
       <div class="card">

@@ -55,24 +55,15 @@
     </div>
     <div class="<%= class_names("collapse", show: open) %>" id="<%= panel_id %>" data-fold-target="panel">
       <% if planned.any? %>
-        <ul class="list-rows">
-          <% planned.each_with_index do |we, i| %>
-            <li class="<%= class_names("just-moved": flash[:moved] == we.id) %>">
+        <%# Reordered by dragging a row by its handle (sortable_controller.js); the workout day's page follows this order. %>
+        <ul class="list-rows" data-controller="sortable">
+          <% planned.each do |we| %>
+            <li class="<%= class_names("just-moved": flash[:moved] == we.id) %>" data-sortable-url="<%= move_workout_exercise_path(we) %>">
+              <span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span>
               <div>
                 <span class="row-title"><%= we.name %></span>
                 <% if we.exercise&.muscle_group.present? %><span class="text-muted small"><%= we.exercise.muscle_group %></span><% end %>
               </div>
-              <%# Reorders the plan; the workout day's page follows this order. %>
-              <span class="move-buttons">
-                <% { "up" => i.positive?, "down" => i < planned.size - 1 }.each do |direction, shown| %>
-                  <% if shown %>
-                    <%= button_to move_workout_exercise_path(we, direction:), method: :patch, class: "btn btn-link btn-sm",
-                          "aria-label": "Move #{we.name} #{direction}", title: "Move #{we.name} #{direction}" do %><%= icon_tag "arrow-#{direction}" %><% end %>
-                  <% else %>
-                    <span class="move-spacer"></span>
-                  <% end %>
-                <% end %>
-              </span>
               <%= button_to workout_exercise_path(we), method: :delete, class: "btn btn-link btn-sm text-danger",
                     "aria-label": "Remove #{we.name} from #{day.day}", title: "Remove #{we.name} from #{day.day}" do %><i class="fa-solid fa-xmark"></i><% end %>
             </li>

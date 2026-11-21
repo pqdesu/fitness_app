@@ -54,9 +54,9 @@ class WorkoutLogExercisesController < ApplicationController
     end
   end
 
-  # Moves an exercise up or down this workout (from its page). The plan keeps its own order.
+  # Moves an exercise in this workout: dropped there, or one place up or down from its ⋯ menu. The plan keeps its own order.
   def move
-    @entry.move!(params[:direction])
+    @entry.move!(params[:to])
     flash[:moved] = @entry.id # lights the card up on the page (.just-moved)
     redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), status: :see_other
   end

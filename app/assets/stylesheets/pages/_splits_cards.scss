@@ -22,22 +22,8 @@ div.card-link {
 // A day opened from its week circle (#day-<id>) stops below the top bar, its name in view
 .day-plan { scroll-margin-top: 5rem; }
 
-// Reordering a day's plan: ↑ ↓ then the ×, set a little apart so a move is not a remove. The
-// arrows are quiet (the name and the × lead the row) and turn primary when touched. Where an arrow
-// is not offered (first, last) a blank keeps its place, so the arrows line up down the list.
-// Every button is a full finger-sized target.
+// A day's plan row: drag handle, name, ×. The × is a full finger-sized target.
 .day-plan .list-rows li {
-  gap: .25rem;
-  > div:first-child { flex: 1; min-width: 0; margin-right: .75rem; }
-  > form:last-child { margin-left: .5rem; }
   form { margin: 0; }
-  .btn, .move-spacer { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; }
-  .btn { text-decoration: none; }
-}
-.move-buttons { display: flex; flex-shrink: 0; }
-.move-buttons .btn {
-  color: $muted;
-  &:active, &:focus-visible { color: $blue; }
-  // A touch screen keeps :hover on the last button tapped, so only a mouse gets it
-  @media (hover: hover) { &:hover { color: $blue; } }
+  .btn { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; text-decoration: none; }
 }

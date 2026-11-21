@@ -1,5 +1,7 @@
 // Workout log
 .entry-card { scroll-margin-top: 5rem; }
+// The cards sit in their own list (for dragging), so the card after it is spaced as the cards are
+.entry-list + .card { margin-top: 1rem; }
 .entry-meta { display: flex; align-items: center; gap: .25rem; }
 .set-table td:first-child, .set-table th:first-child { width: 80px; }
 .set-table td { vertical-align: middle; }

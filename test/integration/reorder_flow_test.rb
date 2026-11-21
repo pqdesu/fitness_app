@@ -10,23 +10,25 @@ class ReorderFlowTest < FlowTest
     sign_in @user
   end
 
-  test "the plan is reordered on the split page, and the workout day follows it" do
+  test "the plan is reordered on the split page by dragging, and the workout day follows it" do
     bench, squat, deadlift = @planned
     get split_path(@day.split)
     assert_equal ["Bench press", "Squat", "Deadlift"], css_select("#day-#{@day.id} .row-title").map(&:text)
-    # the first has no up arrow, the last no down arrow
-    assert_select "#day-#{@day.id} form[action=?] button[aria-label='Move Bench press up']", move_workout_exercise_path(bench, direction: "up"), 0
-    assert_select "#day-#{@day.id} form[action=?] button[aria-label='Move Deadlift down']", move_workout_exercise_path(deadlift, direction: "down"), 0
-    assert_select "#day-#{@day.id} form[action=?] button[aria-label='Move Squat up']", move_workout_exercise_path(squat, direction: "up"), 1
+    # each row is dragged by its handle; dropping it sends where it landed
+    assert_select "#day-#{@day.id} ul.list-rows[data-controller=sortable]", 1
+    assert_select "#day-#{@day.id} li[data-sortable-url=?] .drag-handle", move_workout_exercise_path(squat), 1
+    assert_select "#day-#{@day.id} .drag-handle", 3
+    assert_select "#day-#{@day.id} .move-buttons", 0
 
-    patch move_workout_exercise_path(deadlift, direction: "up")
+    patch move_workout_exercise_path(deadlift, to: 1)
     assert_redirected_to split_path(@day.split, anchor: "day-#{@day.id}")
-    patch move_workout_exercise_path(bench, direction: "down")
+    patch move_workout_exercise_path(bench, to: 3)
+    patch move_workout_exercise_path(squat, to: 9) # off the list: nothing moves
 
     get split_path(@day.split)
-    assert_equal ["Deadlift", "Bench press", "Squat"], css_select("#day-#{@day.id} .row-title").map(&:text)
+    assert_equal ["Deadlift", "Squat", "Bench press"], css_select("#day-#{@day.id} .row-title").map(&:text)
     get workout_day_path(@day)
-    assert_equal ["Deadlift", "Bench press", "Squat"], css_select("#day-exercises .row-title").map(&:text)
+    assert_equal ["Deadlift", "Squat", "Bench press"], css_select("#day-exercises .row-title").map(&:text)
   end
 
   test "a logged workout has its own order on its own page; the plan keeps its order" do
@@ -34,18 +36,20 @@ class ReorderFlowTest < FlowTest
     bench, squat, deadlift = @planned.map { |planned| log.workout_log_exercises.create!(workout_exercise: planned) }
     get workout_log_path(log)
     assert_equal ["Bench press", "Squat", "Deadlift"], css_select(".entry-card h2").map(&:text)
-    # Move up and Move down are in each exercise's ⋯ menu; the first has no Move up, the last no Move down
-    assert_select "#entry-#{bench.id} .actions-menu form[action=?]", move_workout_log_exercise_path(bench, direction: "up"), 0
-    assert_select "#entry-#{bench.id} .actions-menu form[action=?]", move_workout_log_exercise_path(bench, direction: "down"), text: /Move down/
-    assert_select "#entry-#{squat.id} .actions-menu form[action=?]", move_workout_log_exercise_path(squat, direction: "up"), text: /Move up/
-    assert_select "#entry-#{deadlift.id} .actions-menu form[action=?]", move_workout_log_exercise_path(deadlift, direction: "down"), 0
+    # each card is dragged by its handle
+    assert_select "[data-controller=sortable] > #entry-#{squat.id}[data-sortable-url=?] .drag-handle", move_workout_log_exercise_path(squat), 1
+    # and Move up / Move down stay in each exercise's ⋯ menu; the first has no Move up, the last no Move down
+    assert_select "#entry-#{bench.id} .actions-menu form[action=?]", move_workout_log_exercise_path(bench, to: "up"), 0
+    assert_select "#entry-#{bench.id} .actions-menu form[action=?]", move_workout_log_exercise_path(bench, to: "down"), text: /Move down/
+    assert_select "#entry-#{squat.id} .actions-menu form[action=?]", move_workout_log_exercise_path(squat, to: "up"), text: /Move up/
+    assert_select "#entry-#{deadlift.id} .actions-menu form[action=?]", move_workout_log_exercise_path(deadlift, to: "down"), 0
 
-    patch move_workout_log_exercise_path(deadlift, direction: "up")
+    patch move_workout_log_exercise_path(deadlift, to: 1)
     assert_redirected_to workout_log_path(log, anchor: "entry-#{deadlift.id}")
-    patch move_workout_log_exercise_path(deadlift, direction: "up")
+    patch move_workout_log_exercise_path(bench, to: "down")
 
     get workout_log_path(log)
-    assert_equal ["Deadlift", "Bench press", "Squat"], css_select(".entry-card h2").map(&:text)
+    assert_equal ["Deadlift", "Squat", "Bench press"], css_select(".entry-card h2").map(&:text)
     get split_path(@day.split)
     assert_equal ["Bench press", "Squat", "Deadlift"], css_select("#day-#{@day.id} .row-title").map(&:text)
     get workout_day_path(@day, date: Date.current)
@@ -55,7 +59,7 @@ class ReorderFlowTest < FlowTest
   test "an exercise added to a plan or to a workout goes last" do
     press = Exercise.create!(name: "Overhead press", muscle_group: "Shoulders")
     row = Exercise.create!(name: "Row", muscle_group: "Back")
-    patch move_workout_exercise_path(@planned.last, direction: "up")
+    patch move_workout_exercise_path(@planned.last, to: 2)
     post workout_day_workout_exercises_path(@day), params: { exercise_ids: [press.id] }
     get split_path(@day.split)
     assert_equal ["Bench press", "Deadlift", "Squat", "Overhead press"], css_select("#day-#{@day.id} .row-title").map(&:text)
@@ -76,10 +80,10 @@ class ReorderFlowTest < FlowTest
     log = @admin.workout_logs.create!(workout: "Push", workout_day: day, date: Date.current)
     entries = planned.map { |row| log.workout_log_exercises.create!(workout_exercise: row) }
 
-    patch move_workout_exercise_path(planned.last, direction: "up")
+    patch move_workout_exercise_path(planned.last, to: 1)
     assert_response :not_found
     sign_in @user # a 404 does not persist the test session
-    patch move_workout_log_exercise_path(entries.last, direction: "up")
+    patch move_workout_log_exercise_path(entries.last, to: 1)
     assert_response :not_found
     assert_equal planned, day.workout_exercises.reload.to_a
     assert_equal entries, log.workout_log_exercises.reload.to_a
