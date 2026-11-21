@@ -4,16 +4,28 @@
   and for a planned exercise date, the day the set is logged on (see LoggingDate).
 %>
 <% suffix = "#{parent.model_name.param_key}_#{parent.id}" %>
+<%# A bodyweight weight has a ± beside it, so it takes some of the reps' room. %>
+<% weight_col, reps_col = parent.bodyweight? ? %w[col-5 col-3] : %w[col-4 col-4] %>
 <% url = local_assigns[:date] ? polymorphic_path([parent, WorkoutSet], date: date) : polymorphic_path([parent, WorkoutSet]) %>
 <%# While the workout's timer is paused, adding a set asks to resume it first (workout_logs/_timer_alert). %>
 <%= form_with model: [parent, WorkoutSet.new], url:, class: "row g-2 align-items-end inline-form set-form",
       data: { alert_when_paused: "add" } do |f| %>
-  <div class="col-4">
-    <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{suffix}" %>
-    <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", min: 0, placeholder: "–",
-          inputmode: "decimal", class: "form-control", id: "weight_#{suffix}" %>
+  <div class="<%= weight_col %>">
+    <% if parent.bodyweight? %>
+      <%# On a bodyweight exercise the weight is added (+) or taken off (−); empty is bodyweight alone. %>
+      <%= f.label :weight_used, class: "form-label", for: "weight_#{suffix}" do %><%= bodyweight_word %> ± kg<% end %>
+      <div class="input-group" data-controller="sign">
+        <button type="button" class="btn btn-outline-secondary sign-toggle" data-action="sign#flip" aria-label="Add or take off: change the sign">±</button>
+        <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", placeholder: "0",
+              inputmode: "decimal", class: "form-control", id: "weight_#{suffix}", data: { sign_target: "input" } %>
+      </div>
+    <% else %>
+      <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{suffix}" %>
+      <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", min: 0, placeholder: "–",
+            inputmode: "decimal", class: "form-control", id: "weight_#{suffix}" %>
+    <% end %>
   </div>
-  <div class="col-4">
+  <div class="<%= reps_col %>">
     <%= f.label :reps_completed, "Reps", class: "form-label", for: "reps_#{suffix}" %>
     <%= f.number_field :reps_completed, value: last_set&.reps_completed, min: 0, required: true,
           inputmode: "numeric", class: "form-control", id: "reps_#{suffix}" %>

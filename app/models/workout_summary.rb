@@ -19,9 +19,10 @@ class WorkoutSummary
     lifts.sum { |lift| lift.workout_sets.size }
   end
 
-  # The heaviest weight of any set; nil when only bodyweight sets (or none) were recorded.
+  # The heaviest weight of any set; nil when only bodyweight sets (or none) were recorded. A
+  # bodyweight exercise's weight is only what was added or taken off, so it is not a top weight.
   def top_weight
-    lifts.flat_map(&:workout_sets).filter_map(&:weight_used).max
+    lifts.reject(&:bodyweight?).flat_map(&:workout_sets).filter_map(&:weight_used).max
   end
 
   def sets_in(log)

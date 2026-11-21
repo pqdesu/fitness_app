@@ -10,11 +10,22 @@
   <tr>
     <td><span class="order-badge"><%= set.set_number %></span></td>
     <td>
-      <span data-row-edit-target="view"><%= format_weight(set.weight_used) %></span>
-      <%= number_field_tag "workout_set[weight_used]", weight_number(set.weight_used),
-            id: "weight_set_#{set.id}", form: form_id, step: "any", min: 0, placeholder: "–", inputmode: "decimal",
-            class: "form-control form-control-sm set-field", "aria-label": "Weight in kg of set #{set.set_number}",
-            hidden: true, data: { row_edit_target: "field" } %>
+      <span data-row-edit-target="view"><%= format_weight(set.weight_used, bodyweight: set.bodyweight?) %></span>
+      <% if set.bodyweight? %>
+        <%# Added (+) or taken off (−) the body; the ± changes the sign, which a phone's keypad cannot type. %>
+        <div class="input-group input-group-sm set-field" hidden data-row-edit-target="field" data-controller="sign">
+          <button type="button" class="btn btn-outline-secondary sign-toggle" data-action="sign#flip" aria-label="Add or take off: change the sign">±</button>
+          <%= number_field_tag "workout_set[weight_used]", weight_number(set.weight_used),
+                id: "weight_set_#{set.id}", form: form_id, step: "any", placeholder: "0", inputmode: "decimal",
+                class: "form-control", "aria-label": "Kilos added to or taken off the body in set #{set.set_number}",
+                data: { sign_target: "input" } %>
+        </div>
+      <% else %>
+        <%= number_field_tag "workout_set[weight_used]", weight_number(set.weight_used),
+              id: "weight_set_#{set.id}", form: form_id, step: "any", min: 0, placeholder: "–", inputmode: "decimal",
+              class: "form-control form-control-sm set-field", "aria-label": "Weight in kg of set #{set.set_number}",
+              hidden: true, data: { row_edit_target: "field" } %>
+      <% end %>
     </td>
     <td>
       <span data-row-edit-target="view"><%= set.reps_completed %></span>
@@ -29,7 +40,7 @@
         <%= actions_menu "set #{set.set_number}" do %>
           <li><button type="button" class="dropdown-item" data-action="row-edit#edit"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edit</button></li>
           <%= menu_delete "Delete", set_path, aria: { label: "Delete set #{set.set_number}" },
-                confirm: "Delete set #{set.set_number}? #{weight_and_reps(set)}." %>
+                confirm: "Delete set #{set.set_number}? #{weight_and_reps(set, plain: true)}." %>
         <% end %>
       </div>
       <%# The fields and buttons of the edit sit in other cells and belong to this form by its id. %>

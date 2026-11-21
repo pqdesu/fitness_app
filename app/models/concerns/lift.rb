@@ -2,11 +2,12 @@
 #
 # The exercise is picked from the shared catalogue or from the user's own exercises (exercise_id).
 # Its name is also stored on the row, so logged history survives the exercise being deleted.
-# The equipment is free weights, or a machine with a brand the user types.
+# The equipment is free weights, a machine with a brand the user types, or bodyweight (a set's
+# weight is then what is added to the body, or taken off it when negative: see WorkoutSet).
 module Lift
   extend ActiveSupport::Concern
 
-  EQUIPMENT = { "free_weights" => "Free weights", "machine" => "Machine" }.freeze
+  EQUIPMENT = { "free_weights" => "Free weights", "machine" => "Machine", "bodyweight" => "Bodyweight" }.freeze
 
   included do
     belongs_to :exercise, optional: true
@@ -21,6 +22,10 @@ module Lift
 
   def machine?
     equipment == "machine"
+  end
+
+  def bodyweight?
+    equipment == "bodyweight"
   end
 
   def equipment_label

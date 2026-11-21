@@ -68,3 +68,10 @@
 @include media-breakpoint-up(lg) {
   .log-details { position: sticky; top: 5rem; }
 }
+
+// The ± of a bodyweight exercise's weight (sign_controller.js), beside its field. In a set being
+// edited the group takes the field's width, and an input group must not show while hidden.
+.sign-toggle { padding-left: .625rem; padding-right: .625rem; font-weight: 700; }
+@media (pointer: coarse) { .sign-toggle { min-width: 2.75rem; } }
+.input-group.set-field[hidden] { display: none; }
+.input-group.set-field { max-width: 9rem; flex-wrap: nowrap; }

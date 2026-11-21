@@ -542,5 +542,50 @@ class LoggingFlowTest < FlowTest
     end
     assert_equal Date.current - 1, log.reload.date
   end
-end
 
+  test "bodyweight is an equipment: its sets add weight to the body or take it off" do
+    sign_in @user
+    pull_up = Exercise.create!(name: "Pull-up", muscle_group: "Back")
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Pull", weekday: Date.current.wday)
+    planned = day.workout_exercises.create!(exercise: pull_up)
+    page = workout_exercise_path(planned, date: Date.current)
+
+    # chosen like the others, on the exercise page
+    get page
+    assert_select "input[type=radio][name='workout_exercise[equipment]'][value=bodyweight]", 1
+    patch workout_exercise_path(planned, date: Date.current), params: { workout_exercise: { equipment: "bodyweight" } }
+    assert_equal "Bodyweight", planned.reload.equipment_label
+
+    # the weight field takes a sign, with a ± for a phone's keypad, which has no minus key
+    get page
+    assert_select "label[for='weight_workout_exercise_#{planned.id}']", text: /Bodyweight\s*BW ± kg/
+    assert_select ".input-group[data-controller=sign] button[data-action='sign#flip']", "±"
+    assert_select "input#weight_workout_exercise_#{planned.id}[data-sign-target=input]:not([min])", 1
+
+    post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { reps_completed: 8, weight_used: 10 } }
+    post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { reps_completed: 6, weight_used: -15.5 } }
+    post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { reps_completed: 10, weight_used: "" } }
+    entry = planned.entry_on(Date.current)
+    assert entry.bodyweight?
+    assert_equal [10, -15.5, nil], entry.workout_sets.order(:set_number).pluck(:weight_used)
+
+    # shown as "Bodyweight + 10 kg", with "BW" in place of "Bodyweight" on a phone
+    get page
+    assert_equal ["Bodyweight BW + 10 kg", "Bodyweight BW − 15.5 kg", "Bodyweight BW"],
+                 css_select(".set-table td:nth-child(2) > span[data-row-edit-target=view]").map { |n| n.children.map(&:text).join(" ").squish }
+    assert_select ".set-table td > span .d-sm-none", %w[BW BW BW].size
+    # a confirm is a sentence: the long words only
+    second = entry.workout_sets.find_by!(set_number: 2)
+    assert_select "form[data-turbo-confirm=?]", "Delete set 2? Bodyweight − 15.5 kg × 6 reps."
+    # a set being corrected keeps its sign and its ±
+    assert_select ".input-group.set-field[data-controller=sign][hidden] input[form='edit_set_#{second.id}'][value='-15.5']", 1
+
+    # a weight below zero is only for bodyweight
+    bench = day.workout_exercises.create!(exercise: @bench)
+    post workout_exercise_workout_sets_path(bench, date: Date.current), params: { workout_set: { reps_completed: 5, weight_used: -5 } }
+    assert_match "Weight used must be greater than or equal to 0", flash[:alert]
+    get workout_exercise_path(bench, date: Date.current)
+    assert_select "input#weight_workout_exercise_#{bench.id}[min='0']", 1
+    assert_select ".input-group[data-controller=sign]", 0
+  end
+end
