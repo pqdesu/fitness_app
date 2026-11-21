@@ -1,0 +1,29 @@
+<%#
+  The paused-timer alert (timer_alert_controller.js): while the workout's timer is paused, adding an
+  exercise or a set asks whether to keep it paused or resume it, and leaving the workout page
+  whether to keep it paused or stop it. Rendered whenever the workout has a timer, so after a
+  Resume it can reopen "Add exercises". Locals: log (the session, or nil), leave (true on the workout's own pages, where
+  leaving asks too).
+%>
+<% if log&.started_at %>
+  <div class="modal fade confirm-modal" id="timer-alert-modal" tabindex="-1" aria-labelledby="timer-alert-title"
+       aria-describedby="timer-alert-detail" aria-hidden="true"
+       data-controller="timer-alert" data-timer-alert-paused-value="<%= log.timer_paused? %>"
+       data-timer-alert-leave-value="<%= leave %>" data-timer-alert-url-value="<%= workout_log_timer_path(log) %>">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body">
+          <span class="confirm-icon timer-alert-icon"><i class="fa-solid fa-pause"></i></span>
+          <h2 class="confirm-title" id="timer-alert-title">Your timer is paused</h2>
+          <p class="confirm-detail" id="timer-alert-detail" data-timer-alert-target="detail"></p>
+          <div class="confirm-actions">
+            <button type="button" class="btn btn-light" data-timer-alert-target="secondary"
+                    data-action="timer-alert#choose" data-timer-alert-choice-param="secondary">Keep paused</button>
+            <button type="button" class="btn btn-primary" data-timer-alert-target="primary"
+                    data-action="timer-alert#choose" data-timer-alert-choice-param="primary">Resume</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

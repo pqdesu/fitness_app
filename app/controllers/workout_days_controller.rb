@@ -10,10 +10,14 @@ class WorkoutDaysController < ApplicationController
     @workout_exercises = @workout_day.workout_exercises.includes(:exercise).order(:id)
     @date = logging_date(@workout_day)
     # Sets recorded on that date per exercise, read from that day's session of this workout.
-    log = current_user.workout_logs.with_sets.session_of(@workout_day.day, @date)
-    entries = @workout_exercises.to_h { |planned| [planned.id, log && planned.entry_in(log)] }
+    @log = current_user.workout_logs.with_sets.session_of(@workout_day.day, @date)
+    entries = @workout_exercises.to_h { |planned| [planned.id, @log && planned.entry_in(@log)] }
     @sets_logged = entries.transform_values { |entry| entry&.workout_sets&.size.to_i }
-    @extra_entries = log ? log.workout_log_exercises.sort_by(&:id) - entries.values : []
+    @extra_entries = @log ? @log.workout_log_exercises.sort_by(&:id) - entries.values : []
+    # With the automatic timer on, opening today's workout starts it (and the timer). Not when it
+    # could not be logged (the split already has another workout today), so the page never retries.
+    @autostart = current_user.timer_auto_start? && @date == Date.current &&
+                 (@log || @workout_day.workout_logs.new(date: @date)).valid?
   end
 
   def new

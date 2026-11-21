@@ -18,6 +18,31 @@
 .history-table .history-summary { padding-right: .5rem; }
 .history-line { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .375rem; margin-top: .125rem; }
 .history-counts { margin-top: .125rem; font-size: .8rem; color: $muted; }
+// The pen beside a workout's timer line. A thumb-sized target (44px) around a small icon, pulled
+// in by its margins so the line does not grow; the line keeps room below for the target's bottom
+// edge, or the table (which scrolls sideways) would show a scrollbar for it.
+// The icon, the text (which wraps) and the pen in a row, so the pen never ends up alone on a line.
+.history-time {
+  display: flex;
+  align-items: flex-start;
+  gap: .375rem;
+  padding-bottom: .375rem;
+
+  > i { margin-top: .2em; }
+}
+
+.history-time-text { min-width: 0; }
+// On a phone the pen keeps one column at the right of the line, whatever the text's length.
+.history-summary .history-time-text { flex: 1; }
+.timer-edit {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -.875rem -.5rem;
+  color: $blue;
+  vertical-align: middle;
+}
 @media (max-width: 767.98px) {
   .history-table td:last-child { padding-left: 0; padding-right: 1rem; }
 }
