@@ -15,6 +15,9 @@ class DashboardFlowTest < FlowTest
       assert_select ".week-overview-days li.is-today .week-overview-name", "Mon"
       assert_select ".week-overview .toggle-days[data-bs-target='#week-days'][aria-expanded=false]", 1
       assert_select "#week-days.collapse:not(.show) .week-overview-days", 1
+      # nothing done yet: no counts on the workout's page
+      get workout_day_path(push, date: Date.current)
+      assert_select ".day-counts", 0
 
       log = push.workout_logs.create!(date: Date.current)
       bench = log.workout_log_exercises.create!(name: "Bench press")
@@ -29,6 +32,8 @@ class DashboardFlowTest < FlowTest
       assert_equal ["1", "2", "3", "72.5 kg"], css_select(".week-summary dd").map { |n| n.text.squish }
       assert_select ".week-overview-days li.has-workout", 1
       assert_select ".week-overview-days a[href=?]", workout_log_path(log, from: "dashboard"), text: "Push"
+      # each day says how many exercises and sets it had
+      assert_select ".week-overview-days li.has-workout .small", "2 exercises · 3 sets"
       assert_select ".today", /Logged today · 2 exercises · 3 sets · top 72.5 kg/
       assert_select ".today a.btn-primary[href=?]", workout_day_path(push, date: Date.current), text: "Continue"
     end
@@ -144,6 +149,8 @@ class DashboardFlowTest < FlowTest
       # a table of cells, not a grid (which promises arrow-key moves); a logged day's link sits inside its cell
       assert_select ".calendar[role=table] [role=row] [role=cell] > a.calendar-day", 3
       assert_select ".calendar[role=grid], .calendar [role=gridcell], .calendar a[role]", 0
+      # with how many exercises and sets it had, as today's workout says once it has sets
+      assert_select ".today-last .last-counts", "2 exercises\u00a0· 5 sets"
       assert_select "a.calendar-day.has-workout[href=?]", workout_log_path(older, from: "dashboard"), text: "2"
       assert_select "a.calendar-day.has-workout.is-today[aria-current=date]", text: "16"
       assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push workout"

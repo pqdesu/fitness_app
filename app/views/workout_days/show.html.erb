@@ -6,6 +6,10 @@
     <h1><%= @workout_day.day %></h1>
     <%# The date its sets go to (see LoggingDate): today, a day earlier this week, or one to come. %>
     <p class="text-muted mb-0"><% if @date == Date.current %>Today · <% end %><%= l @date, format: "%A, %B %-d" %></p>
+    <%# What is done so far in this workout on that date: exercises with a set, and sets. %>
+    <% if @log && (done = WorkoutSummary.new(@log)).sets.positive? %>
+      <p class="day-counts small fw-semibold mb-0"><%= pluralize(done.exercises, "exercise") %> · <%= pluralize(done.sets, "set") %></p>
+    <% end %>
   </div>
   <div class="header-actions">
     <%= link_to "Plan", split_path(@workout_day.split, anchor: "day-#{@workout_day.id}"), class: "btn btn-light" %>

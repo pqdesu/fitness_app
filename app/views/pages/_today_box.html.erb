@@ -33,7 +33,10 @@
   <% today_lifts = dashboard.today_lifts %>
   <% last_time = capture do %>
     <% if last_log %>
-      Last time · <%= link_to l(last_log.date, format: "%A, %B %-d"), workout_log_path(last_log, from: "dashboard") %>
+      <% last_summary = WorkoutSummary.new(last_log) %>
+      <%# Each count stays whole and a "·" ends a line when it wraps, never starts one. %>
+      Last time · <%= link_to l(last_log.date, format: "%A, %B %-d"), workout_log_path(last_log, from: "dashboard") %>&nbsp;·
+      <span class="last-counts"><span class="text-nowrap"><%= pluralize(last_summary.exercises, "exercise") %>&nbsp;·</span> <span class="text-nowrap"><%= pluralize(last_summary.sets, "set") %></span></span>
       <% if last_log.workout_day.nil? %>
         <span class="last-source">· <%= last_log.workout %>, from a deleted split</span>
       <% elsif last_log.workout_day != today_workout %>

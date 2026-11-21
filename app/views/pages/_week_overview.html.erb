@@ -1,6 +1,6 @@
 <%#
   This week at a glance, Sunday to Saturday. The summary (workouts, exercises, sets and the heaviest
-  weight) is always visible; the toggle opens one row per day: what was logged and how many sets.
+  weight) is always visible; the toggle opens one row per day: what was logged, how many exercises and sets.
   A logged day links to that workout, or to the day's list in History when there were several.
   Locals: dates (the 7 days), logs_by_date (date => workout logs), summary (a WorkoutSummary of
   the week), today.
@@ -28,7 +28,8 @@
           <span class="week-overview-name"><%= l date, format: "%a" %></span>
           <% if day_logs.any? %>
             <%= link_to day_logs.map(&:workout).to_sentence, day_logs_path(day_logs, date), class: "row-title" %>
-            <span class="text-muted small"><%= pluralize(day_logs.sum { |log| summary.sets_in(log) }, "set") %></span>
+            <% day = WorkoutSummary.new(day_logs) %>
+            <span class="text-muted small"><%= pluralize(day.exercises, "exercise") %> · <%= pluralize(day.sets, "set") %></span>
           <% else %>
             <span class="text-muted"><%= date > today ? "–" : "Rest" %></span>
           <% end %>
