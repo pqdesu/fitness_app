@@ -6,7 +6,7 @@
 <div class="page-header">
   <div>
     <h1><%= @workout_exercise.name %></h1>
-    <p class="text-muted mb-0"><%= @workout_exercise.equipment_label %></p>
+    <p class="text-muted mb-0"><%= @workout_exercise.equipment_label %><% if @workout_exercise.exercise&.unilateral? %> · Unilateral<% end %></p>
   </div>
 </div>
 
@@ -29,13 +29,32 @@
 
       <% unless upcoming %>
         <div class="card-footer">
-          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date %>
+          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date, first: @sets.empty? %>
         </div>
       <% end %>
     </div>
   </div>
 
   <div class="col-lg-4">
+    <%# A note on this exercise for that day. It is the logged exercise's note, so it can be written
+        once the exercise is being logged (its first set), and shows on the logged workout too. %>
+    <% if @entry %>
+      <div class="card exercise-note">
+        <div class="card-header"><h2>Note</h2><span class="text-muted small"><%= logging_date_label(@date) %></span></div>
+        <div class="card-body">
+          <%= form_with model: @entry, url: workout_log_exercise_path(@entry, workout_exercise_id: @workout_exercise.id, date: @date),
+                class: "inline-form" do |f| %>
+            <%= f.label :notes, "Note on #{@workout_exercise.name}", class: "visually-hidden" %>
+            <div class="input-group">
+              <%= f.text_area :notes, rows: 2, maxlength: 500, placeholder: "Anything to remember about this exercise today",
+                    class: "form-control" %>
+              <button type="submit" class="btn btn-primary note-save" aria-label="Save note"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
     <div class="card">
       <div class="card-header"><h2>Equipment</h2></div>
       <div class="card-body">

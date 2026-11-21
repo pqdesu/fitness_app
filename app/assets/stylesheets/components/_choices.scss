@@ -20,3 +20,26 @@
 
 // Bootstrap's legend size wins over the inline form's small label without this
 .inline-form .choices-field legend { font-size: .78rem; }
+
+// The equipment's groups of pills (shared/_equipment_fields): room above each group's label
+.equipment-fields [data-reveal-target="panel"] .choices-field { margin-top: .875rem; }
+
+// A folded list of pills (shared/_choices with fold): a 44px row with the label, the current
+// choice and an arrow; the pills open under it.
+.choice-summary {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 .875rem;
+  border: 1px solid $line;
+  border-radius: .75rem;
+  background: white;
+  text-align: left;
+
+  .choice-current { flex: 1; min-width: 0; text-align: right; font-weight: 600; color: $blue; overflow-wrap: anywhere; }
+  .fa-chevron-down { color: $muted; font-size: .75rem; transition: transform .2s; }
+  &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+}
+.is-folded .choices { margin-top: .5rem; }

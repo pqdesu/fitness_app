@@ -2,15 +2,17 @@
 .modal-title { font-size: 1.15rem; margin: 0; }
 
 .picker-group {
-  margin: 1.25rem 0 .375rem;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid $line;
   font-size: .75rem;
   font-weight: 700;
   letter-spacing: .04em;
   text-transform: uppercase;
   color: $muted;
-
-  &:first-child { margin-top: 0; }
 }
+// "Create your own" is a heading, not a group to open
+h3.picker-group { margin: 1.25rem 0 .375rem; border-bottom: 0; }
 
 .picker-row {
   display: flex;

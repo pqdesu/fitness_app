@@ -4,7 +4,7 @@
   link out. Locals: log (loaded with its exercises and sets).
 %>
 <% panel_id = "recent-log-#{log.id}" %>
-<% lifts = log.workout_log_exercises.sort_by(&:id) %>
+<% lifts = log.workout_log_exercises.to_a %>
 <% set_count = lifts.sum { |lift| lift.workout_sets.size } %>
 <li class="recent-row">
   <button type="button" class="recent-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
@@ -29,7 +29,8 @@
     <% if lifts.empty? %>
       <p class="text-muted small">No exercises in this workout.</p>
     <% else %>
-      <ul class="lift-pills">
+      <%= render "shared/list_toggle", target: "#{panel_id}-lifts", label: "exercises", css: "mb-2" %>
+      <ul class="lift-pills collapse" id="<%= panel_id %>-lifts">
         <% lifts.each do |lift| %>
           <% top = lift.top_set %>
           <li>

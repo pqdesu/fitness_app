@@ -10,9 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_20_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "equipment_items", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "kind", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "kind, lower((name)::text)", name: "index_equipment_items_on_kind_and_name", unique: true
+  end
 
   create_table "exercises", force: :cascade do |t|
     t.string "name", null: false
@@ -20,9 +28,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_130000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.string "equipment", default: "free_weights", null: false
+    t.string "equipment_name"
+    t.string "machine_type"
+    t.string "machine_brand"
+    t.boolean "unilateral", default: false, null: false
     t.index "lower((name)::text)", name: "index_exercises_on_shared_name", unique: true, where: "(user_id IS NULL)"
     t.index "user_id, lower((name)::text)", name: "index_exercises_on_own_name", unique: true, where: "(user_id IS NOT NULL)"
     t.index ["user_id"], name: "index_exercises_on_user_id"
+  end
+
+  create_table "set_tags", force: :cascade do |t|
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((name)::text)", name: "index_set_tags_on_name", unique: true
   end
 
   create_table "splits", force: :cascade do |t|
@@ -47,6 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_130000) do
     t.integer "failed_attempts", default: 0, null: false
     t.datetime "locked_at"
     t.boolean "timer_auto_start", default: false, null: false
+    t.boolean "auto_warm_up", default: false, null: false
     t.index ["active_split_id"], name: "index_users_on_active_split_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -79,6 +100,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_130000) do
     t.string "name", null: false
     t.string "equipment", default: "free_weights", null: false
     t.string "machine_brand"
+    t.string "equipment_name"
+    t.string "machine_type"
+    t.integer "position"
     t.index ["exercise_id"], name: "index_workout_exercises_on_exercise_id"
     t.index ["workout_day_id", "exercise_id"], name: "index_workout_exercises_on_workout_day_id_and_exercise_id", unique: true, where: "(exercise_id IS NOT NULL)"
     t.index ["workout_day_id"], name: "index_workout_exercises_on_workout_day_id"
@@ -94,6 +118,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_130000) do
     t.string "equipment", default: "free_weights", null: false
     t.string "machine_brand"
     t.bigint "exercise_id"
+    t.string "equipment_name"
+    t.string "machine_type"
+    t.integer "position"
     t.index ["exercise_id"], name: "index_workout_log_exercises_on_exercise_id"
     t.index ["workout_exercise_id"], name: "index_workout_log_exercises_on_workout_exercise_id"
     t.index ["workout_log_id", "exercise_id"], name: "index_workout_log_exercises_on_workout_log_id_and_exercise_id", unique: true, where: "(exercise_id IS NOT NULL)"
@@ -116,6 +143,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_130000) do
     t.index ["user_id", "workout", "date"], name: "index_workout_logs_on_user_id_and_workout_and_date", unique: true
     t.index ["user_id"], name: "index_workout_logs_on_user_id"
     t.index ["workout_day_id"], name: "index_workout_logs_on_workout_day_id"
+  end
+
+  create_table "workout_set_tags", force: :cascade do |t|
+    t.bigint "workout_set_id", null: false
+    t.bigint "set_tag_id", null: false
+    t.index ["set_tag_id"], name: "index_workout_set_tags_on_set_tag_id"
+    t.index ["workout_set_id", "set_tag_id"], name: "index_workout_set_tags_on_workout_set_id_and_set_tag_id", unique: true
+    t.index ["workout_set_id"], name: "index_workout_set_tags_on_workout_set_id"
   end
 
   create_table "workout_sets", force: :cascade do |t|
@@ -142,5 +177,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_130000) do
   add_foreign_key "workout_log_exercises", "workout_logs"
   add_foreign_key "workout_logs", "users"
   add_foreign_key "workout_logs", "workout_days", on_delete: :nullify
+  add_foreign_key "workout_set_tags", "set_tags", on_delete: :cascade
+  add_foreign_key "workout_set_tags", "workout_sets", on_delete: :cascade
   add_foreign_key "workout_sets", "workout_log_exercises"
 end

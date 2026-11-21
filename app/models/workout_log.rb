@@ -4,7 +4,7 @@ class WorkoutLog < ApplicationRecord
   belongs_to :user
   # The day of the split it was logged from; gone once that day or its split is deleted.
   belongs_to :workout_day, optional: true
-  has_many :workout_log_exercises, dependent: :destroy
+  has_many :workout_log_exercises, -> { order(:position, :id) }, dependent: :destroy, inverse_of: :workout_log
   has_many :workout_exercises, through: :workout_log_exercises
 
   before_validation :copy_from_workout_day, on: :create

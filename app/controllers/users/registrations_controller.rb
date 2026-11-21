@@ -16,7 +16,7 @@ module Users
 
     # The account's one setting besides email and password: whether the workout timer starts on its own.
     def permit_settings
-      devise_parameter_sanitizer.permit(:account_update, keys: [:timer_auto_start])
+      devise_parameter_sanitizer.permit(:account_update, keys: [:timer_auto_start, :auto_warm_up])
     end
   end
 end

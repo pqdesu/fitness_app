@@ -26,13 +26,19 @@ module SeedData
 
     def database_data
       {
+        "equipment" => EquipmentItem.order(:id).map { |item| { "name" => item.name, "kind" => item.kind } },
+        "set_tags" => SetTag.order(:id).map { |tag| { "name" => tag.name } },
         "exercises" => Exercise.where(user_id: nil).order(:id).map { |exercise| exercise_data(exercise) },
         "users" => User.order(:id).map { |user| user_data(user) }
       }
     end
 
+    # Only what differs from a new exercise: free weights, not unilateral.
     def exercise_data(exercise)
-      { "name" => exercise.name, "muscle_group" => exercise.muscle_group }
+      { "name" => exercise.name, "muscle_group" => exercise.muscle_group,
+        "equipment" => (exercise.equipment unless exercise.equipment == "free_weights"),
+        "equipment_name" => exercise.equipment_name, "machine_type" => exercise.machine_type,
+        "machine_brand" => exercise.machine_brand, "unilateral" => (true if exercise.unilateral?) }
     end
 
     def user_data(user)
@@ -41,6 +47,7 @@ module SeedData
         "admin" => user.admin?,
         "time_zone" => user.time_zone,
         "timer_auto_start" => user.timer_auto_start?,
+        "auto_warm_up" => user.auto_warm_up?,
         "active_split" => user.active_split&.name,
         "exercises" => user.exercises.order(:id).map { |exercise| exercise_data(exercise) },
         "splits" => user.splits.order(:id).includes(workout_days: [:workout_exercises, :workout_day_moves])
@@ -52,7 +59,7 @@ module SeedData
     def real_workouts(user)
       user.workout_logs.where("notes IS NULL OR notes NOT LIKE ?", MOCK_NOTES).order(:date, :id)
           .includes(workout_day: :split,
-                    workout_log_exercises: [:workout_sets, :exercise, { workout_exercise: { workout_day: :split } }])
+                    workout_log_exercises: [:exercise, { workout_sets: :set_tags, workout_exercise: { workout_day: :split } }])
     end
 
     def split_data(split)
@@ -63,7 +70,7 @@ module SeedData
       {
         "day" => day.day,
         "weekday" => day.weekday,
-        "exercises" => day.workout_exercises.sort_by(&:id).map { |planned| lift_data(planned) },
+        "exercises" => day.workout_exercises.map { |planned| lift_data(planned) },
         "moves" => day.workout_day_moves.sort_by(&:week_start)
                       .map { |move| { "week_start" => move.week_start.iso8601, "weekday" => move.weekday } }
       }
@@ -76,6 +83,8 @@ module SeedData
         "name" => lift.name,
         "exercise" => lift.exercise && (lift.exercise.user_id ? "own" : "shared"),
         "equipment" => lift.equipment,
+        "equipment_name" => lift.equipment_name,
+        "machine_type" => lift.machine_type,
         "machine_brand" => lift.machine_brand
       }
     end
@@ -92,7 +101,7 @@ module SeedData
         "ended_at" => log.ended_at&.iso8601,
         "paused_at" => log.paused_at&.iso8601,
         "paused_seconds" => log.paused_seconds,
-        "exercises" => log.workout_log_exercises.sort_by(&:id).map { |entry| entry_data(entry) }
+        "exercises" => log.workout_log_exercises.map { |entry| entry_data(entry) }
       }
     end
 
@@ -103,7 +112,7 @@ module SeedData
         "notes" => entry.notes,
         "sets" => entry.workout_sets.sort_by(&:set_number).map do |set|
           { "number" => set.set_number, "reps" => set.reps_completed,
-            "weight" => set.weight_used&.to_s("F"), "notes" => set.notes }
+            "weight" => set.weight_used&.to_s("F"), "notes" => set.notes, "tags" => set.set_tags.map(&:name) }
         end
       )
     end

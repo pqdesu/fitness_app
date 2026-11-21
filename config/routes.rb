@@ -26,6 +26,8 @@ Rails.application.routes.draw do
   end
   # Opening an exercise shows today's sets; adding a set there logs it under today's workout.
   resources :workout_exercises, only: [:show, :update, :destroy] do
+    # Move to another place in the day's plan (dragged on the split page)
+    patch :move, on: :member
     resources :workout_sets, only: [:create]
   end
 
@@ -38,6 +40,8 @@ Rails.application.routes.draw do
     end
   end
   resources :workout_log_exercises, only: [:edit, :update, :destroy] do
+    # Move to another place in that workout (dragged, or Move up/down); the plan keeps its order
+    patch :move, on: :member
     resources :workout_sets, only: [:create]
   end
   resources :workout_sets, only: [:update, :destroy]
@@ -45,6 +49,10 @@ Rails.application.routes.draw do
   # Admin only: the accounts (make or unmake an admin, delete a user)
   namespace :admin do
     resources :users, only: [:index, :update, :destroy]
+    # The equipment catalogue users pick a lift's equipment from
+    resources :equipment_items, path: "equipment", except: [:show, :new]
+    # The tags users mark sets with
+    resources :set_tags, path: "tags", except: [:show, :new]
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

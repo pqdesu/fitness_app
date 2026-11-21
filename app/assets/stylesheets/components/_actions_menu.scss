@@ -1,0 +1,19 @@
+// The ⋯ menu (actions_menu): edit and delete behind one button
+.actions-menu {
+  .actions-toggle { color: $gray; font-size: 1rem; }
+  .actions-toggle:hover, .actions-toggle[aria-expanded="true"] { color: $blue; }
+
+  .dropdown-menu { min-width: 11rem; }
+  // A menu in a list of rows (.list-rows li) is not one of its rows
+  .dropdown-menu > li { display: block; padding: 0; border: 0; }
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+    min-height: 2.75rem;
+    font-weight: 500;
+    i { width: 1rem; text-align: center; }
+  }
+  // A delete is a button_to: its form must not add space around it
+  form { margin: 0; }
+}

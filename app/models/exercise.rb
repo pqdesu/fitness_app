@@ -1,7 +1,11 @@
 # An exercise users can add to a workout day or a logged workout.
 # - Without a user it belongs to the shared catalogue, which only admins manage.
 # - With a user it is that user's own exercise, and only they see it.
+# - Its equipment (Equipped) is what its planned and logged lifts start with; unilateral marks an
+#   exercise done one arm or one leg at a time.
 class Exercise < ApplicationRecord
+  include Equipped
+
   MUSCLE_GROUPS = %w[Chest Back Shoulders Biceps Triceps Legs Calves Core].freeze
 
   belongs_to :user, optional: true

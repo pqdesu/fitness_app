@@ -2,7 +2,7 @@ class WorkoutLogExercisesController < ApplicationController
   include ExercisePicker
   include LoggingDate
 
-  before_action :set_entry, only: [:edit, :update, :destroy]
+  before_action :set_entry, only: [:edit, :update, :move, :destroy]
 
   # Adds to a workout: an exercise planned for the day (workout_exercise_id), or the exercises
   # chosen (or the one created) in the "Add exercises" modal. From a workout day's page
@@ -39,31 +39,51 @@ class WorkoutLogExercisesController < ApplicationController
   def edit
   end
 
-  # Changes the equipment used for this exercise in this workout, and its note.
+  # Changes the equipment used for this exercise in this workout, and its note. The note is also
+  # written on the exercise's page, which sends its workout_exercise_id and date to return there.
   def update
-    if @entry.update(entry_params)
+    planned = current_user.workout_exercises.find_by(id: params[:workout_exercise_id]) if params[:workout_exercise_id].present?
+    if planned
+      saved = @entry.update(entry_params)
+      redirect_to workout_exercise_path(planned, date: text_param(:date).presence),
+                  **(saved ? { notice: "Note saved." } : { alert: "Note not saved: #{errors_of(@entry)}." })
+    elsif @entry.update(entry_params)
       redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), notice: "#{@entry.name} updated."
     else
       render :edit, status: :unprocessable_content
     end
   end
 
+  # Moves an exercise in this workout: dropped there (on its page or its workout day's), or one place up
+  # or down from its ⋯ menu. The plan keeps its own order.
+  def move
+    @entry.move!(params[:to])
+    flash[:moved] = @entry.id # lights it up on the page (.just-moved)
+    redirect_to back_after_change, status: :see_other
+  end
+
   # Takes an exercise out of a workout. One planned for the day stays on the plan (and is offered
   # again); one added while training is simply gone. From a workout day's page it returns there.
   def destroy
     @entry.destroy
-    workout_day = current_user.workout_days.find_by(id: params[:workout_day_id]) if params[:workout_day_id].present?
-    back = workout_day ? workout_day_path(workout_day, date: text_param(:date).presence) : workout_log_path(@entry.workout_log_id)
-    redirect_to back, notice: "#{@entry.name} removed from this workout.", status: :see_other
+    redirect_to back_after_change, notice: "#{@entry.name} removed from this workout.", status: :see_other
   end
 
   private
+
+  # From a workout day's page (workout_day_id and date) back there, otherwise to the logged workout.
+  def back_after_change
+    workout_day = current_user.workout_days.find_by(id: params[:workout_day_id]) if params[:workout_day_id].present?
+    return workout_day_path(workout_day, date: text_param(:date).presence) if workout_day
+
+    workout_log_path(@entry.workout_log_id, anchor: ("entry-#{@entry.id}" if @entry.persisted?))
+  end
 
   def set_entry
     @entry = current_user.workout_log_exercises.find(params[:id])
   end
 
   def entry_params
-    params.expect(workout_log_exercise: [:equipment, :machine_brand, :notes])
+    params.expect(workout_log_exercise: [*Equipped::ATTRIBUTES, :notes])
   end
 end

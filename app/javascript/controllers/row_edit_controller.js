@@ -8,7 +8,8 @@ export default class extends Controller {
 
   edit() {
     this.toggle(true)
-    const input = this.fieldTargets.find((field) => field.matches("input"))
+    // The first field, which may sit in a group (the weight of a bodyweight exercise, with its ±)
+    const input = this.fieldTargets.map((field) => field.matches("input") ? field : field.querySelector("input")).find(Boolean)
     input.focus()
     input.select()
   }

@@ -64,6 +64,6 @@ class ExercisesController < ApplicationController
   end
 
   def exercise_params
-    params.expect(exercise: [:name, :muscle_group])
+    params.expect(exercise: [:name, :muscle_group, :unilateral, *Equipped::ATTRIBUTES])
   end
 end

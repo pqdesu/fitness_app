@@ -25,7 +25,6 @@
 - Workout logs should have the ame of exercise amount of sets and top weight, also add a 3 dots button to either edit or delete the exercise. and to show the sets and stuff expand it with a arrow down button. Image for reference - /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-19 220155.png
 - On Split page make the exercises planned to be expandale and showing only the current split and day but expand when clicked on to show the exercises. Also when you click the cirecle of the day of the week.
 - Timer for exercise
-- Exercises created by a user can be deleted by the user.
 
 ---
 
@@ -47,6 +46,10 @@
 ---
 
 # Features added (DONE)
+
+### Exercise page
+
+- Exercises created by a user can be deleted by the user.
 
 ### Calendar
 

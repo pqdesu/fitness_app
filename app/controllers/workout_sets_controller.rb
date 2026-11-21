@@ -67,6 +67,6 @@ class WorkoutSetsController < ApplicationController
   end
 
   def workout_set_params
-    params.expect(workout_set: [:reps_completed, :weight_used, :notes])
+    params.expect(workout_set: [:reps_completed, :weight_used, :notes, { set_tag_ids: [] }])
   end
 end

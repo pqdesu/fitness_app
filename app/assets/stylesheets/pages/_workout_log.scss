@@ -1,5 +1,7 @@
 // Workout log
 .entry-card { scroll-margin-top: 5rem; }
+// The cards sit in their own list (for dragging), so the card after it is spaced as the cards are
+.entry-list + .card { margin-top: 1rem; }
 .entry-meta { display: flex; align-items: center; gap: .25rem; }
 .set-table td:first-child, .set-table th:first-child { width: 80px; }
 .set-table td { vertical-align: middle; }
@@ -50,15 +52,9 @@
 // "Add set" stays on one line in its third of a 360px phone
 .set-form .btn { padding-left: .5rem; padding-right: .5rem; white-space: nowrap; }
 
-// On a touch screen the pen and the bin of a set (44px, like every button there: components/_layout)
-// sit apart, so a slip on one does not land on the other.
-@media (pointer: coarse) {
-  .set-actions { gap: .5rem; }
-}
-
 // On a phone the four columns of a set table share less than 370px: the number, weight and reps
 // columns give up side padding, and the weight and reps fields of a set being edited may narrow,
-// so the row being edited and the pen and bin of the other rows fit in the card together.
+// so the row being edited and the ⋯ of the other rows fit in the card together.
 @include media-breakpoint-down(sm) {
   .set-table {
     th, td { padding-left: .5rem; padding-right: .5rem; }
@@ -74,3 +70,19 @@
 @include media-breakpoint-up(lg) {
   .log-details { position: sticky; top: 5rem; }
 }
+
+// The ± of a bodyweight exercise's weight (sign_controller.js), beside its field. In a set being
+// edited the group takes the field's width, and an input group must not show while hidden.
+.sign-toggle { padding-left: .625rem; padding-right: .625rem; font-weight: 700; }
+@media (pointer: coarse) { .sign-toggle { min-width: 2.75rem; } }
+.input-group.set-field[hidden] { display: none; }
+.input-group.set-field { max-width: 9rem; flex-wrap: nowrap; }
+
+// A set's tags (warm-up, assisted…): chips above its note, and pills to tick when adding or editing it
+.set-tags { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-bottom: .375rem; }
+.chip-tag { background: $primary-soft; color: $blue; }
+.set-tag-choices { display: flex; flex-wrap: wrap; gap: .375rem; }
+// The blue arrow that saves a note (a set's, an exercise's), 44px wide on a touch screen
+.note-save { min-width: 2.5rem; }
+@media (pointer: coarse) { .note-save { min-width: 2.75rem; } }
+.set-tag-toggle { color: $muted; }

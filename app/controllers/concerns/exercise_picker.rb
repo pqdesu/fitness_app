@@ -1,5 +1,6 @@
 # Reads what the "Add exercises" modal sends: either exercises ticked in the catalogue
-# (exercise_ids), or a new exercise the user creates on the spot (exercise[name, muscle_group]).
+# (exercise_ids), or a new exercise the user creates on the spot (exercise[name, muscle_group,
+# unilateral and the equipment its lifts start with]).
 module ExercisePicker
   extend ActiveSupport::Concern
 
@@ -18,7 +19,7 @@ module ExercisePicker
   # row it is added to (the caller's create!), so it does not stay behind when the add fails.
   def picked_exercises
     if params[:exercise].present?
-      exercise = find_or_build_exercise(params.expect(exercise: [:name, :muscle_group]))
+      exercise = find_or_build_exercise(params.expect(exercise: [:name, :muscle_group, :unilateral, *Equipped::ATTRIBUTES]))
       exercise.valid? ? [[exercise], nil] : [[], errors_of(exercise)]
     else
       exercises = Exercise.visible_to(current_user).where(id: params[:exercise_ids]).order(:name).to_a

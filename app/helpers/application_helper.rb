@@ -1,15 +1,4 @@
 module ApplicationHelper
-  def format_weight(weight)
-    return "Bodyweight" if weight.nil?
-
-    "#{weight_number(weight)} kg"
-  end
-
-  # A weight as typed: up to three decimals, without trailing zeros (80, 32.5, 1.125).
-  def weight_number(weight)
-    number_with_precision(weight, precision: 3, strip_insignificant_zeros: true)
-  end
-
   # Gives a sub-page its back button, an arrow the layout draws above the page header. It returns
   # to the page the user was on before (back_controller.js, back_trail.js); `path`, the page this
   # one sits under, is where it goes when there was none, such as a link opened directly.
@@ -17,11 +6,6 @@ module ApplicationHelper
     content_for :back, link_to(tag.i(class: "fa-solid fa-arrow-left", aria: { hidden: true }), path,
                                class: "back-link", aria: { label: "Back" }, title: "Back",
                                data: { controller: "back", action: "back#go" }), flush: true
-  end
-
-  # A set in one line: "80 kg × 8 reps".
-  def weight_and_reps(set)
-    "#{format_weight(set.weight_used)} × #{pluralize(set.reps_completed, 'rep')}"
   end
 
   # When a workout was done, by its timer: "6:02 PM ~ 7:15 PM · 1 h 3 min · paused 10 min" (start

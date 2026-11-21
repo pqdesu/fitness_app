@@ -20,8 +20,11 @@
           <p class="text-muted">There are no exercises yet. Create your first one below.</p>
         <% else %>
           <%= form_with url: url, id: "#{id}-form", data: { turbo_action: "advance" } do %>
+            <%# Each muscle group starts closed: its heading opens its exercises. %>
             <% exercises.group_by(&:group).sort.each do |group, group_exercises| %>
-              <h3 class="picker-group"><%= group %></h3>
+              <% group_id = "#{id}-group-#{group.parameterize}" %>
+              <button type="button" class="picker-group group-toggle" data-bs-toggle="collapse" data-bs-target="#<%= group_id %>" aria-expanded="false" aria-controls="<%= group_id %>"><span class="group-name"><%= group %></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
+              <div class="collapse" id="<%= group_id %>">
               <% group_exercises.each do |exercise| %>
                 <% taken = taken_ids.include?(exercise.id) %>
                 <label class="picker-row <%= "is-taken" if taken %>">
@@ -31,6 +34,7 @@
                   <% unless exercise.shared? %><span class="chip">Yours</span><% end %>
                 </label>
               <% end %>
+              </div>
             <% end %>
           <% end %>
         <% end %>
@@ -44,6 +48,16 @@
           <div class="col-12">
             <%= render "shared/choices", f:, field: :muscle_group, label: "Muscle group", selected: nil, id: "#{id}_muscle_group",
                   choices: [["Other", ""], *Exercise::MUSCLE_GROUPS.map { |group| [group, group] }] %>
+          </div>
+          <div class="col-12">
+            <%# What its lifts start with: here, in the plan or the workout it is added to, and later. %>
+            <%= render "shared/equipment_fields", f:, object: Exercise.new, id: "#{id}_new" %>
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <%= f.check_box :unilateral, { class: "form-check-input", id: "#{id}_unilateral" }, "1", "0" %>
+              <%= f.label :unilateral, "Unilateral: one arm or one leg at a time", class: "form-check-label", for: "#{id}_unilateral" %>
+            </div>
           </div>
           <div class="col-12 d-grid">
             <%= f.submit "Create", class: "btn btn-light" %>

@@ -1,7 +1,7 @@
 class WorkoutDay < ApplicationRecord
   belongs_to :split
   has_one :user, through: :split
-  has_many :workout_exercises, dependent: :destroy
+  has_many :workout_exercises, -> { order(:position, :id) }, dependent: :destroy, inverse_of: :workout_day
   has_many :exercises, through: :workout_exercises
   # Logged workouts belong to the user: they stay when the day is deleted.
   has_many :workout_logs, dependent: :nullify
