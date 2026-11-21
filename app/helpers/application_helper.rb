@@ -91,4 +91,46 @@ module ApplicationHelper
   def nav_link_to(label, path, active:)
     link_to label, path, class: class_names("nav-link", active:)
   end
+
+  # The app's sections: label, path, Font Awesome icon, and whether the current page belongs to it.
+  # The top navbar (tablet and desktop) ends with Exercises; the phone's bottom bar has no room for
+  # it, so there Exercises is a link on the dashboard and lights the Dashboard tab.
+  def nav_sections(phone: false)
+    page = controller_name == "pages" && action_name
+    sections = [
+      ["Today", root_path, "calendar-day", page == "home" || todays_workout_page?],
+      ["Dashboard", dashboard_path, "house", page == "dashboard" || (phone && controller_name == "exercises")],
+      ["Splits", splits_path, "layer-group",
+       controller_name.in?(%w[splits workout_days workout_exercises]) && !todays_workout_page?],
+      ["History", workout_logs_path, "clock-rotate-left",
+       controller_name.in?(%w[workout_logs workout_log_exercises workout_timers]) && !todays_workout_page?]
+    ]
+    phone ? sections : sections << ["Exercises", exercises_path, "dumbbell", controller_name == "exercises"]
+  end
+
+  # Today's workout belongs to the Today tab, not Splits or History: a workout day or one of its
+  # exercises opened on today's date, a workout started today off the split, and today's logged workout.
+  def todays_workout_page?
+    date =
+      case "#{controller_name}##{action_name}"
+      when "workout_days#show", "workout_exercises#show" then @date
+      when "workout_logs#new" then Date.current
+      when "workout_logs#show" then @workout_log.date
+      end
+    date == Date.current
+  end
+
+  # The short name of the page a signed-in user is on, shown in the top bar on a phone. A
+  # "controller#action" key wins over the controller's own.
+  PAGE_TITLES = {
+    "pages#home" => "Today", "pages" => "Dashboard", "splits#index" => "Splits", "splits" => "Split",
+    "workout_days#show" => "Workout", "workout_days" => "Workout day", "workout_exercises" => "Exercise",
+    "workout_logs#index" => "History", "workout_logs" => "Workout", "workout_log_exercises" => "Exercise",
+    "workout_timers" => "Timer", "exercises#index" => "Exercises", "exercises" => "Exercise",
+    "admin/users" => "Users", "users/registrations" => "Account"
+  }.freeze
+
+  def page_title
+    PAGE_TITLES["#{controller_path}##{action_name}"] || PAGE_TITLES[controller_path]
+  end
 end

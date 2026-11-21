@@ -1,0 +1,13 @@
+<%# The Today box's and the move buttons' pop-ups, outside the cards. %>
+<% today = dashboard.today %>
+<% if split %>
+  <% if dashboard.movable_days.any? %>
+    <%= render "move_workout", split: split, movable: dashboard.movable_days, plan: dashboard.week_plan, today: today %>
+  <% end %>
+  <% if dashboard.today_workout.nil? %>
+    <% dashboard.rest_day_choices.each_with_index do |(name, days), index| %>
+      <%= render "rest_day_start", split: split, name: name, days: days, index: index, today: today,
+            movable_ids: dashboard.movable_days.values.map(&:id), exercise_counts: dashboard.exercise_counts %>
+    <% end %>
+  <% end %>
+<% end %>

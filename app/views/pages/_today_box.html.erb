@@ -1,0 +1,86 @@
+<%# Today's workout and what was lifted last time: on the dashboard below the active split, and the
+    Today page's main box. The Today page leaves out the date (its heading has it) and opens the
+    rest day choices, which are its content on a rest day. %>
+<% split = dashboard.split %>
+<% today = dashboard.today %>
+<% today_workout = dashboard.today_workout %>
+<% today_log = dashboard.today_log %>
+<% last_log = dashboard.last_log %>
+<% dated = local_assigns.fetch(:dated, true) %>
+<% open = local_assigns.fetch(:open, false) %>
+<div class="card today">
+  <div class="today-header">
+    <div>
+      <% if dated %><p class="eyebrow">Today · <%= l today, format: "%A, %B %-d" %></p><% end %>
+      <% if today_workout %>
+        <h3 class="today-title"><%= today_workout.day %> day</h3>
+        <% if today_workout.weekday != today.wday %><p class="today-moved">Moved from <%= today_workout.weekday_name %>, this week only</p><% end %>
+      <% else %>
+        <h3 class="today-title">Rest day</h3>
+      <% end %>
+    </div>
+    <% if today_workout %>
+      <%# Nothing is logged until the first set is added, so "Start workout" only opens the day. %>
+      <%= link_to (dashboard.today_summary.sets.positive? ? "Continue" : "Start workout"), workout_day_path(today_workout, date: today), class: "btn btn-primary btn-sm" %>
+    <% elsif dashboard.days.any? && !open %>
+      <%# A rest day: choose which workout to train anyway, from the split or outside it. %>
+      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#rest-day-start"
+              aria-expanded="false" aria-controls="rest-day-start">Start workout</button>
+    <% end %>
+  </div>
+
+  <%# What was lifted today once there are sets; until then, what was lifted last time. %>
+  <% today_lifts = dashboard.today_lifts %>
+  <% last_time = capture do %>
+    <% if last_log %>
+      Last time · <%= link_to l(last_log.date, format: "%A, %B %-d"), workout_log_path(last_log, from: "dashboard") %>
+      <% if last_log.workout_day.nil? %>
+        <span class="last-source">· <%= last_log.workout %>, from a deleted split</span>
+      <% elsif last_log.workout_day != today_workout %>
+        <span class="last-source">· <%= last_log.workout %> in <%= last_log.workout_day.split.name %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+  <% if today_workout.nil? %>
+    <p class="today-last">No workout is planned for <%= l today, format: "%A" %> in this split.</p>
+    <% dashboard.week_logs.fetch(today, []).each do |rest_log| %>
+      <p class="today-last today-done">
+        Logged today · <%= link_to "#{rest_log.workout}, #{pluralize(dashboard.week_summary.sets_in(rest_log), 'set')}", workout_log_path(rest_log, from: "dashboard") %>
+        <% if rest_log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
+      </p>
+    <% end %>
+    <% if dashboard.days.any? %>
+      <div class="<%= class_names("collapse", show: open) %>" id="rest-day-start">
+        <% if dashboard.week_plan.any? %>
+          <p class="today-last">From your split. Move it to today for this week, or train it as an extra.</p>
+          <div class="today-start chip-row">
+            <% dashboard.rest_day_choices.keys.each_with_index do |name, index| %>
+              <button type="button" class="btn btn-light btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#rest-start-<%= index %>"><%= name %></button>
+            <% end %>
+          </div>
+        <% end %>
+        <% if dashboard.other_workouts.any? %>
+          <p class="today-last">Something else. It is saved as a rest day workout and your split stays as it is.</p>
+          <div class="today-start chip-row">
+            <% dashboard.other_workouts.each do |name| %>
+              <%= link_to name, new_workout_log_path(workout: name), class: "btn btn-light btn-sm rounded-pill" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="mb-0"><%= link_to "Add a workout day to this split", new_split_workout_day_path(split) %></p>
+    <% end %>
+  <% elsif today_lifts.any? %>
+    <p class="today-last today-done">
+      Logged today · <%= pluralize(dashboard.today_summary.exercises, "exercise") %> · <%= link_to pluralize(dashboard.today_summary.sets, "set"), workout_log_path(today_log, from: "dashboard") %><% if dashboard.today_summary.top_weight %> · top <%= format_weight(dashboard.today_summary.top_weight) %><% end %>
+    </p>
+    <%= render "lifts", lifts: today_lifts, list_class: "today-lifts" %>
+    <% if last_log %><p class="today-last today-previous"><%= last_time %></p><% end %>
+  <% elsif last_log.nil? %>
+    <p class="text-muted small mb-0">You have not logged a <%= today_workout.day %> session before today. Your heaviest sets will show here next time.</p>
+  <% else %>
+    <p class="today-last"><%= last_time %></p>
+    <%= render "lifts", lifts: last_log.workout_log_exercises, list_class: "last-lifts" %>
+  <% end %>
+</div>

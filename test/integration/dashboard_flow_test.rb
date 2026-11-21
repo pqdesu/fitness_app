@@ -8,7 +8,7 @@ class DashboardFlowTest < FlowTest
     push = split.workout_days.create!(day: "Push", weekday: 1)
 
     travel_to Time.zone.local(2026, 11, 16, 12) do
-      get root_path
+      get dashboard_path
       assert_select ".stat-tile", 0
       assert_equal %w[0 0 0 –], css_select(".week-summary dd").map { |n| n.text.squish }
       assert_select ".week-overview-days li", 7
@@ -24,7 +24,7 @@ class DashboardFlowTest < FlowTest
       # a session of last week is not part of this week
       push.workout_logs.create!(date: Date.new(2026, 11, 9)).workout_log_exercises.create!(name: "Old").workout_sets.create!(reps_completed: 5, weight_used: 200)
 
-      get root_path
+      get dashboard_path
       # workouts, exercises, sets, top weight
       assert_equal ["1", "2", "3", "72.5 kg"], css_select(".week-summary dd").map { |n| n.text.squish }
       assert_select ".week-overview-days li.has-workout", 1
@@ -43,7 +43,7 @@ class DashboardFlowTest < FlowTest
     get workout_log_path(log, from: "dashboard")
     assert_select "form[action=?] input[name=_method][value=delete]", workout_log_path(log, from: "dashboard")
     delete workout_log_path(log, from: "dashboard")
-    assert_redirected_to root_path
+    assert_redirected_to dashboard_path
     assert_not WorkoutLog.exists?(log.id)
 
     # from anywhere else it still goes to History
@@ -62,7 +62,7 @@ class DashboardFlowTest < FlowTest
     log.workout_log_exercises.create!(name: "Cable fly")
 
     travel_to Time.zone.local(2026, 11, 16, 12) do
-      get root_path
+      get dashboard_path
       row = ".recent-row"
       # collapsed summary: name, date and sets, split
       assert_select "#{row} .recent-toggle[aria-expanded=false][data-bs-target='#recent-log-#{log.id}']", 1
@@ -91,7 +91,7 @@ class DashboardFlowTest < FlowTest
 
     # Monday 16 November 2026
     travel_to Time.zone.local(2026, 11, 16, 12) do
-      get root_path
+      get dashboard_path
       assert_select "a[href=?]", new_split_path, count: 0
 
       # the month, Sunday first, with this week's row and today marked
@@ -132,7 +132,7 @@ class DashboardFlowTest < FlowTest
       # today's own sets are not "last time"
       push.workout_logs.create!(date: Date.current).workout_log_exercises.create!(name: "Today lift")
 
-      get root_path
+      get dashboard_path
       assert_select ".today-last a[href=?]", workout_log_path(last, from: "dashboard"), text: "Monday, November 9"
       assert_equal ["Bench press", "Dips"], css_select(".last-lifts .row-title").map(&:text)
       assert_equal ["80 kg × 6 reps", "Bodyweight × 15 reps"], css_select(".last-lifts .top-set").map { |n| n.text.squish }
@@ -160,13 +160,13 @@ class DashboardFlowTest < FlowTest
       pull_log = pull_day.workout_logs.create!(date: Date.new(2026, 11, 9))
       someone_else = @admin.splits.create!(name: "Theirs").workout_days.create!(day: "Legs", weekday: 1)
       someone_else.workout_logs.create!(date: Date.new(2026, 11, 10))
-      get root_path
+      get dashboard_path
       assert_equal %w[2 9 16], css_select(".calendar-day.has-workout").map(&:text)
       assert_select "a.calendar-day[href=?]", workout_logs_path(date: "2026-11-09", from: "dashboard"), text: "9"
       assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push and Pull workouts"
       get workout_logs_path(date: "2026-11-09", from: "dashboard")
       assert_select "h1", "Workouts on November 09, 2026"
-      assert_select ".back-link[href=?]", root_path, count: 1
+      assert_select ".back-link[href=?]", dashboard_path, count: 1
       assert_select "table.app-table tbody tr", 2
       assert_select "a[href=?]", workout_log_path(pull_log, from: "dashboard")
       assert_select "a[href=?]", workout_log_path(last, from: "dashboard")
@@ -178,7 +178,7 @@ class DashboardFlowTest < FlowTest
       get workout_logs_path(date: "not-a-date")
       assert_redirected_to workout_logs_path
       pull_log.destroy!
-      get root_path
+      get dashboard_path
 
       # the ring is around the split only; today's exercises are in their own box below it
       assert_select ".split-card.is-active .week", 1
@@ -204,7 +204,7 @@ class DashboardFlowTest < FlowTest
       someone_else.workout_logs.create!(date: Date.new(2026, 11, 19)).workout_log_exercises.create!(name: "Not mine")
       patch activate_split_path(upper_lower)
 
-      get root_path
+      get dashboard_path
       assert_select ".today-title", "Lower day"
       assert_select ".today-last a[href=?]", workout_log_path(legs_log, from: "dashboard"), text: "Thursday, November 19"
       assert_select ".today-last .last-source", /Legs in PPL/
@@ -215,7 +215,7 @@ class DashboardFlowTest < FlowTest
     # Tuesday: nothing planned
     travel_to Time.zone.local(2026, 11, 17, 12) do
       logs_before = WorkoutLog.count
-      get root_path
+      get dashboard_path
       assert_select ".today-title", "Rest day"
       assert_select ".today", /No workout is planned for Tuesday/
       # a rest day can still start any workout of the split: its pop-up opens that workout day
@@ -249,7 +249,7 @@ class DashboardFlowTest < FlowTest
 
     # Tuesday: Push again, in the new split
     travel_to Time.zone.local(2026, 11, 17, 12) do
-      get root_path
+      get dashboard_path
       assert_select ".today-title", "Push day"
       assert_select ".today-last a[href=?]", workout_log_path(log, from: "dashboard"), text: "Monday, November 16"
       assert_select ".today-last .last-source", /from a deleted split/
@@ -278,13 +278,13 @@ class DashboardFlowTest < FlowTest
 
     # 01:00 UTC on Tuesday 1 December is still Monday 30 November in São Paulo and already Tuesday in Tokyo
     travel_to Time.utc(2026, 12, 1, 1) do
-      get root_path
+      get dashboard_path
       assert_select "body[data-time-zone=?]", "Etc/UTC"
       assert_select ".calendar-card h2", "December 2026"
       assert_select ".today-title", "Rest day"
 
       cookies[:time_zone] = "America/Sao_Paulo"
-      get root_path
+      get dashboard_path
       assert_select "body[data-time-zone=?][data-reloadable=true]", "America/Sao_Paulo"
       assert_select ".calendar-card h2", "November 2026"
       assert_select ".calendar-day.is-today", text: "30"
@@ -296,7 +296,7 @@ class DashboardFlowTest < FlowTest
       assert_equal Date.new(2026, 11, 30), @user.workout_logs.last.date
 
       cookies[:time_zone] = "Asia/Tokyo"
-      get root_path
+      get dashboard_path
       assert_select ".calendar-card h2", "December 2026"
       assert_select ".today-title", "Rest day"
 
@@ -305,14 +305,14 @@ class DashboardFlowTest < FlowTest
 
       # a zone the server does not know falls back to the last one it did know
       cookies[:time_zone] = "Not/AZone"
-      get root_path
+      get dashboard_path
       assert_select "body[data-time-zone=?]", "Asia/Tokyo"
       assert_equal "Asia/Tokyo", @user.reload.time_zone
 
       # a browser that has not reported a zone yet (new session, no JavaScript) starts in the saved one
       cookies.delete :time_zone
       @user.update_column(:time_zone, "America/Sao_Paulo")
-      get root_path
+      get dashboard_path
       assert_select "body[data-time-zone=?]", "America/Sao_Paulo"
       assert_select ".today-title", "Push day"
     end
@@ -329,7 +329,7 @@ class DashboardFlowTest < FlowTest
       last = upper.workout_logs.create!(date: Date.new(2026, 11, 15))
       last.workout_log_exercises.create!(name: "Old lift").workout_sets.create!(reps_completed: 6, weight_used: 80)
 
-      get root_path
+      get dashboard_path
       assert_equal ["Old lift"], css_select(".last-lifts .row-title").map(&:text)
       assert_select ".today-lifts", 0
 
@@ -339,7 +339,7 @@ class DashboardFlowTest < FlowTest
       # an exercise opened today without a set yet is not listed
       today.workout_log_exercises.create!(name: "No sets yet")
 
-      get root_path
+      get dashboard_path
       assert_select ".today-done a[href=?]", workout_log_path(today, from: "dashboard"), text: "2 sets"
       assert_equal ["Bench press"], css_select(".today-lifts .row-title").map(&:text)
       assert_equal ["70 kg × 5 reps"], css_select(".today-lifts .top-set").map { |n| n.text.squish }

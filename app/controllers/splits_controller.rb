@@ -43,7 +43,7 @@ class SplitsController < ApplicationController
     # Changing it from the dashboard ("Change" on the active split card) returns there;
     # anywhere else the user stays on the page they were on.
     if from_dashboard?
-      redirect_to root_path, notice:, status: :see_other
+      redirect_to dashboard_path, notice:, status: :see_other
     else
       redirect_back fallback_location: splits_path, notice:, status: :see_other
     end

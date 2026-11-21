@@ -1,5 +1,12 @@
 # Issues
 
+## Home page
+
+### Calendar and week
+
+- Currently on calendar the workout days appeared to be missed (white color on calendar) and week appears to be done (filled with blue), but yesterday I missed the workoutday and still is colored as if I did the workout - Check /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074724.png and /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074728.png. I want on calendat to be filled wtih blue if a workout was logged and white like it is now if the workout has no logs. ON the week do the same. Also have a different way to show whihc day of the week it is by having a circle around the day.
+- Small UI issue on calendar. The numbers appeared to be slight off center. Check /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 080640.png
+
 # Potential issues
 
 Risks a branch knowingly left behind: not seen as a bug yet, but they could become one. Each says which branch it comes from. When one is seen for real it moves up to the open issues; when it is fixed it moves to "Issues resolved".
@@ -35,6 +42,18 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 ### The paused-timer alert only covers the app's own links
 
 - From `workout-timer`: leaving the workout with the browser's back button, a swipe back or by closing the tab does not ask about a paused timer; only the app's links (the back arrow, the menu, Plan) do.
+
+### Deleting a workout opened from Today goes to the dashboard
+
+- From `bottom-navbar-mobile`: the Today page's box shares its links with the dashboard's, and they carry `?from=dashboard`. Opening a logged workout from Today and deleting it returns to the dashboard (`/dashboard`), not to Today. Its back arrow follows the pages visited, so it still returns to Today.
+
+### Bottom bar not tried on a real phone
+
+- From `bottom-navbar-mobile`: the bottom tab bar, the back arrow in the top bar's corner and the iPhone safe-area padding (`viewport-fit=cover`) were checked only in desktop Chrome inside a 390 px frame. Not verified: that the tabs clear the iPhone home indicator, that a phone turned sideways keeps the page clear of the notch, the tap feel, and the fixed back arrow while Safari's toolbar slides. A flash card can also cover the back arrow for up to 5 seconds.
+
+### A week move without a Referer lands on Today
+
+- From `bottom-navbar-mobile`: "Move a workout" and "Back to the plan" return to the page they were sent from by its Referer. A browser that sends none (a strict privacy setting) lands on Today even when the move was made on the dashboard. The move is still saved. Not verified on such a browser.
 
 # Issues resolved (DONE)
 

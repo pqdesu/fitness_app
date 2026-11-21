@@ -1,0 +1,59 @@
+<% dashboard = @dashboard %>
+<% split = dashboard.split %>
+<% today = dashboard.today %>
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Dashboard</p>
+    <h1>Ready to train?</h1>
+  </div>
+  <%# The phone's bottom bar has no Exercises tab; the catalogue is reached from here. %>
+  <%= link_to exercises_path, class: "btn btn-light btn-sm d-md-none" do %><i class="fa-solid fa-dumbbell"></i> Exercises<% end %>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <%= render "calendar", today: today, weeks: dashboard.calendar_weeks, logs_by_date: dashboard.calendar_logs %>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card split-card is-active h-auto">
+      <% if split %>
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Active split</p>
+            <h2><%= link_to split.name, split, class: "row-title" %></h2>
+          </div>
+          <% if dashboard.several_splits? %><%= link_to "Change", splits_path(from: "dashboard"), class: "link-quiet" %><% end %>
+        </div>
+        <div class="card-body">
+          <%= render "splits/week", split: split, workout_days: dashboard.days, plan: dashboard.week_plan, today: today.wday %>
+          <%= render "week_moves", dashboard: dashboard, split: split %>
+          <%= render "week_overview", dates: dashboard.week_dates, logs_by_date: dashboard.week_logs, summary: dashboard.week_summary, today: today %>
+        </div>
+      <% else %>
+        <div class="card-header"><h2>Active split</h2></div>
+        <%= render "splits/empty" %>
+      <% end %>
+    </div>
+
+    <% if split %>
+      <%= render "today_box", dashboard: dashboard %>
+    <% end %>
+
+    <div class="card">
+      <div class="card-header"><h2>Recent workouts</h2><%= link_to "History", workout_logs_path, class: "link-quiet" %></div>
+      <% if dashboard.recent_logs.empty? %>
+        <div class="empty-state">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <p>No workouts logged yet. Open a workout day, open an exercise and add your first set.</p>
+        </div>
+      <% else %>
+        <ul class="recent-list">
+          <%= render partial: "recent_workout", collection: dashboard.recent_logs, as: :log %>
+        </ul>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<%= render "today_popups", dashboard: dashboard, split: split %>

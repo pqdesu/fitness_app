@@ -1,5 +1,5 @@
 # Moves a workout of a split to another weekday for this week only (see WorkoutDayMove).
-# The split's plan is not changed.
+# The split's plan is not changed. It returns to the page it was sent from: the dashboard or Today.
 class WeekMovesController < ApplicationController
   before_action :set_split
 
@@ -10,20 +10,22 @@ class WeekMovesController < ApplicationController
     weekday = Integer(params[:weekday], exception: false)
     today = Date.current
     error = day ? @split.week_move_error(day, weekday, today) : "choose a workout"
-    return redirect_to(root_path, alert: "Not moved: #{error}.") if error
+    return redirect_back_or_to(root_path, alert: "Not moved: #{error}.") if error
 
     from = @split.week_plan(today).key(day)
     other = @split.move_for_week!(day, weekday, today)
     notice = "#{day.day} is on #{Date::DAYNAMES[weekday]} this week"
     notice += ", and #{other.day} on #{Date::DAYNAMES[from]}" if other && from
-    redirect_to (params[:open].present? ? workout_day_path(day) : root_path),
-                notice: "#{notice}. Next week follows the plan again."
+    notice += ". Next week follows the plan again."
+    return redirect_to(workout_day_path(day), notice:) if params[:open].present?
+
+    redirect_back_or_to root_path, notice:
   end
 
   # Back to the plan for this week.
   def destroy
     @split.clear_week_moves(Date.current)
-    redirect_to root_path, notice: "This week is back to the plan.", status: :see_other
+    redirect_back_or_to root_path, notice: "This week is back to the plan.", status: :see_other
   end
 
   private

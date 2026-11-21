@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: { registrations: "users/registrations" }
+  # Signed out the landing page; signed in the Today page: today's workout, or on a rest day what
+  # to train instead. The dashboard (month, week, recent workouts) is its own page.
   root to: "pages#home"
+  get "dashboard", to: "pages#dashboard"
 
   # Exercises: the shared catalogue (admins manage it) and each user's own exercises
   resources :exercises, except: [:show]
