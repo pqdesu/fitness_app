@@ -66,7 +66,7 @@
           <% end %>
 
           <div class="card-footer">
-            <%= render "workout_sets/form", parent: entry, last_set: sets.last %>
+            <%= render "workout_sets/form", parent: entry, last_set: sets.last, first: sets.empty? %>
           </div>
         </div>
       </div>

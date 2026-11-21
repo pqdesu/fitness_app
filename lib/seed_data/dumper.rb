@@ -47,6 +47,7 @@ module SeedData
         "admin" => user.admin?,
         "time_zone" => user.time_zone,
         "timer_auto_start" => user.timer_auto_start?,
+        "auto_warm_up" => user.auto_warm_up?,
         "active_split" => user.active_split&.name,
         "exercises" => user.exercises.order(:id).map { |exercise| exercise_data(exercise) },
         "splits" => user.splits.order(:id).includes(workout_days: [:workout_exercises, :workout_day_moves])

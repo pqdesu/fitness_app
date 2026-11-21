@@ -29,7 +29,7 @@
 
       <% unless upcoming %>
         <div class="card-footer">
-          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date %>
+          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date, first: @sets.empty? %>
         </div>
       <% end %>
     </div>

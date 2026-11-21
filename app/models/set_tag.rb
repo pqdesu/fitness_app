@@ -7,4 +7,10 @@ class SetTag < ApplicationRecord
   normalizes :name, with: ->(name) { name.squish.presence }
 
   validates :name, presence: true, length: { maximum: 30 }, uniqueness: { case_sensitive: false }
+
+  # "Warm-up", "Warmup", "warm up": the tag an exercise's first set starts with when the user asks
+  # for it (users.auto_warm_up).
+  def warm_up?
+    name.downcase.gsub(/[^a-z]/, "") == "warmup"
+  end
 end

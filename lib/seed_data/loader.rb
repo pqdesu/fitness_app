@@ -24,7 +24,7 @@ module SeedData
     def load_user(item)
       user = User.find_by(email: item["email"]) ||
              User.create!(email: item["email"], password: user_password, admin: item["admin"] || false,
-                          timer_auto_start: item["timer_auto_start"] || false)
+                          timer_auto_start: item["timer_auto_start"] || false, auto_warm_up: item["auto_warm_up"] || false)
       user.update_column(:time_zone, item["time_zone"]) if user.time_zone.blank? && item["time_zone"].present?
 
       # "Today" of the date rules is the user's own day.

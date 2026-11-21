@@ -33,6 +33,8 @@
                 input_html: { autocomplete: "new-password" } %>
     <%= f.input :timer_auto_start, as: :boolean, label: "Start the workout timer automatically",
                 hint: "Opening today's workout starts it and its timer. Off, you press Start timer yourself." %>
+    <%= f.input :auto_warm_up, as: :boolean, label: "Tag the first set of each exercise as a warm-up",
+                hint: "The first set of an exercise each day starts with Warm-up ticked; untick it when it is not one." %>
     <%= f.input :current_password,
                 hint: "we need your current password to confirm your changes",
                 required: true,

@@ -71,6 +71,28 @@ class SetTagsFlowTest < FlowTest
     assert_equal ["Assisted"], second.reload.set_tags.map(&:name)
   end
 
+  test "with the account's warm-up setting, an exercise's first set of the day starts tagged Warm-up" do
+    sign_in @user
+    get edit_user_registration_path
+    assert_select "input[type=checkbox][name='user[auto_warm_up]']", 1
+    patch user_registration_path, params: { user: { auto_warm_up: "1", current_password: "secret123" } }
+    assert @user.reload.auto_warm_up?
+
+    get @page
+    assert_select ".set-form input#tag_workout_exercise_#{@planned.id}_#{@warm_up.id}[checked]", 1
+    assert_select ".set-form input#tag_workout_exercise_#{@planned.id}_#{@assisted.id}:not([checked])", 1
+    post workout_exercise_workout_sets_path(@planned, date: Date.current),
+         params: { workout_set: { reps_completed: 10, weight_used: 40, set_tag_ids: [@warm_up.id] } }
+    # the next set is not a warm-up unless ticked
+    get @page
+    assert_select ".set-form input#tag_workout_exercise_#{@planned.id}_#{@warm_up.id}:not([checked])", 1
+    # off, nothing starts ticked
+    @user.update!(auto_warm_up: false)
+    other = @day.workout_exercises.create!(exercise: @squat)
+    get workout_exercise_path(other, date: Date.current)
+    assert_select ".set-form .set-tag-choices input[checked]", 0
+  end
+
   test "an exercise has a note for the day once it is being logged" do
     sign_in @user
     # nothing is logged yet: no note to write, and opening the page logs nothing
