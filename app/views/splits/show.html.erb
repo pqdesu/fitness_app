@@ -9,9 +9,10 @@
     <% else %>
       <%= button_to "Set as active", activate_split_path(@split), method: :patch, class: "btn btn-primary" %>
     <% end %>
-    <%= link_to "Rename", edit_split_path(@split), class: "btn btn-light" %>
-    <%= button_to "Delete", @split, method: :delete, class: "btn btn-outline-danger",
-          form: { data: { turbo_confirm: "Delete this split and its days? Your logged workouts are kept." } } %>
+    <%= actions_menu @split.name do %>
+      <%= menu_link "Rename", edit_split_path(@split) %>
+      <%= menu_delete "Delete split", @split, confirm: "Delete this split and its days? Your logged workouts are kept." %>
+    <% end %>
   </div>
 </div>
 
@@ -33,9 +34,10 @@
         <p class="text-muted small mb-0"><%= day.weekday_name %></p>
       </div>
       <div class="entry-meta">
-        <%= link_to edit_workout_day_path(day), class: "btn btn-link btn-sm", "aria-label": "Edit #{day.day}", title: "Edit #{day.day}" do %><i class="fa-solid fa-pen"></i><% end %>
-        <%= button_to workout_day_path(day), method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Delete #{day.day}", title: "Delete #{day.day}",
-              form: { data: { turbo_confirm: "Delete #{day.day} and its planned exercises? Your logged workouts are kept." } } do %><i class="fa-solid fa-trash"></i><% end %>
+        <%= actions_menu day.day do %>
+          <%= menu_link "Edit", edit_workout_day_path(day) %>
+          <%= menu_delete "Delete #{day.day}", workout_day_path(day), confirm: "Delete #{day.day} and its planned exercises? Your logged workouts are kept." %>
+        <% end %>
       </div>
     </div>
     <% if planned.any? %>

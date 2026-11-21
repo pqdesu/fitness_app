@@ -50,15 +50,9 @@
 // "Add set" stays on one line in its third of a 360px phone
 .set-form .btn { padding-left: .5rem; padding-right: .5rem; white-space: nowrap; }
 
-// On a touch screen the pen and the bin of a set (44px, like every button there: components/_layout)
-// sit apart, so a slip on one does not land on the other.
-@media (pointer: coarse) {
-  .set-actions { gap: .5rem; }
-}
-
 // On a phone the four columns of a set table share less than 370px: the number, weight and reps
 // columns give up side padding, and the weight and reps fields of a set being edited may narrow,
-// so the row being edited and the pen and bin of the other rows fit in the card together.
+// so the row being edited and the ⋯ of the other rows fit in the card together.
 @include media-breakpoint-down(sm) {
   .set-table {
     th, td { padding-left: .5rem; padding-right: .5rem; }
@@ -74,3 +68,9 @@
 @include media-breakpoint-up(lg) {
   .log-details { position: sticky; top: 5rem; }
 }
+
+// A logged exercise folds (workout_logs/show): the arrow turns when open, and a folded card has
+// no line under its header, as nothing follows it.
+.entry-toggle .fa-chevron-down { transition: transform .2s; }
+.entry-toggle[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
+.entry-card .card-header:has(+ .collapse:not(.show)) { border-bottom: 0; }

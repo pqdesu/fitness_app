@@ -37,6 +37,9 @@ class ExercisesFlowTest < FlowTest
     # one closed heading per muscle group, with how many exercises it has, that opens them
     assert_select "button.exercise-group[aria-expanded=false][data-bs-target='#exercises-back']", text: /Back\s+2/
     assert_select "#exercises-back.collapse:not(.show) td", text: /Jefferson curl/
+    # edit and delete are in each exercise's ⋯ menu
+    assert_select ".actions-menu a[href=?]", edit_exercise_path(private_lift), text: /Edit/
+    assert_select ".actions-menu form.button_to[action=?][data-turbo-confirm] .fa-xmark", exercise_path(private_lift)
     assert_select "a[href=?]", edit_exercise_path(private_lift)
     assert_select "a[href=?]", edit_exercise_path(deadlift)
     patch exercise_path(private_lift), params: { exercise: { muscle_group: "Core" } }

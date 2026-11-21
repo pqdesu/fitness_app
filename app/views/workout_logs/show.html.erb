@@ -36,27 +36,38 @@
 
     <% @log_exercises.each do |entry| %>
       <% sets = entry.workout_sets.sort_by(&:set_number) %>
-      <div class="card entry-card" id="entry-<%= entry.id %>">
+      <% top = entry.top_set %>
+      <% panel_id = "entry-#{entry.id}-sets" %>
+      <%# Each exercise starts folded: its name, sets and heaviest set; the arrow opens its sets and
+          the add-set form (fold_controller.js keeps it open when a save refreshes the page). %>
+      <div class="card entry-card" id="entry-<%= entry.id %>" data-controller="fold" data-action="turbo:before-morph-attribute->fold#keep">
         <div class="card-header">
           <div>
             <h2><%= entry.name %></h2>
-            <p class="text-muted small mb-0"><%= entry.equipment_label %></p>
+            <p class="text-muted small mb-0"><%= entry.equipment_label %><% if top %>&nbsp;· <span class="text-nowrap">Top <span class="top-set"><%= weight_and_reps(top) %></span></span><% end %></p>
             <% if entry.notes.present? %><p class="entry-note small mb-0"><i class="fa-regular fa-note-sticky"></i> <%= entry.notes %></p><% end %>
           </div>
           <div class="entry-meta">
             <span class="chip"><%= pluralize(sets.size, "set") %></span>
-            <%= link_to edit_workout_log_exercise_path(entry), class: "btn btn-link btn-sm", "aria-label": "Edit #{entry.name}" do %><i class="fa-solid fa-pen"></i><% end %>
-            <%= button_to workout_log_exercise_path(entry), method: :delete, class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{entry.name} from this workout",
-                  form: { data: { turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } } do %><i class="fa-solid fa-xmark"></i><% end %>
+            <%= actions_menu entry.name do %>
+              <%= menu_link "Edit", edit_workout_log_exercise_path(entry) %>
+              <%= menu_delete "Remove from workout", workout_log_exercise_path(entry), confirm: "Remove #{entry.name} and its sets from this workout?" %>
+            <% end %>
+            <button type="button" class="btn btn-light btn-sm entry-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
+                    aria-expanded="false" aria-controls="<%= panel_id %>" aria-label="Sets of <%= entry.name %>" data-fold-target="toggle">
+              <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
 
-        <% if sets.any? %>
-          <%= render "workout_sets/table", sets: sets %>
-        <% end %>
+        <div class="collapse" id="<%= panel_id %>" data-fold-target="panel">
+          <% if sets.any? %>
+            <%= render "workout_sets/table", sets: sets %>
+          <% end %>
 
-        <div class="card-footer">
-          <%= render "workout_sets/form", parent: entry, last_set: sets.last %>
+          <div class="card-footer">
+            <%= render "workout_sets/form", parent: entry, last_set: sets.last %>
+          </div>
         </div>
       </div>
     <% end %>

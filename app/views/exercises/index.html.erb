@@ -37,11 +37,10 @@
                 <td><%= @usage.fetch(exercise.id, 0) %></td>
                 <td class="text-end">
                   <% if current_user.admin? || !exercise.shared? %>
-                    <div class="row-actions">
-                      <%= link_to "Edit", edit_exercise_path(exercise), class: "btn btn-light btn-sm" %>
-                      <%= button_to "Delete", exercise, method: :delete, class: "btn btn-outline-danger btn-sm",
-                            form: { data: { turbo_confirm: "Delete #{exercise.name}?" } } %>
-                    </div>
+                    <%= actions_menu exercise.name do %>
+                      <%= menu_link "Edit", edit_exercise_path(exercise) %>
+                      <%= menu_delete "Delete", exercise, confirm: "Delete #{exercise.name}?" %>
+                    <% end %>
                   <% end %>
                 </td>
               </tr>

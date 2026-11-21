@@ -45,6 +45,11 @@ class SplitsFlowTest < FlowTest
     assert_select ".week .week-day.is-set", 1
     assert_select ".week a.is-set[href=?]", split_path(split, anchor: "day-#{day.id}")
     assert_select "#day-#{day.id} h2", "Push"
+    # the split's and each day's edit and delete are in a ⋯ menu; deleting is an × and asks first
+    assert_select ".page-header .actions-menu a[href=?]", edit_split_path(split), text: /Rename/
+    assert_select ".page-header .actions-menu form.button_to[action=?][data-turbo-confirm] .fa-xmark", split_path(split)
+    assert_select "#day-#{day.id} .actions-menu a[href=?]", edit_workout_day_path(day), text: /Edit/
+    assert_select "#day-#{day.id} .actions-menu form.button_to[action=?][data-turbo-confirm] .fa-xmark", workout_day_path(day)
     assert_select ".week a.is-set .week-label", "Push"
     get new_split_workout_day_path(split)
     assert_select "select[name='workout_day[weekday]'] option[selected]", text: "Sunday"

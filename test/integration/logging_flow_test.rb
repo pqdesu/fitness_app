@@ -329,6 +329,20 @@ class LoggingFlowTest < FlowTest
     get workout_log_path(log)
     assert_select "h2", "Bench press"
     assert_select "h2", "From this day, not in this workout"
+    # each exercise is folded: its name, sets and heaviest set, and an arrow that opens the rest
+    card = "#entry-#{entry.id}[data-controller=fold]"
+    assert_select "#{card} .card-header .top-set", "80 kg × 8 reps"
+    assert_select "#{card} .card-header .chip", "1 set"
+    assert_select "#{card} button.entry-toggle[aria-expanded=false][data-bs-target='#entry-#{entry.id}-sets']", 1
+    assert_select "#entry-#{entry.id}-sets.collapse:not(.show) table.set-table", 1
+    assert_select "#entry-#{entry.id}-sets.collapse:not(.show) form[action=?]", workout_log_exercise_workout_sets_path(entry)
+    # edit and remove are in its ⋯ menu; removing is an ×
+    assert_select "#{card} .card-header .actions-menu .dropdown-menu a[href=?]", edit_workout_log_exercise_path(entry), text: /Edit/
+    assert_select "#{card} .card-header .actions-menu form.button_to[action=?][data-turbo-confirm] .fa-xmark", workout_log_exercise_path(entry)
+    # a set's edit and delete are in its own ⋯ menu, and delete is an × there too
+    assert_select ".set-table .actions-menu button[data-action='row-edit#edit']", 1
+    assert_select ".set-table .actions-menu form.button_to .fa-xmark", 1
+    assert_select ".fa-trash", 0
 
     post workout_log_exercise_workout_sets_path(entry), params: { workout_set: { reps_completed: 8 } }
     assert_equal [1, 2], entry.workout_sets.order(:set_number).pluck(:set_number)
