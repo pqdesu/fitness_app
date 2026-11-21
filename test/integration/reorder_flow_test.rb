@@ -52,8 +52,58 @@ class ReorderFlowTest < FlowTest
     assert_equal ["Deadlift", "Squat", "Bench press"], css_select(".entry-card h2").map(&:text)
     get split_path(@day.split)
     assert_equal ["Bench press", "Squat", "Deadlift"], css_select("#day-#{@day.id} .row-title").map(&:text)
+    # the workout day's page shows that workout in its own order
     get workout_day_path(@day, date: Date.current)
-    assert_equal ["Bench press", "Squat", "Deadlift"], css_select("#day-exercises .row-title").map(&:text)
+    assert_equal ["Deadlift", "Squat", "Bench press"], css_select("#day-exercises .row-title").map(&:text)
+  end
+
+  test "a workout day's page lists the workout first, in its order and draggable, then the plan still to do" do
+    _bench, squat, deadlift = @planned
+    bulgarian = Exercise.create!(name: "Bulgarian split squat", muscle_group: "Legs")
+    # Monday 23 November 2026: Push is today's
+    travel_to Time.zone.local(2026, 11, 23, 12) do
+      date = Date.current
+      # nothing done yet: the plan, in its order, with nothing to drag
+      get workout_day_path(@day)
+      assert_equal ["Bench press", "Squat", "Deadlift"], css_select("#day-exercises .row-title").map(&:text)
+      assert_select "#day-exercises .drag-handle", 0
+
+      # Squat trained first, then Bulgarian split squat added to today's workout
+      post workout_exercise_workout_sets_path(squat, date:), params: { workout_set: { weight_used: 100, reps_completed: 5 } }
+      post workout_day_workout_log_exercises_path(@day, date:), params: { exercise_ids: [bulgarian.id] }
+      log = @user.workout_logs.sole
+      squat_entry, bulgarian_entry = log.workout_log_exercises.to_a
+
+      get workout_day_path(@day)
+      assert_equal ["Squat", "Bulgarian split squat"], css_select("#day-exercises .day-in-workout .row-title").map(&:text)
+      assert_equal ["Bench press", "Deadlift"], css_select("#day-exercises .day-to-do .row-title").map(&:text)
+      assert_select ".day-in-workout[data-controller=sortable] li[data-sortable-url=?] .drag-handle",
+                    move_workout_log_exercise_path(bulgarian_entry, workout_day_id: @day.id, date:), 1
+      assert_select ".day-in-workout li[data-sortable-url=?] .drag-handle", move_workout_log_exercise_path(squat_entry, workout_day_id: @day.id, date:), 1
+      assert_select ".day-to-do .drag-handle", 0
+      # a planned exercise in the workout still opens its page; an added one its workout
+      assert_select ".day-in-workout a.row-link[href=?]", workout_exercise_path(squat, date:)
+      assert_select ".day-in-workout a.row-link[href=?]", workout_log_path(log, anchor: "entry-#{bulgarian_entry.id}")
+
+      # Bulgarian split squat was done before Squat
+      patch move_workout_log_exercise_path(bulgarian_entry, workout_day_id: @day.id, date:, to: 1)
+      assert_redirected_to workout_day_path(@day, date:)
+      get workout_day_path(@day)
+      assert_equal ["Bulgarian split squat", "Squat"], css_select(".day-in-workout .row-title").map(&:text)
+      assert_equal ["Bench press", "Deadlift"], css_select(".day-to-do .row-title").map(&:text)
+
+      # the logged workout has the same order; the plan keeps its own
+      get workout_log_path(log)
+      assert_equal ["Bulgarian split squat", "Squat"], css_select(".entry-card h2").map(&:text)
+      get split_path(@day.split)
+      assert_equal ["Bench press", "Squat", "Deadlift"], css_select("#day-#{@day.id} .row-title").map(&:text)
+
+      # Deadlift trained next joins the workout, last
+      post workout_exercise_workout_sets_path(deadlift, date:), params: { workout_set: { weight_used: 140, reps_completed: 3 } }
+      get workout_day_path(@day)
+      assert_equal ["Bulgarian split squat", "Squat", "Deadlift"], css_select(".day-in-workout .row-title").map(&:text)
+      assert_equal ["Bench press"], css_select(".day-to-do .row-title").map(&:text)
+    end
   end
 
   test "an exercise added to a plan or to a workout goes last" do

@@ -54,23 +54,30 @@ class WorkoutLogExercisesController < ApplicationController
     end
   end
 
-  # Moves an exercise in this workout: dropped there, or one place up or down from its ⋯ menu. The plan keeps its own order.
+  # Moves an exercise in this workout: dropped there (on its page or its workout day's), or one place up
+  # or down from its ⋯ menu. The plan keeps its own order.
   def move
     @entry.move!(params[:to])
-    flash[:moved] = @entry.id # lights the card up on the page (.just-moved)
-    redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), status: :see_other
+    flash[:moved] = @entry.id # lights it up on the page (.just-moved)
+    redirect_to back_after_change, status: :see_other
   end
 
   # Takes an exercise out of a workout. One planned for the day stays on the plan (and is offered
   # again); one added while training is simply gone. From a workout day's page it returns there.
   def destroy
     @entry.destroy
-    workout_day = current_user.workout_days.find_by(id: params[:workout_day_id]) if params[:workout_day_id].present?
-    back = workout_day ? workout_day_path(workout_day, date: text_param(:date).presence) : workout_log_path(@entry.workout_log_id)
-    redirect_to back, notice: "#{@entry.name} removed from this workout.", status: :see_other
+    redirect_to back_after_change, notice: "#{@entry.name} removed from this workout.", status: :see_other
   end
 
   private
+
+  # From a workout day's page (workout_day_id and date) back there, otherwise to the logged workout.
+  def back_after_change
+    workout_day = current_user.workout_days.find_by(id: params[:workout_day_id]) if params[:workout_day_id].present?
+    return workout_day_path(workout_day, date: text_param(:date).presence) if workout_day
+
+    workout_log_path(@entry.workout_log_id, anchor: ("entry-#{@entry.id}" if @entry.persisted?))
+  end
 
   def set_entry
     @entry = current_user.workout_log_exercises.find(params[:id])

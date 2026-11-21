@@ -282,9 +282,10 @@ class LoggingFlowTest < FlowTest
     post workout_day_workout_log_exercises_path(day, date: today), params: { exercise_ids: [@squat.id] }
     assert_match "Squat is already in this workout", flash[:alert]
 
-    # the workout page lists the plan, then what was added, which opens in the logged workout
+    # the workout page lists the workout first (what was added, which opens in the logged workout),
+    # then the plan still to do
     get page
-    assert_equal ["Bench press", "Squat", "Dips"], css_select(".list-rows .row-title").map(&:text)
+    assert_equal ["Squat", "Dips", "Bench press"], css_select(".list-rows .row-title").map(&:text)
     squat_entry = log.workout_log_exercises.find_by!(name: "Squat")
     assert_select ".list-rows a.row-link[href=?]", workout_log_path(log, anchor: "entry-#{squat_entry.id}")
     assert_select "#exercise-picker label.is-taken", 3
