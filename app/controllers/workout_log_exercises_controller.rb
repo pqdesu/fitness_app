@@ -39,9 +39,15 @@ class WorkoutLogExercisesController < ApplicationController
   def edit
   end
 
-  # Changes the equipment used for this exercise in this workout, and its note.
+  # Changes the equipment used for this exercise in this workout, and its note. The note is also
+  # written on the exercise's page, which sends its workout_exercise_id and date to return there.
   def update
-    if @entry.update(entry_params)
+    planned = current_user.workout_exercises.find_by(id: params[:workout_exercise_id]) if params[:workout_exercise_id].present?
+    if planned
+      saved = @entry.update(entry_params)
+      redirect_to workout_exercise_path(planned, date: text_param(:date).presence),
+                  **(saved ? { notice: "Note saved." } : { alert: "Note not saved: #{errors_of(@entry)}." })
+    elsif @entry.update(entry_params)
       redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), notice: "#{@entry.name} updated."
     else
       render :edit, status: :unprocessable_content
