@@ -20,6 +20,8 @@
 
 <%= render "workout_logs/timer", log: @workout_log, start_path: (workout_log_timer_path(@workout_log) if @workout_log.timer_today?),
       autostart: current_user.timer_auto_start? %>
+<%# Before the paused-timer alert, so it asks first and each asks once (rest_alert_controller.js). %>
+<%= render "workout_sets/rest_alert" %>
 <%= render "workout_logs/timer_alert", log: @workout_log, leave: true %>
 
 <div class="row g-4">
@@ -71,7 +73,8 @@
           <% end %>
 
           <div class="card-footer">
-            <%= render "workout_sets/form", parent: entry, last_set: sets.last, first: sets.empty? %>
+            <%= render "workout_sets/rest_timer", entry: %>
+            <%= render "workout_sets/form", parent: entry, last_set: sets.last, first: sets.empty?, rest_entry: entry %>
           </div>
         </div>
       </div>

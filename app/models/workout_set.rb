@@ -23,6 +23,10 @@ class WorkoutSet < ApplicationRecord
   validates :weight_used, numericality: { greater_than: -100_000, less_than: 100_000 }, allow_nil: true
   validates :weight_used, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true, unless: :bodyweight?
 
+  # The rest before this set, in seconds: measured by the rest timer, or typed in minutes (rest_approx).
+  validates :rest_seconds, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than: 1.day.to_i },
+                           allow_nil: true
+
   normalizes :notes, with: ->(notes) { notes.squish.presence }
   # The same limit as the note field of a set (see workout_sets/_set).
   validates :notes, length: { maximum: 200 }

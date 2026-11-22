@@ -111,6 +111,7 @@ module SeedData
 
         entry.workout_sets.create!(set_number: set["number"], reps_completed: set["reps"], notes: set["notes"],
                                    weight_used: set["weight"] && BigDecimal(set["weight"].to_s),
+                                   rest_seconds: set["rest"], rest_approx: set["rest_approx"] || false,
                                    set_tags: SetTag.where(name: Array(set["tags"])))
       end
     end

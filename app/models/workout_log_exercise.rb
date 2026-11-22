@@ -22,6 +22,15 @@ class WorkoutLogExercise < ApplicationRecord
     workout_sets.max_by { |set| [set.weight_used || 0, set.reps_completed] }
   end
 
+  def rest_running? = rest_started_at.present? && rest_ended_at.nil?
+
+  # The rest stopped with Stop, in seconds, for the set added next; the timer is then done.
+  def take_rest!
+    seconds = (rest_ended_at - rest_started_at).round if rest_ended_at && rest_started_at
+    update!(rest_started_at: nil, rest_ended_at: nil) if rest_started_at
+    seconds
+  end
+
   private
 
   def siblings = WorkoutLogExercise.where(workout_log_id:)

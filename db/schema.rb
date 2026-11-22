@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -121,6 +121,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
     t.string "equipment_name"
     t.string "machine_type"
     t.integer "position"
+    t.datetime "rest_started_at"
+    t.datetime "rest_ended_at"
     t.index ["exercise_id"], name: "index_workout_log_exercises_on_exercise_id"
     t.index ["workout_exercise_id"], name: "index_workout_log_exercises_on_workout_exercise_id"
     t.index ["workout_log_id", "exercise_id"], name: "index_workout_log_exercises_on_workout_log_id_and_exercise_id", unique: true, where: "(exercise_id IS NOT NULL)"
@@ -161,6 +163,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "rest_seconds"
+    t.boolean "rest_approx", default: false, null: false
     t.index ["workout_log_exercise_id", "set_number"], name: "index_workout_sets_on_workout_log_exercise_id_and_set_number", unique: true
     t.index ["workout_log_exercise_id"], name: "index_workout_sets_on_workout_log_exercise_id"
   end

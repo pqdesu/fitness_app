@@ -22,6 +22,9 @@ class WorkoutSetsController < ApplicationController
       end
 
       workout_set = entry.workout_sets.new(workout_set_params)
+      # The rest timer, stopped before this set; a rest typed in by hand comes first.
+      measured = entry.take_rest!
+      workout_set.rest_seconds ||= measured
       # A set that is not saved must not leave an empty workout behind.
       raise ActiveRecord::Rollback unless workout_set.save
     end
@@ -67,6 +70,20 @@ class WorkoutSetsController < ApplicationController
   end
 
   def workout_set_params
-    params.expect(workout_set: [:reps_completed, :weight_used, :notes, { set_tag_ids: [] }])
+    set_params = params.expect(workout_set: [:reps_completed, :weight_used, :notes, :rest_minutes, :rest_secs,
+                                             { set_tag_ids: [] }])
+    set_params.merge(rest_from_picker(set_params.extract!(:rest_minutes, :rest_secs)))
+  end
+
+  # The rest picker: minutes with seconds is an exact rest (a measured one corrected); minutes alone
+  # is a rest typed in, "~3 min"; "–" is none. Not sent: the rest is left as it is.
+  def rest_from_picker(picker)
+    return {} unless picker.key?(:rest_minutes)
+    return { rest_seconds: nil, rest_approx: false } if picker[:rest_minutes].blank?
+
+    seconds = picker[:rest_minutes].to_i * 60
+    return { rest_seconds: seconds, rest_approx: true } unless picker.key?(:rest_secs)
+
+    { rest_seconds: seconds + picker[:rest_secs].to_i, rest_approx: false }
   end
 end

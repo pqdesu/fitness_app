@@ -45,6 +45,11 @@ module ApplicationHelper
                                                  .map { |value, unit| "#{value} #{unit}" }.join(" ").presence || "0 s"
   end
 
+  # The rest before a set: to the second when measured, "~3 min" when typed in whole minutes.
+  def rest_text(set)
+    set.rest_approx ? "~#{set.rest_seconds / 60} min" : duration_text(set.rest_seconds)
+  end
+
   # Seconds as a clock reads them: 0:42:13. The same as timer_controller.js shows while it runs.
   def clock_duration(seconds)
     format("%<h>d:%<m>02d:%<s>02d", h: seconds / 3600, m: seconds / 60 % 60, s: seconds % 60)

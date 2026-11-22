@@ -8,6 +8,10 @@
 <% form_id = "edit_set_#{set.id}" %>
 <% set_path = workout_set_path(set, workout_exercise_id: local_assigns[:workout_exercise]&.id, date: local_assigns[:date]) %>
 <tbody data-controller="row-edit" data-action="keydown.esc->row-edit#cancel">
+  <%# The rest before this set: measured by the rest timer, or typed in minutes ("~3 min"). %>
+  <% if set.rest_seconds %>
+    <tr class="set-rest-row"><td colspan="4" class="set-rest"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i> Rest <%= rest_text(set) %></td></tr>
+  <% end %>
   <tr>
     <td><span class="order-badge"><%= set.set_number %></span></td>
     <td>
@@ -82,10 +86,27 @@
       </div>
     </td>
   </tr>
-  <%# While editing: Save and Cancel, on a row of their own so the number fields keep their width on a phone. %>
+  <%# While editing: the rest picker, Save and Cancel, on a row of their own so the number fields keep their width
+      on a phone. The picker's lists open as the phone's wheel. They are sent with every save of this set (the note,
+      a tag) holding the rest it has, so those keep it. A measured rest is minutes and seconds; any other is typed in
+      whole minutes, "~3 min". %>
   <tr class="set-note" hidden data-row-edit-target="field">
     <td colspan="4">
       <div class="set-edit-bar">
+        <% exact = set.rest_seconds && !set.rest_approx %>
+        <div class="rest-picker" role="group" aria-label="Rest before set <%= set.set_number %>">
+          <span class="rest-picker-label">Rest</span>
+          <% if exact %>
+            <% minutes, secs = set.rest_seconds.divmod(60) %>
+            <%= select_tag "workout_set[rest_minutes]", options_for_select((0..[30, minutes].max).to_a, minutes), include_blank: "–",
+                  id: "rest_min_set_#{set.id}", form: form_id, class: "form-select form-select-sm", "aria-label": "Minutes" %> min
+            <%= select_tag "workout_set[rest_secs]", options_for_select((0..59).to_a, secs),
+                  id: "rest_sec_set_#{set.id}", form: form_id, class: "form-select form-select-sm", "aria-label": "Seconds" %> s
+          <% else %>
+            <%= select_tag "workout_set[rest_minutes]", options_for_select((1..30).map { |m| ["~#{m}", m] }, set.rest_seconds&./(60)), include_blank: "–",
+                  id: "rest_min_set_#{set.id}", form: form_id, class: "form-select form-select-sm", "aria-label": "About how many minutes" %> min
+          <% end %>
+        </div>
         <button type="submit" form="<%= form_id %>" class="btn btn-primary btn-sm">Save</button>
         <button type="button" class="btn btn-light btn-sm" data-action="row-edit#cancel">Cancel</button>
       </div>

@@ -113,6 +113,8 @@ module SeedData
         "sets" => entry.workout_sets.sort_by(&:set_number).map do |set|
           { "number" => set.set_number, "reps" => set.reps_completed,
             "weight" => set.weight_used&.to_s("F"), "notes" => set.notes, "tags" => set.set_tags.map(&:name) }
+            # Only a set with a rest says so, so the sets already in the file stay as they are.
+            .merge(set.rest_seconds ? { "rest" => set.rest_seconds, "rest_approx" => set.rest_approx } : {})
         end
       )
     end

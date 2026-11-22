@@ -64,6 +64,18 @@ class SeedDataTest < ActiveSupport::TestCase
     assert_equal first, @path.read, "a database loaded from the file dumps the same file"
   end
 
+  test "a set's rest goes into the file and comes back, measured or about so many minutes" do
+    first, second = log_upper(Date.new(2026, 11, 16)).workout_log_exercises.order(:id).map { |entry| entry.workout_sets.find_by(set_number: 2) }
+    first.update!(rest_seconds: 135)
+    second.update!(rest_seconds: 180, rest_approx: true)
+    SeedData.dump(@path)
+
+    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem, SetTag].each { |model| model.find_each(&:destroy!) }
+    SeedData.load(@path)
+    assert_equal [[nil, false], [nil, false], [135, false], [180, true]],
+                 WorkoutSet.pluck(:rest_seconds, :rest_approx).sort_by { |rest, _| rest || 0 }
+  end
+
   test "a dump keeps what the file had and adds what is new; mock workouts are left out" do
     old = log_upper(Date.new(2026, 11, 9))
     SeedData.dump(@path)

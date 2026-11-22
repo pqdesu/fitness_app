@@ -43,6 +43,8 @@ Rails.application.routes.draw do
     # Move to another place in that workout (dragged, or Move up/down); the plan keeps its order
     patch :move, on: :member
     resources :workout_sets, only: [:create]
+    # The rest timer between sets: Start rest (create), Stop (update), throw it away (destroy)
+    resource :rest, only: [:create, :update, :destroy], controller: "rest_timers"
   end
   resources :workout_sets, only: [:update, :destroy]
 

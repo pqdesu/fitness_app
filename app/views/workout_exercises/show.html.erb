@@ -2,6 +2,8 @@
 <% turbo_refreshes_with method: :morph, scroll: :preserve %>
 <% back_to workout_day_path(@workout_day, date: @date) %>
 <% upcoming = @date > Date.current %>
+<%# Before the paused-timer alert, so it asks first and each asks once (rest_alert_controller.js). %>
+<%= render "workout_sets/rest_alert" %>
 <%= render "workout_logs/timer_alert", log: @log, leave: false %>
 <div class="page-header">
   <div>
@@ -29,7 +31,8 @@
 
       <% unless upcoming %>
         <div class="card-footer">
-          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date, first: @sets.empty? %>
+          <%= render "workout_sets/rest_timer", entry: @entry, back: { workout_exercise_id: @workout_exercise.id, date: @date } %>
+          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date, first: @sets.empty?, rest_entry: @entry %>
         </div>
       <% end %>
     </div>
