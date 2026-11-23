@@ -17,6 +17,58 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `set-notes-removed-exercises`: the exercise page and the logged workout page keep their scroll when a set or note is saved, because Turbo morphs the page in place (`turbo_refreshes_with method: :morph, scroll: :preserve`). That only happens when the save comes back to the exact same address. An exercise page opened without `?date=` comes back with the date added, so that first save reloads the page and jumps to the top. The links in the app always add the date, so this needs a typed or old link. Likely too, not verified: a logged workout page opened with an anchor (`#entry-…`, as "Added to this workout" on a workout day's page links) may jump once on its first save, since the address differs by the anchor.
 
+### Bodyweight sets switched back to free weights show a minus
+
+- From `exercise-page-features`: a bodyweight lift with sets below zero (an assisted pull-up, "Bodyweight − 15.5 kg") that is switched back to free weights shows those sets as "-15.5 kg".
+
+### A second set tag takes another tap
+
+- From `exercise-page-features`: ticking a tag on a recorded set saves the set at once, and the page refresh closes the tag row, so a second tag needs the Tag button again.
+
+### Drag and drop not tried on a real phone
+
+- From `exercise-page-features`: dragging (the split page's plan, a logged workout's cards, the workout day's two cards) was only tried with emulated touch and mouse in headless Chrome. Long drags that need the screen to scroll at its edge were not fully checked.
+
+### Moving exercises without dragging
+
+- From `exercise-page-features`: the plan on the split page and the workout day's two cards can only be reordered or moved between cards by dragging (the ↑ ↓ arrows were removed by the owner's choice). A keyboard or screen reader cannot do it there. A logged workout keeps Move up / Move down in each card's ⋯ menu. On a workout day's page, a planned exercise leaves the workout only by dragging it back.
+
+### The moved-row highlight does not flash twice
+
+- From `exercise-page-features`: moving the same row twice in a row does not light it up again the second time (`.just-moved`).
+
+### Exercise order relies on PostgreSQL
+
+- From `exercise-page-features`: `position` is nullable and a row is numbered only once its list is reordered; new rows go last because PostgreSQL sorts NULL last. Another database would put them first.
+
+### Rest timer edges
+
+- From `exercise-page-features`:
+  - The rest clock shows an hour digit ("0:00:42"), because it reuses the workout timer's clock.
+  - The "Did you forget to stop your rest timer?" box only catches the app's own links. Swiping back, the browser's back button or closing the tab leave with the rest running; the next Add set on that exercise still asks.
+  - "Save rest" (Add set while the rest runs) counts the time of the set itself as rest.
+  - The minute and second lists in a set's Edit were never tried on an iPhone (where they open as the wheel). Not verified.
+
+### Long exercise names on a workout day
+
+- From `exercise-page-features`: next to the "3 sets" chip and the buttons, a long name ("Seated Lateral Raise") wraps to three lines on a 390 px phone.
+
+### A Cardio exercise edited from master is refused
+
+- From `exercise-page-features` (feature 7): "Cardio" is a muscle group on this branch only. On `master`, which shares the development database, editing a Cardio exercise fails its muscle-group check until this branch is merged.
+
+### An empty Cardio workout reads "0 sets"
+
+- From `exercise-page-features` (features 7 and 8): a Cardio workout with an exercise but no time yet reads "0 sets" in Recent workouts and History, while the Today box says "no time yet".
+
+### A cardio machine just added starts folded
+
+- From `exercise-page-features` (features 7 and 8): after "Add selected", the new machine's card on the logged workout is folded like every card, so typing its first time takes one more tap (the arrow).
+
+### The Cardio tile of the week comes and goes
+
+- From `exercise-page-features` (feature 7): the week overview's Cardio tile shows only in a week with cardio, and sits alone on a second row under the four others, so the box is taller that week.
+
 ## General
 
 ### Muscle group and equipment pills not tried on a real phone
@@ -54,6 +106,14 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 ### A week move without a Referer lands on Today
 
 - From `bottom-navbar-mobile`: "Move a workout" and "Back to the plan" return to the page they were sent from by its Referer. A browser that sends none (a strict privacy setting) lands on Today even when the move was made on the dashboard. The move is still saved. Not verified on such a browser.
+
+### Exercises page pages a big muscle group
+
+- From `exercise-page-features`: the Exercises page folds by muscle group but still pages 30 exercises, so a big group can continue on page 2.
+
+### Exercise page features not tried on a real phone
+
+- From `exercise-page-features`: everything on this branch (equipment pills, tags, notes, folds, ⋯ menus, drag and drop, the rest timer, cardio rows and the Cardio button) was checked in headless Chrome at 390 px only, never on a real phone.
 
 # Issues resolved (DONE)
 

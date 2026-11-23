@@ -29,3 +29,8 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    attributes:
+      cardio_entry:
+        # A cardio row's time is typed in minutes and seconds, not as a number of seconds.
+        duration_seconds: "Time"

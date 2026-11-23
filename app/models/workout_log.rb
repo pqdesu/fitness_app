@@ -4,7 +4,7 @@ class WorkoutLog < ApplicationRecord
   belongs_to :user
   # The day of the split it was logged from; gone once that day or its split is deleted.
   belongs_to :workout_day, optional: true
-  has_many :workout_log_exercises, dependent: :destroy
+  has_many :workout_log_exercises, -> { order(:position, :id) }, dependent: :destroy, inverse_of: :workout_log
   has_many :workout_exercises, through: :workout_log_exercises
 
   before_validation :copy_from_workout_day, on: :create
@@ -14,11 +14,15 @@ class WorkoutLog < ApplicationRecord
   # A workout is logged on the day it is done, so its date is never after today; the earliest
   # date only stops a typo in the year (0001, 20026) from sending a workout where no page shows it.
   EARLIEST_DATE = Date.new(2000, 1, 1)
+  # Cardio on a rest day instead of lifting: a logged workout of its own, never a day of a split.
+  CARDIO = "Cardio".freeze
+  # What a logged workout can be: a split's workouts, or Cardio.
+  WORKOUTS = [*WorkoutDay::NAMES, CARDIO].freeze
   validates :date, presence: true
   validate :date_in_range, if: -> { new_record? || date_changed? }
   validates :notes, length: { maximum: 2000 }
   validate :ends_after_start
-  validates :workout, inclusion: { in: WorkoutDay::NAMES }
+  validates :workout, inclusion: { in: WORKOUTS }
   # One session per workout per day: sets added from any split go into the same log.
   validate :only_session_of_workout_that_day, if: -> { new_record? || date_changed? || workout_changed? }
 
@@ -28,7 +32,7 @@ class WorkoutLog < ApplicationRecord
   # Sessions of this same workout, whichever split they were done in.
   scope :of_workout, ->(name) { where(workout: WorkoutDay.names_for(name)) }
   # With everything WorkoutSummary and the pages read, so they ask the database for nothing more.
-  scope :with_sets, -> { includes(workout_log_exercises: :workout_sets) }
+  scope :with_sets, -> { includes(workout_log_exercises: [:workout_sets, :cardio_entries]) }
 
   # The session of that workout on that date among these logs (a user's), or nil.
   def self.session_of(workout, date)

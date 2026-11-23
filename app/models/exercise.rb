@@ -1,8 +1,14 @@
 # An exercise users can add to a workout day or a logged workout.
 # - Without a user it belongs to the shared catalogue, which only admins manage.
 # - With a user it is that user's own exercise, and only they see it.
+# - Its equipment (Equipped) is what its planned and logged lifts start with; unilateral marks an
+#   exercise done one arm or one leg at a time.
 class Exercise < ApplicationRecord
-  MUSCLE_GROUPS = %w[Chest Back Shoulders Biceps Triceps Legs Calves Core].freeze
+  include Equipped
+
+  # Cardio is not a muscle, but it is chosen like one: a cardio exercise is logged as incline,
+  # speed and time instead of weight and reps (CardioEntry).
+  MUSCLE_GROUPS = %w[Chest Back Shoulders Biceps Triceps Legs Calves Core Cardio].freeze
 
   belongs_to :user, optional: true
   # An exercise that is part of someone's program cannot be deleted:
@@ -29,6 +35,8 @@ class Exercise < ApplicationRecord
   def shared?
     user_id.nil?
   end
+
+  def cardio? = muscle_group == "Cardio"
 
   # Heading the exercise is listed under when choosing one.
   def group

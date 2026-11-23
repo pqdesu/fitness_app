@@ -16,31 +16,39 @@
       <p>The catalogue is empty.</p>
     </div>
   <% else %>
-    <div class="table-responsive">
-      <table class="table app-table">
-        <thead>
-          <tr><th>Name</th><th>Muscle group</th><th>Used in plans</th><th></th></tr>
-        </thead>
-        <tbody>
-          <% @exercises.each do |exercise| %>
-            <tr>
-              <td class="fw-semibold"><%= exercise.name %><% unless exercise.shared? %> <span class="chip ms-1">Yours</span><% end %></td>
-              <td><% if exercise.muscle_group.present? %><span class="chip"><%= exercise.muscle_group %></span><% else %>–<% end %></td>
-              <td><%= @usage.fetch(exercise.id, 0) %></td>
-              <td class="text-end">
-                <% if current_user.admin? || !exercise.shared? %>
-                  <div class="row-actions">
-                    <%= link_to "Edit", edit_exercise_path(exercise), class: "btn btn-light btn-sm" %>
-                    <%= button_to "Delete", exercise, method: :delete, class: "btn btn-outline-danger btn-sm",
-                          form: { data: { turbo_confirm: "Delete #{exercise.name}?" } } %>
-                  </div>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <%# One heading per muscle group, closed at first: it opens that group's exercises. %>
+    <% @exercises.group_by(&:group).each do |group, group_exercises| %>
+      <% group_id = "exercises-#{group.parameterize}" %>
+      <button type="button" class="group-toggle exercise-group" data-bs-toggle="collapse" data-bs-target="#<%= group_id %>"
+              aria-expanded="false" aria-controls="<%= group_id %>">
+        <span class="group-name"><%= group %></span>
+        <span class="chip"><%= group_exercises.size %></span>
+        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+      </button>
+      <div class="collapse table-responsive exercise-group-list" id="<%= group_id %>">
+        <table class="table app-table">
+          <thead>
+            <tr><th>Name</th><th>Used in plans</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% group_exercises.each do |exercise| %>
+              <tr>
+                <td class="fw-semibold"><%= exercise.name %><% unless exercise.shared? %> <span class="chip ms-1">Yours</span><% end %><% if exercise.unilateral? %> <span class="chip ms-1">Unilateral</span><% end %></td>
+                <td><%= @usage.fetch(exercise.id, 0) %></td>
+                <td class="text-end">
+                  <% if current_user.admin? || !exercise.shared? %>
+                    <%= actions_menu exercise.name do %>
+                      <%= menu_link "Edit", edit_exercise_path(exercise) %>
+                      <%= menu_delete "Delete", exercise, confirm: "Delete #{exercise.name}?" %>
+                    <% end %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
     <%= render "shared/pagination" %>
   <% end %>
 </div>

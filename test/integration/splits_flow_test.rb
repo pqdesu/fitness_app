@@ -45,6 +45,11 @@ class SplitsFlowTest < FlowTest
     assert_select ".week .week-day.is-set", 1
     assert_select ".week a.is-set[href=?]", split_path(split, anchor: "day-#{day.id}")
     assert_select "#day-#{day.id} h2", "Push"
+    # the split's and each day's edit and delete are in a ⋯ menu; deleting is an × and asks first
+    assert_select ".page-header .actions-menu a[href=?]", edit_split_path(split), text: /Rename/
+    assert_select ".page-header .actions-menu form.button_to[action=?][data-turbo-confirm] .fa-xmark", split_path(split)
+    assert_select "#day-#{day.id} .actions-menu a[href=?]", edit_workout_day_path(day), text: /Edit/
+    assert_select "#day-#{day.id} .actions-menu form.button_to[action=?][data-turbo-confirm] .fa-xmark", workout_day_path(day)
     assert_select ".week a.is-set .week-label", "Push"
     get new_split_workout_day_path(split)
     assert_select "select[name='workout_day[weekday]'] option[selected]", text: "Sunday"
@@ -121,5 +126,35 @@ class SplitsFlowTest < FlowTest
     patch activate_split_path(others)
     assert_response :not_found
     assert_equal upper_lower, @user.reload.active_split
+  end
+
+  test "a split's days are folded but today's, and the splits list still shows every split's days" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+    pull = split.workout_days.create!(day: "Pull", weekday: 3)
+    push.workout_exercises.create!(exercise: @bench)
+    other = @user.splits.create!(name: "Upper lower")
+    other.workout_days.create!(day: "Upper", weekday: 2)
+    @user.update!(active_split: split)
+
+    # Monday 16 November 2026: Push is today's
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      get split_path(split)
+      # each day opens and closes with its arrow; its circle in the week, or #day-<id>, opens it
+      assert_select "#day-#{push.id}[data-controller=fold][data-action~='click@document->fold#openFromLink']", 1
+      assert_select "#day-#{push.id} .card-header", /Monday · Today/
+      assert_select "#day-#{push.id} .card-header .chip", "1 exercise"
+      assert_select "#day-#{push.id} button.fold-toggle[aria-expanded=true][data-bs-target='#day-#{push.id}-plan']", 1
+      assert_select "#day-#{push.id}-plan.collapse.show .row-title", "Bench press"
+      assert_select "#day-#{pull.id} button.fold-toggle[aria-expanded=false]", 1
+      assert_select "#day-#{pull.id}-plan.collapse:not(.show) button", text: /Plan exercises/
+      assert_select ".week a.is-set[href=?]", split_path(split, anchor: "day-#{pull.id}")
+
+      # the splits list shows every split's days, as before
+      get splits_path
+      assert_select ".split-days-toggle", 0
+      assert_select ".split-card .chip", %w[Push Pull Upper].size
+    end
   end
 end

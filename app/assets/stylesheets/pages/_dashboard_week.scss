@@ -25,28 +25,6 @@
   }
 }
 
-// The control that opens a dropdown: a full-width button, 44px tall for a thumb
-.toggle-days {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 2.75rem;
-  margin-top: .5rem;
-  padding: 0;
-  border: 0;
-  border-top: 1px solid $line;
-  background: none;
-  color: $blue;
-  font-size: .85rem;
-  font-weight: 600;
-
-  .fa-chevron-down { transition: transform .2s; }
-  &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
-  .when-open, &[aria-expanded="true"] .when-closed { display: none; }
-  &[aria-expanded="true"] .when-open { display: inline; }
-}
-
 .week-overview-days {
   list-style: none;
   margin: 0;

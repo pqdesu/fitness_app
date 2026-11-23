@@ -11,21 +11,7 @@
 
 ### Exercise page
 
-- When adding a exercise, in the equipment box, currently I can only choose between Free weight or machine. I want to be able to add what type of machine and Brand. If it is Free Weight you can have options like Dumbbell, Barbell, Kettlebell etc. Machine it can be Smith, Chest Press, Leg extension etc. Also what type of Machine like Plate loaded, Pin etc. So when creating a exercise it can be very detailed like: Plate Loaded Pec Deck from MTorture. "Plate loaded" being type of machine, "Pec Deck" being what machine and "MTorture" being the brand.
-  Make those options possible when adding the equipment. Also Admin can add to the catalog of Equipments and a normal user can not.
-  Also add a option for the exercise that it can be unilateral or not (both hands or legs)
 - Admins are also able to delete exercises already created with a small button on the side of the name in the modal.
-- Also add notes of the exercise and notes for the set. So add a small text field for personal notes.
-- Also add tags for each set. For example: warm-up, assisted etc. Admin can create and edit tags
-- Add the amount of exercises and sets on the top of the exercises pages of the day. Also with that add this data to the weekly overview with the amount of set and exercises done on the week and when someone opens the weekly overview
-- Make the exercises movable, so I can move around the order of the exercises done.
-- Add Cardio as a exercise as well with inputs for incline, speed and time, for now. Also since it is Cardio it has to be a completly different thing then the weight training exercises.
-- I want a button to add cardio if the day is rest day, instead of weight lifiting I will do cardio and that needs to be different, a new button only for Cardio.
-- Bodyweight to as weight selection
-- Workout logs should have the ame of exercise amount of sets and top weight, also add a 3 dots button to either edit or delete the exercise. and to show the sets and stuff expand it with a arrow down button. Image for reference - /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-19 220155.png
-- On Split page make the exercises planned to be expandale and showing only the current split and day but expand when clicked on to show the exercises. Also when you click the cirecle of the day of the week.
-- Timer for exercise
-- Exercises created by a user can be deleted by the user.
 
 ---
 
@@ -47,6 +33,23 @@
 ---
 
 # Features added (DONE)
+
+### Exercise page
+
+- Exercises created by a user can be deleted by the user.
+- When adding a exercise, in the equipment box, currently I can only choose between Free weight or machine. I want to be able to add what type of machine and Brand. If it is Free Weight you can have options like Dumbbell, Barbell, Kettlebell etc. Machine it can be Smith, Chest Press, Leg extension etc. Also what type of Machine like Plate loaded, Pin etc. So when creating a exercise it can be very detailed like: Plate Loaded Pec Deck from MTorture. "Plate loaded" being type of machine, "Pec Deck" being what machine and "MTorture" being the brand.
+  Make those options possible when adding the equipment. Also Admin can add to the catalog of Equipments and a normal user can not.
+  Also add a option for the exercise that it can be unilateral or not (both hands or legs)
+- Also add notes of the exercise and notes for the set. So add a small text field for personal notes.
+- Also add tags for each set. For example: warm-up, assisted etc. Admin can create and edit tags
+- Add the amount of exercises and sets on the top of the exercises pages of the day. Also with that add this data to the weekly overview with the amount of set and exercises done on the week and when someone opens the weekly overview
+- Make the exercises movable, so I can move around the order of the exercises done.
+- Bodyweight to as weight selection
+- Workout logs should have the ame of exercise amount of sets and top weight, also add a 3 dots button to either edit or delete the exercise. and to show the sets and stuff expand it with a arrow down button. Image for reference - /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-19 220155.png
+- On Split page make the exercises planned to be expandale and showing only the current split and day but expand when clicked on to show the exercises. Also when you click the cirecle of the day of the week.
+- Timer for exercise
+- Add Cardio as a exercise as well with inputs for incline, speed and time, for now. Also since it is Cardio it has to be a completly different thing then the weight training exercises.
+- I want a button to add cardio if the day is rest day, instead of weight lifiting I will do cardio and that needs to be different, a new button only for Cardio.
 
 ### Calendar
 

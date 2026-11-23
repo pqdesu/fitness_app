@@ -1,0 +1,6 @@
+<%# A cardio exercise's rows. Locals: cardio_entries, and optionally workout_exercise and date (see cardio_entries/_entry). %>
+<table class="table app-table set-table cardio-table">
+  <thead><tr><th>#</th><th>Incline</th><th>Speed</th><th>Time</th><th></th></tr></thead>
+  <%= render partial: "cardio_entries/entry", collection: cardio_entries, as: :cardio_entry,
+             locals: { workout_exercise: local_assigns[:workout_exercise], date: local_assigns[:date] } %>
+</table>
