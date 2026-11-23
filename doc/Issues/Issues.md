@@ -111,6 +111,12 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - No button to start a workout on Rest days. If I go to the gym to do something I want to be able to add it. And when it is recorded make sure it shows it was a rest day but I when to the gym. Also it does not change the split but adds a info saying this day I did this.
 
+### Back to the plan left a trained workout on the calendar
+
+- When I remove the workout move from Saturday to Sunday it stayed on the calendar. If I remove the workout from the week on the Today page it should update everywhere. (owner, 2026-11-23)
+- Cause: "Back to the plan" deleted every move of the week, including Lower's move to Sunday after Lower had been trained on Sunday. "This week" then put Lower back on Saturday, while the calendar still showed the workout logged on Sunday. Moving a workout already refused once it was logged that week; going back to the plan did not.
+- Fixed on `back-to-plan-keeps-trained`: "Back to the plan" undoes only the moves of workouts not trained yet this week, and keeps the one a trained workout swapped with. It says which stayed ("Lower stays on Sunday: a trained workout keeps its day"), and it is hidden when nothing can go back (`Split#undoable_week_moves`). The logged workout is never touched.
+
 ### Split override
 
 - Currently because I logged 2 workouts for the day I can only see the previously set on. Please delete the old one from the db also check if it is still possible to log workouts on the same day. It should only be possible if the split changes.
