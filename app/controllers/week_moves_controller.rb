@@ -25,7 +25,14 @@ class WeekMovesController < ApplicationController
   # Back to the plan for this week.
   def destroy
     @split.clear_week_moves(Date.current)
-    redirect_back_or_to root_path, notice: "This week is back to the plan.", status: :see_other
+    kept = @split.week_plan(Date.current).reject { |weekday, day| weekday == day.weekday }
+    notice = "This week is back to the plan"
+    if kept.any?
+      stays = kept.map { |weekday, day| "#{day.day} stays on #{Date::DAYNAMES[weekday]}" }
+      # The one it swapped with stays too, so the reason is the rule, not "it was trained".
+      notice += ", but #{stays.to_sentence}: a trained workout keeps its day"
+    end
+    redirect_back_or_to root_path, notice: "#{notice}.", status: :see_other
   end
 
   private
