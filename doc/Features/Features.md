@@ -12,8 +12,6 @@
 ### Exercise page
 
 - Admins are also able to delete exercises already created with a small button on the side of the name in the modal.
-- Add Cardio as a exercise as well with inputs for incline, speed and time, for now. Also since it is Cardio it has to be a completly different thing then the weight training exercises.
-- I want a button to add cardio if the day is rest day, instead of weight lifiting I will do cardio and that needs to be different, a new button only for Cardio.
 
 ---
 
@@ -50,6 +48,8 @@
 - Workout logs should have the ame of exercise amount of sets and top weight, also add a 3 dots button to either edit or delete the exercise. and to show the sets and stuff expand it with a arrow down button. Image for reference - /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-19 220155.png
 - On Split page make the exercises planned to be expandale and showing only the current split and day but expand when clicked on to show the exercises. Also when you click the cirecle of the day of the week.
 - Timer for exercise
+- Add Cardio as a exercise as well with inputs for incline, speed and time, for now. Also since it is Cardio it has to be a completly different thing then the weight training exercises.
+- I want a button to add cardio if the day is rest day, instead of weight lifiting I will do cardio and that needs to be different, a new button only for Cardio.
 
 ### Calendar
 

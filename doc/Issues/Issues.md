@@ -53,6 +53,22 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `exercise-page-features`: next to the "3 sets" chip and the buttons, a long name ("Seated Lateral Raise") wraps to three lines on a 390 px phone.
 
+### A Cardio exercise edited from master is refused
+
+- From `exercise-page-features` (feature 7): "Cardio" is a muscle group on this branch only. On `master`, which shares the development database, editing a Cardio exercise fails its muscle-group check until this branch is merged.
+
+### An empty Cardio workout reads "0 sets"
+
+- From `exercise-page-features` (features 7 and 8): a Cardio workout with an exercise but no time yet reads "0 sets" in Recent workouts and History, while the Today box says "no time yet".
+
+### A cardio machine just added starts folded
+
+- From `exercise-page-features` (features 7 and 8): after "Add selected", the new machine's card on the logged workout is folded like every card, so typing its first time takes one more tap (the arrow).
+
+### The Cardio tile of the week comes and goes
+
+- From `exercise-page-features` (feature 7): the week overview's Cardio tile shows only in a week with cardio, and sits alone on a second row under the four others, so the box is taller that week.
+
 ## General
 
 ### Muscle group and equipment pills not tried on a real phone
@@ -97,7 +113,7 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 ### Exercise page features not tried on a real phone
 
-- From `exercise-page-features`: everything on this branch (equipment pills, tags, notes, folds, ⋯ menus, drag and drop, the rest timer) was checked in headless Chrome at 390 px only, never on a real phone.
+- From `exercise-page-features`: everything on this branch (equipment pills, tags, notes, folds, ⋯ menus, drag and drop, the rest timer, cardio rows and the Cardio button) was checked in headless Chrome at 390 px only, never on a real phone.
 
 # Issues resolved (DONE)
 
