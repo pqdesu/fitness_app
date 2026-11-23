@@ -1,0 +1,53 @@
+<%#
+  One cardio row: incline, speed and time. Edit (in its ⋯ menu) turns them into fields in this same
+  row (row_edit_controller.js), with Save and Cancel in place of the menu. Locals: cardio_entry, and
+  optionally workout_exercise and date when the table is on an exercise's page, so saving or deleting
+  returns there.
+%>
+<% form_id = "edit_cardio_#{cardio_entry.id}" %>
+<% row_path = cardio_entry_path(cardio_entry, workout_exercise_id: local_assigns[:workout_exercise]&.id, date: local_assigns[:date]) %>
+<% minutes, seconds = cardio_entry.duration_seconds.divmod(60) %>
+<%# Named by its exercise and number to the user ("Treadmill 2"): "row" is table jargon. %>
+<% name = "#{cardio_entry.workout_log_exercise.name} #{cardio_entry.entry_number}" %>
+<tbody data-controller="row-edit" data-action="keydown.esc->row-edit#cancel">
+  <tr>
+    <td><span class="order-badge"><%= cardio_entry.entry_number %></span></td>
+    <td>
+      <span data-row-edit-target="view"><%= cardio_entry.incline ? "#{weight_number(cardio_entry.incline)} %" : "–" %></span>
+      <%= number_field_tag "cardio_entry[incline]", weight_number(cardio_entry.incline), id: "incline_cardio_#{cardio_entry.id}",
+            form: form_id, step: "any", placeholder: "–", inputmode: "decimal", class: "form-control form-control-sm set-field",
+            "aria-label": "Incline in % of #{name}", hidden: true, data: { row_edit_target: "field" } %>
+    </td>
+    <td>
+      <span data-row-edit-target="view"><%= cardio_entry.speed ? "#{weight_number(cardio_entry.speed)} km/h" : "–" %></span>
+      <%= number_field_tag "cardio_entry[speed]", weight_number(cardio_entry.speed), id: "speed_cardio_#{cardio_entry.id}",
+            form: form_id, step: "any", min: 0, placeholder: "–", inputmode: "decimal", class: "form-control form-control-sm set-field",
+            "aria-label": "Speed in km/h of #{name}", hidden: true, data: { row_edit_target: "field" } %>
+    </td>
+    <td>
+      <span data-row-edit-target="view"><%= cardio_time(cardio_entry.duration_seconds) %></span>
+      <div class="cardio-time-fields" hidden data-row-edit-target="field">
+        <%= number_field_tag "cardio_entry[minutes]", minutes, id: "minutes_cardio_#{cardio_entry.id}", form: form_id, min: 0,
+              inputmode: "numeric", class: "form-control form-control-sm", "aria-label": "Minutes of #{name}" %>
+        <span class="cardio-colon" aria-hidden="true"></span>
+        <%= number_field_tag "cardio_entry[seconds]", format("%02d", seconds), id: "seconds_cardio_#{cardio_entry.id}", form: form_id, min: 0, max: 59,
+              inputmode: "numeric", class: "form-control form-control-sm", "aria-label": "Seconds of #{name}" %>
+      </div>
+    </td>
+    <td class="text-end">
+      <div class="set-actions" data-row-edit-target="view">
+        <%= actions_menu name do %>
+          <li><button type="button" class="dropdown-item" data-action="row-edit#edit"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edit</button></li>
+          <%= menu_delete "Delete", row_path, aria: { label: "Delete #{name}" },
+                confirm: "Delete #{name}? #{cardio_time(cardio_entry.duration_seconds)}." %>
+        <% end %>
+      </div>
+      <div class="cardio-edit-actions" hidden data-row-edit-target="field">
+        <button type="submit" form="<%= form_id %>" class="btn btn-primary btn-sm" aria-label="Save <%= name %>"><i class="fa-solid fa-check" aria-hidden="true"></i></button>
+        <button type="button" class="btn btn-light btn-sm" data-action="row-edit#cancel" aria-label="Cancel editing <%= name %>"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      </div>
+      <%# The fields sit in other cells and belong to this form by its id. %>
+      <%= form_with url: row_path, method: :patch, id: form_id, html: { hidden: true }, data: { row_edit_target: "form" } do %><% end %>
+    </td>
+  </tr>
+</tbody>

@@ -3,6 +3,7 @@ module SeedData
   # are already there are left as they are, so running it again changes nothing.
   class Loader
     include Catalogue
+    include Cardio
 
     def initialize(path)
       @path = Pathname(path)
@@ -114,6 +115,7 @@ module SeedData
                                    rest_seconds: set["rest"], rest_approx: set["rest_approx"] || false,
                                    set_tags: SetTag.where(name: Array(set["tags"])))
       end
+      load_cardio(entry, item["cardio"])
     end
 
     def create_entry(user, log, item)

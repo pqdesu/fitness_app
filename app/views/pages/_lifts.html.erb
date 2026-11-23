@@ -5,7 +5,7 @@
     <li>
       <span class="row-title"><%= lift.name %></span>
       <span class="top-set">
-        <% if top %><%= weight_and_reps(top) %><% else %><span class="text-muted">No sets</span><% end %>
+        <% if lift.cardio_entries.any? %><%= entry_done(lift) %><% elsif top %><%= weight_and_reps(top) %><% else %><span class="text-muted">No sets</span><% end %>
       </span>
     </li>
   <% end %>

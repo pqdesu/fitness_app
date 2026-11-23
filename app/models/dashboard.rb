@@ -58,9 +58,9 @@ class Dashboard
     @today_summary ||= WorkoutSummary.new(today_log)
   end
 
-  # Today's exercises that have sets: the Today box shows them once there are any.
+  # Today's exercises that have sets or cardio rows: the Today box shows them once there are any.
   def today_lifts
-    today_log ? today_log.workout_log_exercises.select { |lift| lift.workout_sets.any? } : []
+    today_log ? today_log.workout_log_exercises.select { |lift| lift.workout_sets.any? || lift.cardio_entries.any? } : []
   end
 
   # The weeks (Sunday to Saturday) that cover this month.

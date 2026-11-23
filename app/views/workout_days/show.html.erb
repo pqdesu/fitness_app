@@ -7,8 +7,8 @@
     <%# The date its sets go to (see LoggingDate): today, a day earlier this week, or one to come. %>
     <p class="text-muted mb-0"><% if @date == Date.current %>Today · <% end %><%= l @date, format: "%A, %B %-d" %></p>
     <%# What is done so far in this workout on that date: exercises with a set, and sets. %>
-    <% if @log && (done = WorkoutSummary.new(@log)).sets.positive? %>
-      <p class="day-counts small fw-semibold mb-0"><%= pluralize(done.exercises, "exercise") %> · <%= pluralize(done.sets, "set") %></p>
+    <% if @log && (done = WorkoutSummary.new(@log)).exercises.positive? %>
+      <p class="day-counts small fw-semibold mb-0"><%= summary_counts(done) %></p>
     <% end %>
   </div>
   <div class="header-actions">
@@ -47,7 +47,7 @@
               <%# Dragged back to "Still to do" it leaves the workout and stays on the plan. %>
               <% li[:data].merge!(sortable_into_url: workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), sortable_into_method: "delete",
                                   sortable_confirm: ("Remove #{entry.name} and its sets from this workout?" if entry.workout_sets.any?)) %>
-              <%= render "planned_exercise", we: planned, sets: entry.workout_sets.size, li:, draggable: true, in_workout: true %>
+              <%= render "planned_exercise", we: planned, entry:, li:, draggable: true, in_workout: true %>
             <% else %>
               <%# Added while training, not planned: removing one takes it out of this workout, and it is gone. It cannot go to the plan's block. %>
               <% entry_path = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}") %>
@@ -57,7 +57,7 @@
                   <span class="row-title"><%= entry.name %></span>
                   <span class="text-muted small"><%= entry.equipment_label %> · Added to this workout</span>
                 <% end %>
-                <% if entry.workout_sets.any? %><span class="chip chip-done"><%= pluralize(entry.workout_sets.size, "set") %></span><% else %><span class="text-muted small text-nowrap">No sets</span><% end %>
+                <% if entry.workout_sets.any? || entry.cardio_entries.any? %><span class="chip chip-done"><%= entry_done(entry) %></span><% else %><span class="text-muted small text-nowrap"><%= entry.cardio? ? "No time yet" : "No sets" %></span><% end %>
                 <%= button_to workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), method: :delete,
                       class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{entry.name} from this workout", title: "Remove #{entry.name} from this workout",
                       form: { data: ({ turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } if entry.workout_sets.any?) } do %><i class="fa-solid fa-xmark"></i><% end %>
@@ -75,7 +75,7 @@
       <%= tag.ul class: "list-rows day-to-do", data: ({ controller: "sortable", sortable_group_value: "day", sortable_sort_value: false } unless upcoming) do %>
         <% @to_do.each do |we| %>
           <% li = upcoming ? {} : { data: { sortable_into_url: workout_day_workout_log_exercises_path(@workout_day, date: @date, workout_exercise_id: we.id), sortable_into_method: "post" } } %>
-          <%= render "planned_exercise", we:, sets: 0, li:, draggable: !upcoming %>
+          <%= render "planned_exercise", we:, li:, draggable: !upcoming %>
         <% end %>
         <% if @to_do.empty? %><li class="day-hint text-muted small">Everything planned is in this workout.</li><% end %>
       <% end %>

@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "cardio_entries", force: :cascade do |t|
+    t.bigint "workout_log_exercise_id", null: false
+    t.integer "entry_number", null: false
+    t.decimal "incline", precision: 4, scale: 1
+    t.decimal "speed", precision: 4, scale: 1
+    t.integer "duration_seconds", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["workout_log_exercise_id", "entry_number"], name: "index_cardio_entries_on_entry_and_number", unique: true
+    t.index ["workout_log_exercise_id"], name: "index_cardio_entries_on_workout_log_exercise_id"
+  end
 
   create_table "equipment_items", force: :cascade do |t|
     t.string "name", null: false
@@ -169,6 +181,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
     t.index ["workout_log_exercise_id"], name: "index_workout_sets_on_workout_log_exercise_id"
   end
 
+  add_foreign_key "cardio_entries", "workout_log_exercises"
   add_foreign_key "exercises", "users"
   add_foreign_key "splits", "users"
   add_foreign_key "users", "splits", column: "active_split_id", on_delete: :nullify

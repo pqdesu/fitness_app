@@ -29,6 +29,27 @@ module LiftsHelper
     safe_join([format_weight(set.weight_used, bodyweight: set.bodyweight?, plain:), " × #{pluralize(set.reps_completed, 'rep')}"])
   end
 
+  # What one logged exercise has done, for its chip: "3 sets", or for cardio its time, "30 min".
+  def entry_done(entry)
+    return pluralize(entry.workout_sets.size, "set") unless entry.cardio?
+
+    seconds = entry.cardio_entries.sum(&:duration_seconds)
+    seconds.positive? ? duration_text(seconds) : "No time yet"
+  end
+
+  # What was done: "3 sets", the time of cardio, "30 min", or both, "3 sets · 30 min".
+  def sets_and_time(sets, seconds)
+    parts = []
+    parts << pluralize(sets, "set") if sets.positive? || !seconds.positive?
+    parts << duration_text(seconds) if seconds.positive?
+    parts.join(" · ")
+  end
+
+  # A WorkoutSummary in one line: "2 exercises · 3 sets · 30 min".
+  def summary_counts(summary)
+    "#{pluralize(summary.exercises, 'exercise')} · #{sets_and_time(summary.sets, summary.cardio_seconds)}"
+  end
+
   # The names of a kind of equipment in the admin's catalogue, read once per page (a split page
   # has an "Add exercises" form per day).
   def equipment_names(kind)

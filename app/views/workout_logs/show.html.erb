@@ -41,6 +41,8 @@
     <% @log_exercises.each_with_index do |entry, i| %>
       <% sets = entry.workout_sets.sort_by(&:set_number) %>
       <% top = entry.top_set %>
+      <%# Cardio is logged as incline, speed and time: no sets, equipment or rest timer. %>
+      <% cardio = entry.cardio? %>
       <% panel_id = "entry-#{entry.id}-sets" %>
       <%# Each exercise starts folded: its name, sets and heaviest set; the arrow opens its sets and
           the add-set form (fold_controller.js keeps it open when a save refreshes the page). %>
@@ -53,7 +55,7 @@
             <% if entry.notes.present? %><p class="entry-note small mb-0"><i class="fa-regular fa-note-sticky"></i> <%= entry.notes %></p><% end %>
           </div>
           <div class="entry-meta">
-            <span class="chip"><%= pluralize(sets.size, "set") %></span>
+            <span class="chip"><%= entry_done(entry) %></span>
             <%= actions_menu entry.name do %>
               <%= menu_link "Edit", edit_workout_log_exercise_path(entry) %>
               <% if i.positive? %><%= menu_button "Move up", move_workout_log_exercise_path(entry, to: "up"), icon: "arrow-up" %><% end %>
@@ -68,14 +70,21 @@
         </div>
 
         <div class="collapse" id="<%= panel_id %>" data-fold-target="panel">
-          <% if sets.any? %>
-            <%= render "workout_sets/table", sets: sets %>
-          <% end %>
+          <% if cardio %>
+            <% if entry.cardio_entries.any? %><%= render "cardio_entries/table", cardio_entries: entry.cardio_entries %><% end %>
+            <div class="card-footer">
+              <%= render "cardio_entries/form", parent: entry, last: entry.cardio_entries.last %>
+            </div>
+          <% else %>
+            <% if sets.any? %>
+              <%= render "workout_sets/table", sets: sets %>
+            <% end %>
 
-          <div class="card-footer">
-            <%= render "workout_sets/rest_timer", entry: %>
-            <%= render "workout_sets/form", parent: entry, last_set: sets.last, first: sets.empty?, rest_entry: entry %>
-          </div>
+            <div class="card-footer">
+              <%= render "workout_sets/rest_timer", entry: %>
+              <%= render "workout_sets/form", parent: entry, last_set: sets.last, first: sets.empty?, rest_entry: entry %>
+            </div>
+          <% end %>
         </div>
       </div>
     <% end %>

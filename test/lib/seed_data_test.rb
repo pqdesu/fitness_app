@@ -76,6 +76,21 @@ class SeedDataTest < ActiveSupport::TestCase
                  WorkoutSet.pluck(:rest_seconds, :rest_approx).sort_by { |rest, _| rest || 0 }
   end
 
+  test "cardio rows go into the file and come back, once" do
+    treadmill = Exercise.create!(name: "Treadmill", muscle_group: "Cardio")
+    entry = log_upper(Date.new(2026, 11, 16)).workout_log_exercises.create!(exercise: treadmill)
+    entry.cardio_entries.create!(incline: "5.5", speed: "6", duration_seconds: 750)
+    entry.cardio_entries.create!(duration_seconds: 600)
+    SeedData.dump(@path)
+
+    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem, SetTag].each { |model| model.find_each(&:destroy!) }
+    2.times { SeedData.load(@path) }
+    entry = WorkoutLogExercise.find_by!(name: "Treadmill")
+    assert entry.exercise.cardio?
+    assert_equal [[1, BigDecimal("5.5"), BigDecimal("6"), 750], [2, nil, nil, 600]],
+                 entry.cardio_entries.pluck(:entry_number, :incline, :speed, :duration_seconds)
+  end
+
   test "a dump keeps what the file had and adds what is new; mock workouts are left out" do
     old = log_upper(Date.new(2026, 11, 9))
     SeedData.dump(@path)

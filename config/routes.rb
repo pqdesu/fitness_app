@@ -29,6 +29,8 @@ Rails.application.routes.draw do
     # Move to another place in the day's plan (dragged on the split page)
     patch :move, on: :member
     resources :workout_sets, only: [:create]
+    # A cardio exercise's rows (incline, speed, time), its counterpart of sets
+    resources :cardio_entries, only: [:create]
   end
 
   # Recording: log -> logged exercises -> sets. new and create start a workout that is not in a split.
@@ -43,10 +45,12 @@ Rails.application.routes.draw do
     # Move to another place in that workout (dragged, or Move up/down); the plan keeps its order
     patch :move, on: :member
     resources :workout_sets, only: [:create]
+    resources :cardio_entries, only: [:create]
     # The rest timer between sets: Start rest (create), Stop (update), throw it away (destroy)
     resource :rest, only: [:create, :update, :destroy], controller: "rest_timers"
   end
   resources :workout_sets, only: [:update, :destroy]
+  resources :cardio_entries, only: [:update, :destroy]
 
   # Admin only: the accounts (make or unmake an admin, delete a user)
   namespace :admin do

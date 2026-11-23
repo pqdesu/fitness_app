@@ -55,6 +55,11 @@ module ApplicationHelper
     format("%<h>d:%<m>02d:%<s>02d", h: seconds / 3600, m: seconds / 60 % 60, s: seconds % 60)
   end
 
+  # A cardio row's time as a treadmill shows it: 12:30, or 1:05:00 past an hour.
+  def cardio_time(seconds)
+    seconds < 3600 ? format("%<m>d:%<s>02d", m: seconds / 60, s: seconds % 60) : clock_duration(seconds)
+  end
+
   def clock_time(time)
     l(time, format: "%-l:%M %p")
   end

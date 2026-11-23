@@ -28,7 +28,7 @@ class WorkoutLog < ApplicationRecord
   # Sessions of this same workout, whichever split they were done in.
   scope :of_workout, ->(name) { where(workout: WorkoutDay.names_for(name)) }
   # With everything WorkoutSummary and the pages read, so they ask the database for nothing more.
-  scope :with_sets, -> { includes(workout_log_exercises: :workout_sets) }
+  scope :with_sets, -> { includes(workout_log_exercises: [:workout_sets, :cardio_entries]) }
 
   # The session of that workout on that date among these logs (a user's), or nil.
   def self.session_of(workout, date)

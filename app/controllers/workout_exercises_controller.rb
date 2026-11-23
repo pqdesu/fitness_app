@@ -16,6 +16,7 @@ class WorkoutExercisesController < ApplicationController
     # Pre-fills the form, so repeating the last set is a single tap.
     @last_set = @sets.last || WorkoutSet.where(workout_log_exercise: @workout_exercise.workout_log_exercises)
                                         .order(created_at: :desc, id: :desc).first
+    cardio_rows if @workout_exercise.cardio?
   end
 
   # Plans the exercises chosen (or the one created) in a day's "Plan exercises" modal on the split
@@ -65,6 +66,13 @@ class WorkoutExercisesController < ApplicationController
   end
 
   private
+
+  # A cardio exercise's rows that day, and the last one ever, which pre-fills the form as the last set does.
+  def cardio_rows
+    @cardio_entries = @entry ? @entry.cardio_entries.to_a : []
+    @last_cardio = @cardio_entries.last || CardioEntry.where(workout_log_exercise: @workout_exercise.workout_log_exercises)
+                                                      .order(created_at: :desc, id: :desc).first
+  end
 
   def plan_path(workout_day)
     split_path(workout_day.split, anchor: "day-#{workout_day.id}")

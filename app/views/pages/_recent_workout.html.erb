@@ -5,13 +5,13 @@
 %>
 <% panel_id = "recent-log-#{log.id}" %>
 <% lifts = log.workout_log_exercises.to_a %>
-<% set_count = lifts.sum { |lift| lift.workout_sets.size } %>
+<% summary = WorkoutSummary.new(log) %>
 <li class="recent-row">
   <button type="button" class="recent-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
           aria-expanded="false" aria-controls="<%= panel_id %>">
     <span class="recent-summary">
       <span class="row-title"><%= log.workout %></span>
-      <span class="text-muted small"><%= l log.date, format: :long %> · <%= pluralize(set_count, "set") %></span>
+      <span class="text-muted small"><%= l log.date, format: :long %> · <%= sets_and_time(summary.sets, summary.cardio_seconds) %></span>
     </span>
     <% if log.rest_day? || log.workout_day %>
       <span class="recent-chips">
@@ -23,7 +23,7 @@
   </button>
 
   <div class="collapse recent-panel" id="<%= panel_id %>">
-    <p class="recent-counts"><%= pluralize(lifts.count { |lift| lift.workout_sets.any? }, "exercise") %> · <%= pluralize(set_count, "set") %></p>
+    <p class="recent-counts"><%= summary_counts(summary) %></p>
     <% if (time = workout_time(log)) %><p class="recent-counts"><i class="fa-regular fa-clock" aria-hidden="true"></i> <%= time %></p><% end %>
 
     <% if lifts.empty? %>
@@ -50,6 +50,12 @@
                   </li>
                 <% end %>
               </ol>
+            <% elsif lift.cardio_entries.any? %>
+              <%# Cardio shows its time; its rows are on the workout's page. %>
+              <span class="lift-pill">
+                <span class="lift-pill-name"><%= lift.name %></span>
+                <span class="top-set"><%= entry_done(lift) %></span>
+              </span>
             <% else %>
               <span class="lift-pill is-empty">
                 <span class="lift-pill-name"><%= lift.name %></span>

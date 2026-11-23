@@ -104,3 +104,16 @@
 .rest-picker { display: flex; align-items: center; gap: .25rem; margin-right: auto; font-size: .875rem; }
 .rest-picker .form-select { width: auto; }
 .rest-picker-label { margin-right: .125rem; color: $muted; }
+
+// A cardio row (cardio_entries/_entry): its first column is the row's number, like a set's, and
+// Edit turns incline, speed and time into fields in the same row, with ✓ and × in place of the ⋯
+.cardio-table td:first-child, .cardio-table th:first-child { width: 2.75rem; padding-left: .75rem; }
+// Narrow fields and ✓ above × keep the editing row inside a 390px phone
+.cardio-table .set-field { min-width: 0; width: 3rem; }
+.cardio-table .form-control-sm { padding-left: .375rem; padding-right: .375rem; }
+.cardio-time-fields { display: flex; align-items: center; gap: .125rem; }
+.cardio-time-fields[hidden], .cardio-edit-actions[hidden] { display: none; }
+.cardio-time-fields .form-control { width: 2.75rem; }
+// The colon between minutes and seconds, drawn here so the cell's text is only its time
+.cardio-colon::before { content: ":"; }
+.cardio-edit-actions { display: inline-flex; flex-direction: column; gap: .5rem; }

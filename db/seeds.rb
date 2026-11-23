@@ -29,7 +29,12 @@ puts "Admin user: #{admin.email}"
   ["Romanian deadlift", "Legs"],
   ["Leg press", "Legs"],
   ["Calf raise", "Calves"],
-  ["Plank", "Core"]
+  ["Plank", "Core"],
+  # Cardio is logged as incline, speed and time instead of weight and reps
+  ["Treadmill", "Cardio"],
+  ["Stationary bike", "Cardio"],
+  ["Stair climber", "Cardio"],
+  ["Elliptical", "Cardio"]
 ].each do |name, muscle_group|
   Exercise.find_or_create_by!(name: name) do |exercise|
     exercise.muscle_group = muscle_group

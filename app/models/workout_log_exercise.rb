@@ -6,6 +6,8 @@ class WorkoutLogExercise < ApplicationRecord
   # Optional: an exercise can be logged without having been planned.
   belongs_to :workout_exercise, optional: true
   has_many :workout_sets, dependent: :destroy
+  # A cardio exercise's rows (incline, speed, time) in place of sets.
+  has_many :cardio_entries, -> { order(:entry_number) }, dependent: :destroy, inverse_of: :workout_log_exercise
 
   # Runs before Lift's normalisation, so the copied values are the ones that get checked.
   before_validation :copy_from_plan, on: :create, prepend: true
@@ -21,6 +23,12 @@ class WorkoutLogExercise < ApplicationRecord
   def top_set
     workout_sets.max_by { |set| [set.weight_used || 0, set.reps_completed] }
   end
+
+  # Its rows keep it cardio once its exercise is deleted or moved out of the Cardio group.
+  def cardio? = exercise&.cardio? || cardio_entries.any?
+
+  # Cardio has no equipment: it says so wherever a lift's equipment is written.
+  def equipment_label = cardio? ? "Cardio" : super
 
   def rest_running? = rest_started_at.present? && rest_ended_at.nil?
 

@@ -43,3 +43,9 @@
   &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
 }
 .is-folded .choices { margin-top: .5rem; }
+
+// A new exercise of the Cardio group has no equipment and is not one-sided: those fields hide
+// while the Cardio pill is picked (CSS only; the defaults they hold are what cardio keeps)
+form:has(input[name="exercise[muscle_group]"][value="Cardio"]:checked) {
+  .equipment-fields, .form-check:has(input[name="exercise[unilateral]"]) { display: none; }
+}

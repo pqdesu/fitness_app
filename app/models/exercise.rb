@@ -6,7 +6,9 @@
 class Exercise < ApplicationRecord
   include Equipped
 
-  MUSCLE_GROUPS = %w[Chest Back Shoulders Biceps Triceps Legs Calves Core].freeze
+  # Cardio is not a muscle, but it is chosen like one: a cardio exercise is logged as incline,
+  # speed and time instead of weight and reps (CardioEntry).
+  MUSCLE_GROUPS = %w[Chest Back Shoulders Biceps Triceps Legs Calves Core Cardio].freeze
 
   belongs_to :user, optional: true
   # An exercise that is part of someone's program cannot be deleted:
@@ -33,6 +35,8 @@ class Exercise < ApplicationRecord
   def shared?
     user_id.nil?
   end
+
+  def cardio? = muscle_group == "Cardio"
 
   # Heading the exercise is listed under when choosing one.
   def group

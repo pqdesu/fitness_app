@@ -1,0 +1,34 @@
+<%#
+  "Add" for a cardio exercise: incline, speed and time, pre-filled with the last row so repeating it is
+  a single tap. Only the time is needed (a bike has no incline). Locals: parent (the planned exercise or
+  the logged exercise), last (the last row, or nil), and for a planned exercise date (see LoggingDate).
+%>
+<% suffix = "#{parent.model_name.param_key}_#{parent.id}" %>
+<% url = local_assigns[:date] ? polymorphic_path([parent, CardioEntry], date: date) : polymorphic_path([parent, CardioEntry]) %>
+<% minutes, seconds = last&.duration_seconds&.divmod(60) %>
+<%# While the workout's timer is paused, adding asks to resume it first (workout_logs/_timer_alert). %>
+<%= form_with model: [parent, CardioEntry.new], url:, class: "row g-2 align-items-end inline-form set-form cardio-form",
+      data: { alert_when_paused: "add" } do |f| %>
+  <div class="col-6">
+    <%= f.label :incline, "Incline %", class: "form-label", for: "incline_#{suffix}" %>
+    <%= f.number_field :incline, value: weight_number(last&.incline), step: "any", placeholder: "–", inputmode: "decimal",
+          class: "form-control", id: "incline_#{suffix}" %>
+  </div>
+  <div class="col-6">
+    <%= f.label :speed, "Speed km/h", class: "form-label", for: "speed_#{suffix}" %>
+    <%= f.number_field :speed, value: weight_number(last&.speed), step: "any", min: 0, placeholder: "–", inputmode: "decimal",
+          class: "form-control", id: "speed_#{suffix}" %>
+  </div>
+  <div class="col-3">
+    <%= f.label :minutes, "Min", class: "form-label", for: "minutes_#{suffix}" %>
+    <%# Not required: a row under a minute is typed in seconds alone; an empty time is refused by the row. %>
+    <%= f.number_field :minutes, value: minutes, min: 0, placeholder: "0", inputmode: "numeric", class: "form-control", id: "minutes_#{suffix}" %>
+  </div>
+  <div class="col-3">
+    <%= f.label :seconds, "Sec", class: "form-label", for: "seconds_#{suffix}" %>
+    <%= f.number_field :seconds, value: seconds && format("%02d", seconds), min: 0, max: 59, placeholder: "0", inputmode: "numeric", class: "form-control", id: "seconds_#{suffix}" %>
+  </div>
+  <div class="col-6 d-grid">
+    <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add<% end %>
+  </div>
+<% end %>

@@ -2,8 +2,10 @@
 <% turbo_refreshes_with method: :morph, scroll: :preserve %>
 <% back_to workout_day_path(@workout_day, date: @date) %>
 <% upcoming = @date > Date.current %>
+<%# Cardio is logged as incline, speed and time: no sets, equipment or rest timer. %>
+<% cardio = @workout_exercise.cardio? %>
 <%# Before the paused-timer alert, so it asks first and each asks once (rest_alert_controller.js). %>
-<%= render "workout_sets/rest_alert" %>
+<%= render "workout_sets/rest_alert" unless cardio %>
 <%= render "workout_logs/timer_alert", log: @log, leave: false %>
 <div class="page-header">
   <div>
@@ -23,6 +25,12 @@
       <% if upcoming %>
         <%# A workout later this week is planned, not done: sets are added on its day. %>
         <div class="empty-state compact"><p><%= @workout_day.day %> is on <%= l @date, format: "%A" %> this week. Add sets on that day.</p></div>
+      <% elsif cardio %>
+        <% if @cardio_entries.empty? %>
+          <div class="empty-state compact"><p>Nothing yet <%= @date == Date.current ? "today" : "on #{l @date, format: "%A"}" %>. Add your incline, speed and time below.</p></div>
+        <% else %>
+          <%= render "cardio_entries/table", cardio_entries: @cardio_entries, workout_exercise: @workout_exercise, date: @date %>
+        <% end %>
       <% elsif @sets.empty? %>
         <div class="empty-state compact"><p>No sets yet <%= @date == Date.current ? "today" : "on #{l @date, format: "%A"}" %>. Add your first set below.</p></div>
       <% else %>
@@ -31,8 +39,12 @@
 
       <% unless upcoming %>
         <div class="card-footer">
-          <%= render "workout_sets/rest_timer", entry: @entry, back: { workout_exercise_id: @workout_exercise.id, date: @date } %>
-          <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date, first: @sets.empty?, rest_entry: @entry %>
+          <% if cardio %>
+            <%= render "cardio_entries/form", parent: @workout_exercise, last: @last_cardio, date: @date %>
+          <% else %>
+            <%= render "workout_sets/rest_timer", entry: @entry, back: { workout_exercise_id: @workout_exercise.id, date: @date } %>
+            <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date, first: @sets.empty?, rest_entry: @entry %>
+          <% end %>
         </div>
       <% end %>
     </div>
@@ -58,6 +70,7 @@
       </div>
     <% end %>
 
+    <% unless cardio %>
     <div class="card">
       <div class="card-header"><h2>Equipment</h2></div>
       <div class="card-body">
@@ -67,5 +80,6 @@
         <% end %>
       </div>
     </div>
+    <% end %>
   </div>
 </div>

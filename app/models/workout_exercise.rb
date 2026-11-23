@@ -12,6 +12,11 @@ class WorkoutExercise < ApplicationRecord
   validate :not_already_on_day, on: :create
 
   # Where this exercise's sets of that date are recorded, or nil when there are none yet.
+  def cardio? = exercise&.cardio? || false
+
+  # Cardio has no equipment: it says so wherever a lift's equipment is written.
+  def equipment_label = cardio? ? "Cardio" : super
+
   def entry_on(date)
     log = workout_day.log_on(date)
     entry_in(log) if log

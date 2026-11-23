@@ -2,6 +2,8 @@ module SeedData
   # Writes db/seeds/data.yml: what it already had, with the database's version of every record
   # that is in both, and the database's new records added after the file's own.
   class Dumper
+    include Cardio
+
     HEADER = <<~TEXT.freeze
       # Base data of the app, loaded by bin/rails db:seed (lib/seed_data.rb).
       # Rewritten by bin/rails seed:dump, which keeps everything already here and adds what the
@@ -59,7 +61,8 @@ module SeedData
     def real_workouts(user)
       user.workout_logs.where("notes IS NULL OR notes NOT LIKE ?", MOCK_NOTES).order(:date, :id)
           .includes(workout_day: :split,
-                    workout_log_exercises: [:exercise, { workout_sets: :set_tags, workout_exercise: { workout_day: :split } }])
+                    workout_log_exercises: [:exercise, :cardio_entries,
+                                            { workout_sets: :set_tags, workout_exercise: { workout_day: :split } }])
     end
 
     def split_data(split)
@@ -116,7 +119,7 @@ module SeedData
             # Only a set with a rest says so, so the sets already in the file stay as they are.
             .merge(set.rest_seconds ? { "rest" => set.rest_seconds, "rest_approx" => set.rest_approx } : {})
         end
-      )
+      ).merge(cardio_data(entry))
     end
   end
 end
