@@ -5,15 +5,17 @@ class WorkoutDaysController < ApplicationController
   before_action :set_split, only: [:new, :create]
   before_action :set_workout_day, only: [:show, :edit, :update, :destroy]
 
-  # The workout: the exercises planned for the day, and those added to this session while training.
+  # The workout: first the exercises in that date's session, in its order (planned ones and those
+  # added while training; the user drags them into the order done), then the planned ones not
+  # started yet, in the plan's order.
   def show
-    @workout_exercises = @workout_day.workout_exercises.includes(:exercise).order(:id)
+    @workout_exercises = @workout_day.workout_exercises.includes(:exercise)
     @date = logging_date(@workout_day)
-    # Sets recorded on that date per exercise, read from that day's session of this workout.
     @log = current_user.workout_logs.with_sets.session_of(@workout_day.day, @date)
-    entries = @workout_exercises.to_h { |planned| [planned.id, @log && planned.entry_in(@log)] }
-    @sets_logged = entries.transform_values { |entry| entry&.workout_sets&.size.to_i }
-    @extra_entries = @log ? @log.workout_log_exercises.sort_by(&:id) - entries.values : []
+    planned_of = @log ? @workout_exercises.filter_map { |planned| (entry = planned.entry_in(@log)) && [entry, planned] }.to_h : {}
+    # [entry, the planned exercise it is of, or nil when it was added while training]
+    @in_workout = @log ? @log.workout_log_exercises.map { |entry| [entry, planned_of[entry]] } : []
+    @to_do = @workout_exercises - planned_of.values
     # With the automatic timer on, opening today's workout starts it (and the timer). Not when it
     # could not be logged (the split already has another workout today), so the page never retries.
     @autostart = current_user.timer_auto_start? && @date == Date.current &&

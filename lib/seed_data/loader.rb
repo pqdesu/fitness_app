@@ -2,6 +2,9 @@ module SeedData
   # Creates every record of db/seeds/data.yml that the database does not have yet. Records that
   # are already there are left as they are, so running it again changes nothing.
   class Loader
+    include Catalogue
+    include Cardio
+
     def initialize(path)
       @path = Pathname(path)
     end
@@ -9,6 +12,8 @@ module SeedData
     def load
       data = SeedData.read(@path)
       ActiveRecord::Base.transaction do
+        Array(data["equipment"]).each { |item| find_or_create_equipment(item) }
+        Array(data["set_tags"]).each { |item| named(SetTag.all, item["name"]) || SetTag.create!(name: item["name"]) }
         Array(data["exercises"]).each { |item| find_or_create_exercise(Exercise.where(user_id: nil), item) }
         Array(data["users"]).each { |item| load_user(item) }
       end
@@ -20,7 +25,7 @@ module SeedData
     def load_user(item)
       user = User.find_by(email: item["email"]) ||
              User.create!(email: item["email"], password: user_password, admin: item["admin"] || false,
-                          timer_auto_start: item["timer_auto_start"] || false)
+                          timer_auto_start: item["timer_auto_start"] || false, auto_warm_up: item["auto_warm_up"] || false)
       user.update_column(:time_zone, item["time_zone"]) if user.time_zone.blank? && item["time_zone"].present?
 
       # "Today" of the date rules is the user's own day.
@@ -42,14 +47,6 @@ module SeedData
       end
     end
 
-    def find_or_create_exercise(scope, item)
-      named(scope, item["name"]) || scope.create!(name: item["name"], muscle_group: item["muscle_group"])
-    end
-
-    def named(scope, name)
-      scope.where("LOWER(name) = ?", name.to_s.downcase).order(:id).first
-    end
-
     def split_named(user, name)
       user.splits.order(:id).find_by(name:)
     end
@@ -62,8 +59,7 @@ module SeedData
     end
 
     def lift_attributes(user, item)
-      { name: item["name"], exercise: exercise_for(user, item),
-        equipment: item["equipment"] || "free_weights", machine_brand: item["machine_brand"] }
+      equipment_attributes(item).merge(name: item["name"], exercise: exercise_for(user, item))
     end
 
     def day_of(user, split_name, weekday)
@@ -114,9 +110,12 @@ module SeedData
       Array(item["sets"]).each do |set|
         next if entry.workout_sets.exists?(set_number: set["number"])
 
-        entry.workout_sets.create!(set_number: set["number"], reps_completed: set["reps"],
-                                   weight_used: set["weight"] && BigDecimal(set["weight"].to_s), notes: set["notes"])
+        entry.workout_sets.create!(set_number: set["number"], reps_completed: set["reps"], notes: set["notes"],
+                                   weight_used: set["weight"] && BigDecimal(set["weight"].to_s),
+                                   rest_seconds: set["rest"], rest_approx: set["rest_approx"] || false,
+                                   set_tags: SetTag.where(name: Array(set["tags"])))
       end
+      load_cardio(entry, item["cardio"])
     end
 
     def create_entry(user, log, item)

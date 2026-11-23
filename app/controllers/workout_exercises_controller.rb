@@ -2,7 +2,7 @@ class WorkoutExercisesController < ApplicationController
   include ExercisePicker
   include LoggingDate
 
-  before_action :set_workout_exercise, only: [:show, :update, :destroy]
+  before_action :set_workout_exercise, only: [:show, :update, :move, :destroy]
 
   # Opening an exercise: the sets of the date its workout is logged on (see LoggingDate), and the
   # form to add the next one, unless that date is still to come.
@@ -10,12 +10,13 @@ class WorkoutExercisesController < ApplicationController
     @workout_day = @workout_exercise.workout_day
     @date = logging_date(@workout_day)
     @entry = @workout_exercise.entry_on(@date)
-    @sets = @entry ? @entry.workout_sets.order(:set_number).to_a : []
+    @sets = @entry ? @entry.workout_sets.includes(:set_tags).order(:set_number).to_a : []
     # That date's session, for its paused-timer alert, even before this exercise has a set.
     @log = @entry&.workout_log || @workout_day.log_on(@date)
     # Pre-fills the form, so repeating the last set is a single tap.
     @last_set = @sets.last || WorkoutSet.where(workout_log_exercise: @workout_exercise.workout_log_exercises)
                                         .order(created_at: :desc, id: :desc).first
+    cardio_rows if @workout_exercise.cardio?
   end
 
   # Plans the exercises chosen (or the one created) in a day's "Plan exercises" modal on the split
@@ -50,6 +51,13 @@ class WorkoutExercisesController < ApplicationController
     end
   end
 
+  # Moves an exercise to where it was dropped in the day's plan (split page); the workout day follows it.
+  def move
+    @workout_exercise.move!(params[:to])
+    flash[:moved] = @workout_exercise.id # lights the row up on the page (.just-moved)
+    redirect_to plan_path(@workout_exercise.workout_day), status: :see_other
+  end
+
   # Takes an exercise off the plan (from the split page). Workouts already logged keep it.
   def destroy
     @workout_exercise.destroy
@@ -58,6 +66,13 @@ class WorkoutExercisesController < ApplicationController
   end
 
   private
+
+  # A cardio exercise's rows that day, and the last one ever, which pre-fills the form as the last set does.
+  def cardio_rows
+    @cardio_entries = @entry ? @entry.cardio_entries.to_a : []
+    @last_cardio = @cardio_entries.last || CardioEntry.where(workout_log_exercise: @workout_exercise.workout_log_exercises)
+                                                      .order(created_at: :desc, id: :desc).first
+  end
 
   def plan_path(workout_day)
     split_path(workout_day.split, anchor: "day-#{workout_day.id}")
@@ -68,6 +83,6 @@ class WorkoutExercisesController < ApplicationController
   end
 
   def equipment_params
-    params.expect(workout_exercise: [:equipment, :machine_brand])
+    params.expect(workout_exercise: Equipped::ATTRIBUTES)
   end
 end

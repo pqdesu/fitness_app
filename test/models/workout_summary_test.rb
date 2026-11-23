@@ -40,6 +40,18 @@ class WorkoutSummaryTest < ActiveSupport::TestCase
     assert_nil summary.top_weight
   end
 
+  test "a bodyweight exercise's added weight is not a top weight" do
+    log = @push.workout_logs.create!(date: Date.new(2026, 11, 16))
+    dips = log.workout_log_exercises.create!(name: "Weighted dips", equipment: "bodyweight")
+    dips.workout_sets.create!(reps_completed: 8, weight_used: 20)
+    dips.workout_sets.create!(reps_completed: 6, weight_used: -10)
+    log.workout_log_exercises.create!(name: "Curl").workout_sets.create!(reps_completed: 10, weight_used: 15)
+    summary = WorkoutSummary.new(WorkoutLog.includes(workout_log_exercises: :workout_sets).find(log.id))
+
+    assert_equal 15, summary.top_weight
+    assert_equal 3, summary.sets
+  end
+
   test "no workouts" do
     summary = WorkoutSummary.new([])
 

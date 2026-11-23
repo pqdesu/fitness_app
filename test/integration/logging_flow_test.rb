@@ -15,6 +15,9 @@ class LoggingFlowTest < FlowTest
     assert_select "#day-#{day.id} .empty-state", text: /No exercises planned yet/
     assert_select "#day-#{day.id} button[data-bs-target='#{picker}']", text: /Plan exercises/
     assert_equal %w[Chest Legs], css_select("#{picker}-form .picker-group").map(&:text)
+    # each muscle group starts closed and opens its exercises
+    assert_select "#{picker}-form button.picker-group[aria-expanded=false][data-bs-target='#{picker}-group-chest']", 1
+    assert_select "#{picker}-group-chest.collapse:not(.show) label", text: /Bench press/
     assert_select "#{picker} form[action=?]", workout_day_workout_exercises_path(day)
     assert_select "#{picker} label", text: /Bench press/
     assert_select "#{picker} label", text: /Secret lift/, count: 0
@@ -279,9 +282,10 @@ class LoggingFlowTest < FlowTest
     post workout_day_workout_log_exercises_path(day, date: today), params: { exercise_ids: [@squat.id] }
     assert_match "Squat is already in this workout", flash[:alert]
 
-    # the workout page lists the plan, then what was added, which opens in the logged workout
+    # the workout page lists the workout first (what was added, which opens in the logged workout),
+    # then the plan still to do
     get page
-    assert_equal ["Bench press", "Squat", "Dips"], css_select(".list-rows .row-title").map(&:text)
+    assert_equal ["Squat", "Dips", "Bench press"], css_select(".list-rows .row-title").map(&:text)
     squat_entry = log.workout_log_exercises.find_by!(name: "Squat")
     assert_select ".list-rows a.row-link[href=?]", workout_log_path(log, anchor: "entry-#{squat_entry.id}")
     assert_select "#exercise-picker label.is-taken", 3
@@ -326,6 +330,20 @@ class LoggingFlowTest < FlowTest
     get workout_log_path(log)
     assert_select "h2", "Bench press"
     assert_select "h2", "From this day, not in this workout"
+    # each exercise is folded: its name, sets and heaviest set, and an arrow that opens the rest
+    card = "#entry-#{entry.id}[data-controller=fold]"
+    assert_select "#{card} .card-header .top-set", "80 kg × 8 reps"
+    assert_select "#{card} .card-header .chip", "1 set"
+    assert_select "#{card} button.entry-toggle[aria-expanded=false][data-bs-target='#entry-#{entry.id}-sets']", 1
+    assert_select "#entry-#{entry.id}-sets.collapse:not(.show) table.set-table", 1
+    assert_select "#entry-#{entry.id}-sets.collapse:not(.show) form[action=?]", workout_log_exercise_workout_sets_path(entry)
+    # edit and remove are in its ⋯ menu; removing is an ×
+    assert_select "#{card} .card-header .actions-menu .dropdown-menu a[href=?]", edit_workout_log_exercise_path(entry), text: /Edit/
+    assert_select "#{card} .card-header .actions-menu form.button_to[action=?][data-turbo-confirm] .fa-xmark", workout_log_exercise_path(entry)
+    # a set's edit and delete are in its own ⋯ menu, and delete is an × there too
+    assert_select ".set-table .actions-menu button[data-action='row-edit#edit']", 1
+    assert_select ".set-table .actions-menu form.button_to .fa-xmark", 1
+    assert_select ".fa-trash", 0
 
     post workout_log_exercise_workout_sets_path(entry), params: { workout_set: { reps_completed: 8 } }
     assert_equal [1, 2], entry.workout_sets.order(:set_number).pluck(:set_number)
@@ -525,5 +543,50 @@ class LoggingFlowTest < FlowTest
     end
     assert_equal Date.current - 1, log.reload.date
   end
-end
 
+  test "bodyweight is an equipment: its sets add weight to the body or take it off" do
+    sign_in @user
+    pull_up = Exercise.create!(name: "Pull-up", muscle_group: "Back")
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Pull", weekday: Date.current.wday)
+    planned = day.workout_exercises.create!(exercise: pull_up)
+    page = workout_exercise_path(planned, date: Date.current)
+
+    # chosen like the others, on the exercise page
+    get page
+    assert_select "input[type=radio][name='workout_exercise[equipment]'][value=bodyweight]", 1
+    patch workout_exercise_path(planned, date: Date.current), params: { workout_exercise: { equipment: "bodyweight" } }
+    assert_equal "Bodyweight", planned.reload.equipment_label
+
+    # the weight field takes a sign, with a ± for a phone's keypad, which has no minus key
+    get page
+    assert_select "label[for='weight_workout_exercise_#{planned.id}']", text: /Bodyweight\s*BW ± kg/
+    assert_select ".input-group[data-controller=sign] button[data-action='sign#flip']", "±"
+    assert_select "input#weight_workout_exercise_#{planned.id}[data-sign-target=input]:not([min])", 1
+
+    post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { reps_completed: 8, weight_used: 10 } }
+    post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { reps_completed: 6, weight_used: -15.5 } }
+    post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { reps_completed: 10, weight_used: "" } }
+    entry = planned.entry_on(Date.current)
+    assert entry.bodyweight?
+    assert_equal [10, -15.5, nil], entry.workout_sets.order(:set_number).pluck(:weight_used)
+
+    # shown as "Bodyweight + 10 kg", with "BW" in place of "Bodyweight" on a phone
+    get page
+    assert_equal ["Bodyweight BW + 10 kg", "Bodyweight BW − 15.5 kg", "Bodyweight BW"],
+                 css_select(".set-table td:nth-child(2) > span[data-row-edit-target=view]").map { |n| n.children.map(&:text).join(" ").squish }
+    assert_select ".set-table td > span .d-sm-none", %w[BW BW BW].size
+    # a confirm is a sentence: the long words only
+    second = entry.workout_sets.find_by!(set_number: 2)
+    assert_select "form[data-turbo-confirm=?]", "Delete set 2? Bodyweight − 15.5 kg × 6 reps."
+    # a set being corrected keeps its sign and its ±
+    assert_select ".input-group.set-field[data-controller=sign][hidden] input[form='edit_set_#{second.id}'][value='-15.5']", 1
+
+    # a weight below zero is only for bodyweight
+    bench = day.workout_exercises.create!(exercise: @bench)
+    post workout_exercise_workout_sets_path(bench, date: Date.current), params: { workout_set: { reps_completed: 5, weight_used: -5 } }
+    assert_match "Weight used must be greater than or equal to 0", flash[:alert]
+    get workout_exercise_path(bench, date: Date.current)
+    assert_select "input#weight_workout_exercise_#{bench.id}[min='0']", 1
+    assert_select ".input-group[data-controller=sign]", 0
+  end
+end

@@ -2,6 +2,7 @@
 # sets, reps and weight are recorded when the user trains (see WorkoutSet).
 class WorkoutExercise < ApplicationRecord
   include Lift
+  include Positioned
 
   belongs_to :workout_day
   # Removing an exercise from the plan keeps what was already logged for it.
@@ -11,6 +12,11 @@ class WorkoutExercise < ApplicationRecord
   validate :not_already_on_day, on: :create
 
   # Where this exercise's sets of that date are recorded, or nil when there are none yet.
+  def cardio? = exercise&.cardio? || false
+
+  # Cardio has no equipment: it says so wherever a lift's equipment is written.
+  def equipment_label = cardio? ? "Cardio" : super
+
   def entry_on(date)
     log = workout_day.log_on(date)
     entry_in(log) if log
@@ -32,6 +38,8 @@ class WorkoutExercise < ApplicationRecord
   end
 
   private
+
+  def siblings = WorkoutExercise.where(workout_day_id:)
 
   def not_already_on_day
     return if workout_day.nil? || exercise_id.nil?

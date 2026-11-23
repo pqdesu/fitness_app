@@ -1,4 +1,4 @@
-<%# The workout of a day: what the split plans for it, and what is added while training. The plan is changed on the split page. %>
+<%# The workout of a day: what is in it so far, then what the split plans for it and is not started yet. The plan is changed on the split page. %>
 <% back_to root_path %>
 <% upcoming = @date > Date.current %>
 <div class="page-header">
@@ -6,6 +6,10 @@
     <h1><%= @workout_day.day %></h1>
     <%# The date its sets go to (see LoggingDate): today, a day earlier this week, or one to come. %>
     <p class="text-muted mb-0"><% if @date == Date.current %>Today · <% end %><%= l @date, format: "%A, %B %-d" %></p>
+    <%# What is done so far in this workout on that date: exercises with a set, and sets. %>
+    <% if @log && (done = WorkoutSummary.new(@log)).exercises.positive? %>
+      <p class="day-counts small fw-semibold mb-0"><%= summary_counts(done) %></p>
+    <% end %>
   </div>
   <div class="header-actions">
     <%= link_to "Plan", split_path(@workout_day.split, anchor: "day-#{@workout_day.id}"), class: "btn btn-light" %>
@@ -16,57 +20,70 @@
 <%= render "workout_logs/timer_alert", log: @log, leave: true %>
 
 <%# Its exercises are part of this workout: opening one is not leaving it (workout_logs/_timer_alert). %>
-<div class="card" data-stays-in-workout>
-  <div class="card-header">
-    <h2>Exercises</h2>
-    <% if !upcoming && (@workout_exercises.any? || @extra_entries.any?) %>
-      <%= exercise_picker_button "btn-primary btn-sm" %>
-    <% end %>
-  </div>
-  <% if @workout_exercises.empty? && @extra_entries.empty? %>
-    <div class="empty-state">
-      <i class="fa-solid fa-dumbbell"></i>
-      <p>No exercises planned for <%= @workout_day.day %>.<% unless upcoming %> Add one to this workout, or plan them on the split page.<% end %></p>
-      <% unless upcoming %><%= exercise_picker_button "btn-primary" %><% end %>
+<div id="day-exercises" data-stays-in-workout>
+  <% if @in_workout.empty? && @to_do.empty? %>
+    <div class="card">
+      <div class="card-header"><h2>Exercises</h2></div>
+      <div class="empty-state">
+        <i class="fa-solid fa-dumbbell"></i>
+        <p>No exercises planned for <%= @workout_day.day %>.<% unless upcoming %> Add one to this workout, or plan them on the split page.<% end %></p>
+        <% unless upcoming %><%= exercise_picker_button "btn-primary" %><% end %>
+      </div>
     </div>
   <% else %>
-    <ul class="list-rows">
-      <% @workout_exercises.each do |we| %>
-        <% sets_logged = @sets_logged.fetch(we.id, 0) %>
-        <li>
-          <%= link_to workout_exercise_path(we, date: @date), class: "row-link" do %>
-            <span class="row-title"><%= we.name %></span>
-            <span class="text-muted small"><%= we.equipment_label %><% if we.exercise&.muscle_group.present? %> · <%= we.exercise.muscle_group %><% end %></span>
+    <%# The workout so far, in its order: dragged into the order the exercises were done, or back to
+        "Still to do" (sortable_controller.js). The same order as the logged workout's page. A day to come has no workout yet. %>
+    <% unless upcoming %>
+      <div class="card">
+        <div class="card-header">
+          <h2>In this workout <span class="text-muted fw-normal">· <%= @in_workout.size %></span></h2>
+          <%= exercise_picker_button "btn-primary btn-sm" %>
+        </div>
+        <%= tag.ul class: "list-rows day-in-workout", data: { controller: "sortable", sortable_group_value: "day" } do %>
+          <% @in_workout.each do |entry, planned| %>
+            <% li = { class: class_names("just-moved": flash[:moved] == entry.id),
+                      data: { sortable_url: move_workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date) } } %>
+            <% if planned %>
+              <%# Dragged back to "Still to do" it leaves the workout and stays on the plan. %>
+              <% li[:data].merge!(sortable_into_url: workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), sortable_into_method: "delete",
+                                  sortable_confirm: ("Remove #{entry.name} and its sets from this workout?" if entry.workout_sets.any?)) %>
+              <%= render "planned_exercise", we: planned, entry:, li:, draggable: true, in_workout: true %>
+            <% else %>
+              <%# Added while training, not planned: removing one takes it out of this workout, and it is gone. It cannot go to the plan's block. %>
+              <% entry_path = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}") %>
+              <%= tag.li(**li) do %>
+                <span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span>
+                <%= link_to entry_path, class: "row-link" do %>
+                  <span class="row-title"><%= entry.name %></span>
+                  <span class="text-muted small"><%= entry.equipment_label %> · Added to this workout</span>
+                <% end %>
+                <% if entry.workout_sets.any? || entry.cardio_entries.any? %><span class="chip chip-done"><%= entry_done(entry) %></span><% else %><span class="text-muted small text-nowrap"><%= entry.cardio? ? "No time yet" : "No sets" %></span><% end %>
+                <%= button_to workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), method: :delete,
+                      class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{entry.name} from this workout", title: "Remove #{entry.name} from this workout",
+                      form: { data: ({ turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } if entry.workout_sets.any?) } do %><i class="fa-solid fa-xmark"></i><% end %>
+                <%= link_to entry_path, class: "btn btn-light btn-sm", "aria-label": "Open #{entry.name}" do %><i class="fa-solid fa-chevron-right"></i><% end %>
+              <% end %>
+            <% end %>
           <% end %>
-          <% if sets_logged.positive? %><span class="chip chip-done"><%= pluralize(sets_logged, "set") %></span><% end %>
-          <%# An admin renames the exercise from here. The name is the exercise's own, so it changes everywhere. %>
-          <% if current_user.admin? && we.exercise %>
-            <%= link_to edit_exercise_path(we.exercise, workout_day_id: @workout_day.id), class: "btn btn-link btn-sm",
-                  "aria-label": "Edit #{we.name}", title: "Edit #{we.name}" do %><i class="fa-solid fa-pen"></i><% end %>
-          <% end %>
-          <%= link_to workout_exercise_path(we, date: @date), class: "btn btn-light btn-sm", "aria-label": "Open #{we.name}" do %><i class="fa-solid fa-chevron-right"></i><% end %>
-        </li>
+          <% if @in_workout.empty? %><li class="day-hint text-muted small">Drag an exercise here, or open one and add a set.</li><% end %>
+        <% end %>
+      </div>
+    <% end %>
+    <%# The plan's exercises not started yet, in the plan's order. Dragged into the workout they join it where dropped. %>
+    <div class="card">
+      <div class="card-header"><h2>Still to do <span class="text-muted fw-normal">· <%= @to_do.size %></span></h2></div>
+      <%= tag.ul class: "list-rows day-to-do", data: ({ controller: "sortable", sortable_group_value: "day", sortable_sort_value: false } unless upcoming) do %>
+        <% @to_do.each do |we| %>
+          <% li = upcoming ? {} : { data: { sortable_into_url: workout_day_workout_log_exercises_path(@workout_day, date: @date, workout_exercise_id: we.id), sortable_into_method: "post" } } %>
+          <%= render "planned_exercise", we:, li:, draggable: !upcoming %>
+        <% end %>
+        <% if @to_do.empty? %><li class="day-hint text-muted small">Everything planned is in this workout.</li><% end %>
       <% end %>
-      <%# Added while training, not planned: removing one takes it out of this workout, and it is gone. %>
-      <% @extra_entries.each do |entry| %>
-        <% entry_path = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}") %>
-        <li>
-          <%= link_to entry_path, class: "row-link" do %>
-            <span class="row-title"><%= entry.name %></span>
-            <span class="text-muted small"><%= entry.equipment_label %> · Added to this workout</span>
-          <% end %>
-          <% if entry.workout_sets.any? %><span class="chip chip-done"><%= pluralize(entry.workout_sets.size, "set") %></span><% end %>
-          <%= button_to workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), method: :delete,
-                class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{entry.name} from this workout", title: "Remove #{entry.name} from this workout",
-                form: { data: ({ turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } if entry.workout_sets.any?) } do %><i class="fa-solid fa-xmark"></i><% end %>
-          <%= link_to entry_path, class: "btn btn-light btn-sm", "aria-label": "Open #{entry.name}" do %><i class="fa-solid fa-chevron-right"></i><% end %>
-        </li>
-      <% end %>
-    </ul>
+    </div>
   <% end %>
 </div>
 
 <% unless upcoming %>
   <%= render "shared/exercise_picker", url: workout_day_workout_log_exercises_path(@workout_day, date: @date), exercises: picker_exercises,
-        taken_ids: @workout_exercises.filter_map(&:exercise_id) + @extra_entries.filter_map(&:exercise_id) %>
+        taken_ids: @workout_exercises.filter_map(&:exercise_id) + @in_workout.filter_map { |entry, _| entry.exercise_id } %>
 <% end %>

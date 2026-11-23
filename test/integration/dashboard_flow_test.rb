@@ -15,6 +15,9 @@ class DashboardFlowTest < FlowTest
       assert_select ".week-overview-days li.is-today .week-overview-name", "Mon"
       assert_select ".week-overview .toggle-days[data-bs-target='#week-days'][aria-expanded=false]", 1
       assert_select "#week-days.collapse:not(.show) .week-overview-days", 1
+      # nothing done yet: no counts on the workout's page
+      get workout_day_path(push, date: Date.current)
+      assert_select ".day-counts", 0
 
       log = push.workout_logs.create!(date: Date.current)
       bench = log.workout_log_exercises.create!(name: "Bench press")
@@ -29,8 +32,16 @@ class DashboardFlowTest < FlowTest
       assert_equal ["1", "2", "3", "72.5 kg"], css_select(".week-summary dd").map { |n| n.text.squish }
       assert_select ".week-overview-days li.has-workout", 1
       assert_select ".week-overview-days a[href=?]", workout_log_path(log, from: "dashboard"), text: "Push"
+      # each day says how many exercises and sets it had
+      assert_select ".week-overview-days li.has-workout .small", "2 exercises · 3 sets"
       assert_select ".today", /Logged today · 2 exercises · 3 sets · top 72.5 kg/
       assert_select ".today a.btn-primary[href=?]", workout_day_path(push, date: Date.current), text: "Continue"
+
+      # the workout's own page says so at the top
+      get workout_day_path(push, date: Date.current)
+      assert_select ".page-header .day-counts", "2 exercises · 3 sets"
+      # its exercises are listed in "In this workout"
+      assert_select "#day-exercises .day-in-workout li", 2
     end
   end
 
@@ -74,6 +85,9 @@ class DashboardFlowTest < FlowTest
       assert_select "#recent-log-#{log.id} a[href=?]", workout_log_path(log, from: "dashboard"), text: /Open workout/
       assert_select "#recent-log-#{log.id} .recent-counts", "1 exercise · 2 sets"
       assert_select "#recent-log-#{log.id} .recent-notes", "Felt strong"
+      # its exercises start closed behind "Show exercises", like the week's days
+      assert_select "#recent-log-#{log.id} .toggle-days[data-bs-target='#recent-log-#{log.id}-lifts'][aria-expanded=false]", text: /Show exercises/
+      assert_select "#recent-log-#{log.id}-lifts.collapse:not(.show) .lift-pill", 2
       # an exercise is a pill with its heaviest set; it opens every set in order
       assert_select ".lift-pill[data-bs-target='#recent-lift-#{bench.id}'] .top-set", "80 kg × 5 reps"
       assert_equal ["Set 1 60 kg × 10 reps", "Set 2 80 kg × 5 reps"],
@@ -134,7 +148,12 @@ class DashboardFlowTest < FlowTest
 
       get dashboard_path
       assert_select ".today-last a[href=?]", workout_log_path(last, from: "dashboard"), text: "Monday, November 9"
+      # with how many exercises and sets it had, as today's workout says once it has sets
+      assert_select ".today-last .last-counts", "2 exercises\u00a0· 5 sets"
       assert_equal ["Bench press", "Dips"], css_select(".last-lifts .row-title").map(&:text)
+      # last time's exercises start closed behind "Show exercises"
+      assert_select ".today .toggle-days[data-bs-target='#last-lifts-list'][aria-expanded=false]", text: /Show exercises/
+      assert_select "#last-lifts-list.collapse:not(.show) .last-lifts", 1
       assert_equal ["80 kg × 6 reps", "Bodyweight × 15 reps"], css_select(".last-lifts .top-set").map { |n| n.text.squish }
 
       # the calendar highlights exactly the days a workout was logged on (the 2nd, the 9th and today),
@@ -343,6 +362,8 @@ class DashboardFlowTest < FlowTest
       assert_select ".today-done a[href=?]", workout_log_path(today, from: "dashboard"), text: "2 sets"
       assert_equal ["Bench press"], css_select(".today-lifts .row-title").map(&:text)
       assert_equal ["70 kg × 5 reps"], css_select(".today-lifts .top-set").map { |n| n.text.squish }
+      assert_select ".today .toggle-days[data-bs-target='#today-lifts-list'][aria-expanded=false]", text: /Show exercises/
+      assert_select "#today-lifts-list.collapse:not(.show) .today-lifts", 1
       # last time is still one tap away, but its sets no longer stand in for today's
       assert_select ".last-lifts", 0
       assert_select ".today-previous a[href=?]", workout_log_path(last, from: "dashboard"), text: "Sunday, November 15"

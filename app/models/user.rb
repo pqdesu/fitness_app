@@ -19,6 +19,7 @@ class User < ApplicationRecord
   has_many :workout_exercises, through: :workout_days
   has_many :workout_log_exercises, through: :workout_logs
   has_many :workout_sets, through: :workout_log_exercises
+  has_many :cardio_entries, through: :workout_log_exercises
 
   validate :active_split_is_own
 

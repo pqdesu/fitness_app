@@ -24,11 +24,11 @@ class WorkoutLogsController < ApplicationController
   def show
     @workout_day = @workout_log.workout_day
     @log_exercises = @workout_log.workout_log_exercises
-                                 .includes(:workout_sets, :workout_exercise).order(:id)
+                                 .includes({ workout_sets: :set_tags }, :cardio_entries, :workout_exercise, :exercise).to_a
     # Nothing is planned any more once the day (or its split) has been deleted.
     # An exercise already in the workout is not offered again, whichever way it got there.
     @unlogged_exercises = if @workout_day
-      @workout_day.workout_exercises.order(:id).reject { |planned| planned.entry_in(@workout_log) }
+      @workout_day.workout_exercises.reject { |planned| planned.entry_in(@workout_log) }
     else
       []
     end
@@ -53,7 +53,8 @@ class WorkoutLogsController < ApplicationController
       log ||= current_user.workout_logs.create!(workout: @workout, date: Date.current, rest_day: rest_day_today?)
       exercises.each { |exercise| log.workout_log_exercises.create!(exercise:) }
     end
-    redirect_to workout_log_path(log, from: "dashboard"), notice: "#{@workout} workout started. Add your sets."
+    what = cardio_workout? ? "incline, speed and time" : "sets"
+    redirect_to workout_log_path(log, from: "dashboard"), notice: "#{@workout} workout started. Add your #{what}."
   rescue ActiveRecord::RecordInvalid => e
     redirect_to new_workout_log_path(workout: @workout), alert: "Nothing added: #{errors_of(e.record)}."
   end
@@ -81,7 +82,7 @@ class WorkoutLogsController < ApplicationController
 
   def set_workout
     @workout = params[:workout]
-    return redirect_to(root_path, alert: "Choose one of the listed workouts.") unless WorkoutDay::NAMES.include?(@workout)
+    return redirect_to(root_path, alert: "Choose one of the listed workouts.") unless WorkoutLog::WORKOUTS.include?(@workout)
 
     @todays_log = current_user.workout_logs.session_of(@workout, Date.current)
   end
@@ -92,6 +93,8 @@ class WorkoutLogsController < ApplicationController
     split = current_user.current_split
     split.present? && split.rest_day?(Date.current)
   end
+
+  def cardio_workout? = (@workout || @workout_log&.workout) == WorkoutLog::CARDIO
 
   def workout_log_params
     params.expect(workout_log: [:date, :notes])

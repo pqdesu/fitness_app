@@ -1,0 +1,41 @@
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>Equipment</h1>
+    <p class="text-muted mb-0">What users pick for a lift: a free weight, or a machine and its type. A lift keeps the name it has when an item is renamed or deleted here.</p>
+  </div>
+</div>
+
+<%# On a phone the form to add comes first, above the lists; beside them from lg up. %>
+<div class="row g-4">
+  <div class="col-lg-4 order-lg-2">
+    <div class="card">
+      <div class="card-header"><h2>Add equipment</h2></div>
+      <div class="card-body"><%= render "form", item: @item, submit: "Add" %></div>
+    </div>
+  </div>
+
+  <div class="col-lg-8 order-lg-1">
+    <% EquipmentItem::KINDS.each do |kind, title| %>
+      <% items = @items.fetch(kind, []) %>
+      <div class="card" id="equipment-<%= kind.dasherize %>">
+        <div class="card-header"><h2><%= title %></h2><span class="chip"><%= items.size %></span></div>
+        <% if items.empty? %>
+          <div class="empty-state compact"><p>None yet.</p></div>
+        <% else %>
+          <ul class="list-rows">
+            <% items.each do |item| %>
+              <li>
+                <span class="row-title"><%= item.name %></span>
+                <%= actions_menu item.name do %>
+                  <%= menu_link "Edit", edit_admin_equipment_item_path(item) %>
+                  <%= menu_delete "Delete", admin_equipment_item_path(item), confirm: "Delete #{item.name} from the catalogue? Lifts that use it keep the name." %>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -487,7 +487,53 @@ users:
       - number: 1
         reps: 12
         weight: '12.0'
+        tags:
+        - Warm-up
       - number: 2
         reps: 12
         weight: '20.0'
   timer_auto_start: false
+  auto_warm_up: false
+equipment:
+- name: Dumbbell
+  kind: free_weights
+- name: Barbell
+  kind: free_weights
+- name: Kettlebell
+  kind: free_weights
+- name: EZ bar
+  kind: free_weights
+- name: Weight plate
+  kind: free_weights
+- name: Smith machine
+  kind: machine
+- name: Chest press
+  kind: machine
+- name: Pec deck
+  kind: machine
+- name: Shoulder press
+  kind: machine
+- name: Lat pulldown
+  kind: machine
+- name: Seated row
+  kind: machine
+- name: Leg press
+  kind: machine
+- name: Leg extension
+  kind: machine
+- name: Leg curl
+  kind: machine
+- name: Hack squat
+  kind: machine
+- name: Cable crossover
+  kind: machine
+- name: Plate loaded
+  kind: machine_type
+- name: Pin loaded
+  kind: machine_type
+- name: Cable
+  kind: machine_type
+set_tags:
+- name: Warm-up
+- name: Assisted
+- name: Drop set

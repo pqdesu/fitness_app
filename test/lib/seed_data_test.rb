@@ -12,8 +12,12 @@ class SeedDataTest < ActiveSupport::TestCase
     @upper = @split.workout_days.create!(day: "Upper", weekday: 1)
     @lower = @split.workout_days.create!(day: "Lower", weekday: 3)
     @upper.workout_exercises.create!(exercise: @bench)
-    @upper.workout_exercises.create!(exercise: @fly, equipment: "machine", machine_brand: "Hammer")
+    @upper.workout_exercises.create!(exercise: @fly, equipment: "machine", machine_type: "Plate loaded", equipment_name: "Pec deck",
+                                     machine_brand: "Hammer")
+    EquipmentItem.create!(name: "Pec deck", kind: "machine")
+    @fly.update!(unilateral: true, equipment: "machine", machine_brand: "Hammer")
     @user.update!(active_split: @split)
+    @warm_up = SetTag.create!(name: "Warm-up")
   end
 
   teardown { FileUtils.rm_rf(@path.dirname) }
@@ -22,7 +26,7 @@ class SeedDataTest < ActiveSupport::TestCase
     log = @upper.workout_logs.create!(date:, notes:)
     @upper.workout_exercises.each do |planned|
       entry = log.workout_log_exercises.create!(workout_exercise: planned)
-      entry.workout_sets.create!(reps_completed: 8, weight_used: "62.125")
+      entry.workout_sets.create!(reps_completed: 8, weight_used: "62.125", set_tags: [@warm_up])
       entry.workout_sets.create!(reps_completed: 6, notes: "Bodyweight")
     end
     log
@@ -34,7 +38,7 @@ class SeedDataTest < ActiveSupport::TestCase
     SeedData.dump(@path)
     first = @path.read
 
-    [WorkoutLog, WorkoutDayMove, Split, Exercise, User].each { |model| model.find_each(&:destroy!) }
+    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem, SetTag].each { |model| model.find_each(&:destroy!) }
     assert_equal 0, WorkoutSet.count
 
     2.times { SeedData.load(@path) }
@@ -47,13 +51,44 @@ class SeedDataTest < ActiveSupport::TestCase
     assert_equal 4, user.workout_sets.count
     assert_equal BigDecimal("62.125"), user.workout_sets.maximum(:weight_used)
     entry = log.workout_log_exercises.find_by(name: "Pec fly")
-    assert_equal ["Machine · Hammer", "Pec fly"], [entry.equipment_label, entry.exercise.name]
+    assert_equal ["Plate loaded Pec deck · Hammer", "Pec fly"], [entry.equipment_label, entry.exercise.name]
+    assert entry.exercise.unilateral?
+    assert_equal "Machine · Hammer", entry.exercise.equipment_label
+    assert_equal [["Pec deck", "machine"]], EquipmentItem.pluck(:name, :kind)
+    assert_equal [["Warm-up"]] * 2, user.workout_sets.where(weight_used: "62.125").map { |set| set.set_tags.map(&:name) }
     assert_equal user, entry.exercise.user
     assert_equal entry.workout_exercise.workout_day, log.workout_day
     assert_equal [[Date.new(2026, 11, 15), 5]], WorkoutDayMove.pluck(:week_start, :weekday)
 
     SeedData.dump(@path)
     assert_equal first, @path.read, "a database loaded from the file dumps the same file"
+  end
+
+  test "a set's rest goes into the file and comes back, measured or about so many minutes" do
+    first, second = log_upper(Date.new(2026, 11, 16)).workout_log_exercises.order(:id).map { |entry| entry.workout_sets.find_by(set_number: 2) }
+    first.update!(rest_seconds: 135)
+    second.update!(rest_seconds: 180, rest_approx: true)
+    SeedData.dump(@path)
+
+    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem, SetTag].each { |model| model.find_each(&:destroy!) }
+    SeedData.load(@path)
+    assert_equal [[nil, false], [nil, false], [135, false], [180, true]],
+                 WorkoutSet.pluck(:rest_seconds, :rest_approx).sort_by { |rest, _| rest || 0 }
+  end
+
+  test "cardio rows go into the file and come back, once" do
+    treadmill = Exercise.create!(name: "Treadmill", muscle_group: "Cardio")
+    entry = log_upper(Date.new(2026, 11, 16)).workout_log_exercises.create!(exercise: treadmill)
+    entry.cardio_entries.create!(incline: "5.5", speed: "6", duration_seconds: 750)
+    entry.cardio_entries.create!(duration_seconds: 600)
+    SeedData.dump(@path)
+
+    [WorkoutLog, WorkoutDayMove, Split, Exercise, User, EquipmentItem, SetTag].each { |model| model.find_each(&:destroy!) }
+    2.times { SeedData.load(@path) }
+    entry = WorkoutLogExercise.find_by!(name: "Treadmill")
+    assert entry.exercise.cardio?
+    assert_equal [[1, BigDecimal("5.5"), BigDecimal("6"), 750], [2, nil, nil, 600]],
+                 entry.cardio_entries.pluck(:entry_number, :incline, :speed, :duration_seconds)
   end
 
   test "a dump keeps what the file had and adds what is new; mock workouts are left out" do

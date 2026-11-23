@@ -1,10 +1,13 @@
 class WorkoutLogExercise < ApplicationRecord
   include Lift
+  include Positioned
 
   belongs_to :workout_log
   # Optional: an exercise can be logged without having been planned.
   belongs_to :workout_exercise, optional: true
   has_many :workout_sets, dependent: :destroy
+  # A cardio exercise's rows (incline, speed, time) in place of sets.
+  has_many :cardio_entries, -> { order(:entry_number) }, dependent: :destroy, inverse_of: :workout_log_exercise
 
   # Runs before Lift's normalisation, so the copied values are the ones that get checked.
   before_validation :copy_from_plan, on: :create, prepend: true
@@ -21,7 +24,24 @@ class WorkoutLogExercise < ApplicationRecord
     workout_sets.max_by { |set| [set.weight_used || 0, set.reps_completed] }
   end
 
+  # Its rows keep it cardio once its exercise is deleted or moved out of the Cardio group.
+  def cardio? = exercise&.cardio? || cardio_entries.any?
+
+  # Cardio has no equipment: it says so wherever a lift's equipment is written.
+  def equipment_label = cardio? ? "Cardio" : super
+
+  def rest_running? = rest_started_at.present? && rest_ended_at.nil?
+
+  # The rest stopped with Stop, in seconds, for the set added next; the timer is then done.
+  def take_rest!
+    seconds = (rest_ended_at - rest_started_at).round if rest_ended_at && rest_started_at
+    update!(rest_started_at: nil, rest_ended_at: nil) if rest_started_at
+    seconds
+  end
+
   private
+
+  def siblings = WorkoutLogExercise.where(workout_log_id:)
 
   # An entry started from the plan takes the plan's exercise and equipment,
   # so nothing has to be retyped at the gym.
@@ -30,8 +50,7 @@ class WorkoutLogExercise < ApplicationRecord
 
     self.exercise = workout_exercise.exercise
     self.name = workout_exercise.name
-    self.equipment = workout_exercise.equipment
-    self.machine_brand = workout_exercise.machine_brand
+    copy_equipment_from(workout_exercise)
   end
 
   # A log is one session of a workout, so it only links to exercises planned for that workout:

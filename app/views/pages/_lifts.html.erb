@@ -1,11 +1,11 @@
 <%# The heaviest set of each exercise of a logged workout. Locals: lifts (logged exercises), list_class. %>
 <ul class="list-rows <%= list_class %>">
-  <% lifts.sort_by(&:id).each do |lift| %>
+  <% lifts.each do |lift| %>
     <% top = lift.top_set %>
     <li>
       <span class="row-title"><%= lift.name %></span>
       <span class="top-set">
-        <% if top %><%= weight_and_reps(top) %><% else %><span class="text-muted">No sets</span><% end %>
+        <% if lift.cardio_entries.any? %><%= entry_done(lift) %><% elsif top %><%= weight_and_reps(top) %><% else %><span class="text-muted">No sets</span><% end %>
       </span>
     </li>
   <% end %>
