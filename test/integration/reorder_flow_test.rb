@@ -66,7 +66,8 @@ class ReorderFlowTest < FlowTest
       # nothing done yet: the plan, in its order, with nothing to drag
       get workout_day_path(@day)
       assert_equal ["Bench press", "Squat", "Deadlift"], css_select("#day-exercises .row-title").map(&:text)
-      assert_select "#day-exercises .drag-handle", 0
+      assert_select "#day-exercises .day-in-workout .drag-handle", 0
+      assert_select "#day-exercises .day-to-do li[data-sortable-into-url] .drag-handle", 3
 
       # Squat trained first, then Bulgarian split squat added to today's workout
       post workout_exercise_workout_sets_path(squat, date:), params: { workout_set: { weight_used: 100, reps_completed: 5 } }
@@ -80,7 +81,7 @@ class ReorderFlowTest < FlowTest
       assert_select ".day-in-workout[data-controller=sortable] li[data-sortable-url=?] .drag-handle",
                     move_workout_log_exercise_path(bulgarian_entry, workout_day_id: @day.id, date:), 1
       assert_select ".day-in-workout li[data-sortable-url=?] .drag-handle", move_workout_log_exercise_path(squat_entry, workout_day_id: @day.id, date:), 1
-      assert_select ".day-to-do .drag-handle", 0
+      assert_select ".day-to-do li[data-sortable-into-url] .drag-handle", 2
       # a planned exercise in the workout still opens its page; an added one its workout
       assert_select ".day-in-workout a.row-link[href=?]", workout_exercise_path(squat, date:)
       assert_select ".day-in-workout a.row-link[href=?]", workout_log_path(log, anchor: "entry-#{bulgarian_entry.id}")
@@ -103,6 +104,93 @@ class ReorderFlowTest < FlowTest
       get workout_day_path(@day)
       assert_equal ["Bulgarian split squat", "Squat", "Deadlift"], css_select(".day-in-workout .row-title").map(&:text)
       assert_equal ["Bench press"], css_select(".day-to-do .row-title").map(&:text)
+    end
+  end
+
+  test "dropping a planned exercise into the workout adds it at that place and logs the workout" do
+    bench, squat, deadlift = @planned
+    travel_to Time.zone.local(2026, 11, 23, 12) do
+      date = Date.current
+      assert_difference -> { @user.workout_logs.count }, 1 do
+        post workout_day_workout_log_exercises_path(@day, date:, workout_exercise_id: deadlift.id, to: 1)
+      end
+      assert_redirected_to workout_day_path(@day, date:)
+      post workout_day_workout_log_exercises_path(@day, date:, workout_exercise_id: bench.id, to: 1)
+      post workout_day_workout_log_exercises_path(@day, date:, workout_exercise_id: squat.id, to: 2)
+
+      get workout_day_path(@day)
+      assert_equal ["Bench press", "Squat", "Deadlift"], css_select(".day-in-workout .row-title").map(&:text)
+      assert_select ".day-to-do li:not(.day-hint)", 0
+      assert_select ".day-to-do .day-hint", "Everything planned is in this workout."
+      assert_select ".day-in-workout li.just-moved .row-title", "Squat"
+    end
+  end
+
+  test "dragging a planned exercise back out of the workout takes it and its sets out, and it is still to do" do
+    bench, squat, _deadlift = @planned
+    travel_to Time.zone.local(2026, 11, 23, 12) do
+      date = Date.current
+      post workout_exercise_workout_sets_path(bench, date:), params: { workout_set: { weight_used: 60, reps_completed: 5 } }
+      post workout_day_workout_log_exercises_path(@day, date:, workout_exercise_id: squat.id)
+      bench_entry = @user.workout_logs.sole.workout_log_exercises.first
+
+      delete workout_log_exercise_path(bench_entry, workout_day_id: @day.id, date:)
+      assert_redirected_to workout_day_path(@day, date:)
+      get workout_day_path(@day)
+      assert_equal ["Squat"], css_select(".day-in-workout .row-title").map(&:text)
+      assert_equal ["Bench press", "Deadlift"], css_select(".day-to-do .row-title").map(&:text)
+      assert_equal 0, WorkoutSet.count
+    end
+  end
+
+  test "a workout day's page has two blocks, and each row allows only the drops it should" do
+    bench, squat, = @planned
+    bulgarian = Exercise.create!(name: "Bulgarian split squat", muscle_group: "Legs")
+    travel_to Time.zone.local(2026, 11, 23, 12) do
+      date = Date.current
+      # nothing in the workout: its block says what to do, and the plan rows can be dragged into it
+      get workout_day_path(@day)
+      assert_select "#day-exercises .card", 2
+      assert_select ".day-in-workout .day-hint", "Drag an exercise here, or open one and add a set."
+      assert_select ".day-in-workout[data-sortable-group-value=day]", 1
+      assert_select ".day-to-do[data-controller=sortable][data-sortable-group-value=day][data-sortable-sort-value=false]", 1
+      assert_select ".day-to-do li .drag-handle", 3
+      assert_select ".day-to-do li[data-sortable-into-url=?][data-sortable-into-method=post]",
+                    workout_day_workout_log_exercises_path(@day, date:, workout_exercise_id: squat.id), 1
+      assert_select ".day-to-do li[data-sortable-url]", 0
+
+      post workout_exercise_workout_sets_path(bench, date:), params: { workout_set: { weight_used: 60, reps_completed: 5 } }
+      post workout_day_workout_log_exercises_path(@day, date:, workout_exercise_id: squat.id)
+      post workout_day_workout_log_exercises_path(@day, date:), params: { exercise_ids: [bulgarian.id] }
+      bench_entry, squat_entry, bulgarian_entry = @user.workout_logs.sole.workout_log_exercises.to_a
+      get workout_day_path(@day)
+      assert_select ".day-hint", 0
+      back = ->(entry) { workout_log_exercise_path(entry, workout_day_id: @day.id, date:) }
+      # with sets: asks first
+      assert_select ".day-in-workout li[data-sortable-into-url=?][data-sortable-into-method=delete][data-sortable-confirm=?]",
+                    back.(bench_entry), "Remove Bench press and its sets from this workout?", 1
+      # without sets: no question
+      assert_select ".day-in-workout li[data-sortable-into-url=?][data-sortable-into-method=delete]:not([data-sortable-confirm])", back.(squat_entry), 1
+      # added while training, not planned: cannot go back to the plan's block
+      assert_select ".day-in-workout li[data-sortable-url=?]:not([data-sortable-into-url])",
+                    move_workout_log_exercise_path(bulgarian_entry, workout_day_id: @day.id, date:), 1
+      assert_select ".day-to-do li", 1
+
+      # a single row can still be dragged out
+      [squat_entry, bulgarian_entry].each(&:destroy)
+      get workout_day_path(@day)
+      assert_select ".day-in-workout li .drag-handle", 1
+    end
+  end
+
+  test "a workout day still to come shows only the plan, with nothing to drag" do
+    travel_to Time.zone.local(2026, 11, 22, 12) do # Sunday: Monday's Push is later this week
+      get workout_day_path(@day, date: Date.new(2026, 11, 23))
+      assert_response :success
+      assert_equal ["Bench press", "Squat", "Deadlift"], css_select(".day-to-do .row-title").map(&:text)
+      assert_select "#day-exercises .drag-handle", 0
+      assert_select "#day-exercises [data-sortable-into-url]", 0
+      assert_select "#day-exercises .day-in-workout", 0
     end
   end
 

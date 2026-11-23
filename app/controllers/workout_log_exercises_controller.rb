@@ -7,7 +7,8 @@ class WorkoutLogExercisesController < ApplicationController
   # Adds to a workout: an exercise planned for the day (workout_exercise_id), or the exercises
   # chosen (or the one created) in the "Add exercises" modal. From a workout day's page
   # (workout_day_id) they go into that day's session on the page's date, which starts the
-  # session if it has not started yet; the day's plan is not changed.
+  # session if it has not started yet; the day's plan is not changed. A planned exercise dragged in
+  # (workout_exercise_id) comes with the place it was dropped (to).
   def create
     if params[:workout_day_id]
       workout_day = current_user.workout_days.find(params[:workout_day_id])
@@ -30,6 +31,11 @@ class WorkoutLogExercisesController < ApplicationController
 
     # A new session is saved with its entries, as they were built on it.
     WorkoutLogExercise.transaction { workout_log.new_record? ? workout_log.save! : entries.each(&:save!) }
+    # Dropped into the workout from "Still to do": it lands where it was dropped, and lights up.
+    if params[:to].present?
+      entries.first.move!(params[:to])
+      flash[:moved] = entries.first.id
+    end
     redirect_to(workout_day ? back : workout_log_path(workout_log, anchor: "entry-#{entries.first.id}"),
                 notice: "#{entries.map(&:name).to_sentence} added to this workout.")
   rescue ActiveRecord::RecordInvalid => e

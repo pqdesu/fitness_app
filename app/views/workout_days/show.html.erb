@@ -20,44 +20,44 @@
 <%= render "workout_logs/timer_alert", log: @log, leave: true %>
 
 <%# Its exercises are part of this workout: opening one is not leaving it (workout_logs/_timer_alert). %>
-<div class="card" data-stays-in-workout>
-  <div class="card-header">
-    <h2>Exercises</h2>
-    <% if !upcoming && (@in_workout.any? || @to_do.any?) %>
-      <%= exercise_picker_button "btn-primary btn-sm" %>
-    <% end %>
-  </div>
+<div id="day-exercises" data-stays-in-workout>
   <% if @in_workout.empty? && @to_do.empty? %>
-    <div class="empty-state">
-      <i class="fa-solid fa-dumbbell"></i>
-      <p>No exercises planned for <%= @workout_day.day %>.<% unless upcoming %> Add one to this workout, or plan them on the split page.<% end %></p>
-      <% unless upcoming %><%= exercise_picker_button "btn-primary" %><% end %>
+    <div class="card">
+      <div class="card-header"><h2>Exercises</h2></div>
+      <div class="empty-state">
+        <i class="fa-solid fa-dumbbell"></i>
+        <p>No exercises planned for <%= @workout_day.day %>.<% unless upcoming %> Add one to this workout, or plan them on the split page.<% end %></p>
+        <% unless upcoming %><%= exercise_picker_button "btn-primary" %><% end %>
+      </div>
     </div>
   <% else %>
-    <%# Open while training, and it can be folded away like the other lists of exercises. %>
-    <%= render "shared/list_toggle", target: "day-exercises", label: "exercises", open: true, css: "in-card" %>
-    <div class="collapse show" id="day-exercises">
-      <%# The workout so far, in its order: dragged into the order the exercises were done
-          (sortable_controller.js), the same order as the logged workout's page. %>
-      <% if @in_workout.any? %>
-        <% if @to_do.any? %><p class="day-group-label">In this workout</p><% end %>
-        <% draggable = @in_workout.size > 1 %>
-        <%= tag.ul class: "list-rows day-in-workout", data: ({ controller: "sortable" } if draggable) do %>
+    <%# The workout so far, in its order: dragged into the order the exercises were done, or back to
+        "Still to do" (sortable_controller.js). The same order as the logged workout's page. A day to come has no workout yet. %>
+    <% unless upcoming %>
+      <div class="card">
+        <div class="card-header">
+          <h2>In this workout <span class="text-muted fw-normal">· <%= @in_workout.size %></span></h2>
+          <%= exercise_picker_button "btn-primary btn-sm" %>
+        </div>
+        <%= tag.ul class: "list-rows day-in-workout", data: { controller: "sortable", sortable_group_value: "day" } do %>
           <% @in_workout.each do |entry, planned| %>
             <% li = { class: class_names("just-moved": flash[:moved] == entry.id),
-                      data: ({ sortable_url: move_workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date) } if draggable) } %>
+                      data: { sortable_url: move_workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date) } } %>
             <% if planned %>
-              <%= render "planned_exercise", we: planned, sets: entry.workout_sets.size, li:, draggable: %>
+              <%# Dragged back to "Still to do" it leaves the workout and stays on the plan. %>
+              <% li[:data].merge!(sortable_into_url: workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), sortable_into_method: "delete",
+                                  sortable_confirm: ("Remove #{entry.name} and its sets from this workout?" if entry.workout_sets.any?)) %>
+              <%= render "planned_exercise", we: planned, sets: entry.workout_sets.size, li:, draggable: true, in_workout: true %>
             <% else %>
-              <%# Added while training, not planned: removing one takes it out of this workout, and it is gone. %>
+              <%# Added while training, not planned: removing one takes it out of this workout, and it is gone. It cannot go to the plan's block. %>
               <% entry_path = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}") %>
               <%= tag.li(**li) do %>
-                <% if draggable %><span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span><% end %>
+                <span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span>
                 <%= link_to entry_path, class: "row-link" do %>
                   <span class="row-title"><%= entry.name %></span>
                   <span class="text-muted small"><%= entry.equipment_label %> · Added to this workout</span>
                 <% end %>
-                <% if entry.workout_sets.any? %><span class="chip chip-done"><%= pluralize(entry.workout_sets.size, "set") %></span><% end %>
+                <% if entry.workout_sets.any? %><span class="chip chip-done"><%= pluralize(entry.workout_sets.size, "set") %></span><% else %><span class="text-muted small text-nowrap">No sets</span><% end %>
                 <%= button_to workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), method: :delete,
                       class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{entry.name} from this workout", title: "Remove #{entry.name} from this workout",
                       form: { data: ({ turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } if entry.workout_sets.any?) } do %><i class="fa-solid fa-xmark"></i><% end %>
@@ -65,16 +65,19 @@
               <% end %>
             <% end %>
           <% end %>
+          <% if @in_workout.empty? %><li class="day-hint text-muted small">Drag an exercise here, or open one and add a set.</li><% end %>
         <% end %>
-      <% end %>
-      <%# The plan's exercises not started yet, in the plan's order. %>
-      <% if @to_do.any? %>
-        <% if @in_workout.any? %><p class="day-group-label">Still to do</p><% end %>
-        <ul class="list-rows day-to-do">
-          <% @to_do.each do |we| %>
-            <%= render "planned_exercise", we:, sets: 0, li: {}, draggable: false %>
-          <% end %>
-        </ul>
+      </div>
+    <% end %>
+    <%# The plan's exercises not started yet, in the plan's order. Dragged into the workout they join it where dropped. %>
+    <div class="card">
+      <div class="card-header"><h2>Still to do <span class="text-muted fw-normal">· <%= @to_do.size %></span></h2></div>
+      <%= tag.ul class: "list-rows day-to-do", data: ({ controller: "sortable", sortable_group_value: "day", sortable_sort_value: false } unless upcoming) do %>
+        <% @to_do.each do |we| %>
+          <% li = upcoming ? {} : { data: { sortable_into_url: workout_day_workout_log_exercises_path(@workout_day, date: @date, workout_exercise_id: we.id), sortable_into_method: "post" } } %>
+          <%= render "planned_exercise", we:, sets: 0, li:, draggable: !upcoming %>
+        <% end %>
+        <% if @to_do.empty? %><li class="day-hint text-muted small">Everything planned is in this workout.</li><% end %>
       <% end %>
     </div>
   <% end %>

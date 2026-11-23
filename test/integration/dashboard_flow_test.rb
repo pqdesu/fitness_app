@@ -40,9 +40,8 @@ class DashboardFlowTest < FlowTest
       # the workout's own page says so at the top
       get workout_day_path(push, date: Date.current)
       assert_select ".page-header .day-counts", "2 exercises · 3 sets"
-      # its exercises are open, and can be folded away
-      assert_select ".toggle-days[data-bs-target='#day-exercises'][aria-expanded=true]", text: /Hide exercises/
-      assert_select "#day-exercises.collapse.show li", 2
+      # its exercises are listed in "In this workout"
+      assert_select "#day-exercises .day-in-workout li", 2
     end
   end
 
