@@ -149,45 +149,6 @@ class WeekMovesFlowTest < FlowTest
     assert_response :not_found
   end
 
-  test "back to the plan keeps a moved workout that was already trained" do
-    sign_in @user
-    split = @user.splits.create!(name: "Upper Lower")
-    upper = split.workout_days.create!(day: "Upper", weekday: 1)
-    lower = split.workout_days.create!(day: "Lower", weekday: 6)
-    planned = lower.workout_exercises.create!(exercise: @bench)
-
-    # Sunday 2026-11-22: Lower moves to today and is trained
-    travel_to Time.zone.local(2026, 11, 22, 12) do
-      post split_week_move_path(split), params: { workout_day_id: lower.id, weekday: 0 }
-      post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { weight_used: 60, reps_completed: 5 } }
-    end
-
-    # Monday: Upper moves to Friday and is not trained; back to the plan undoes only that
-    travel_to Time.zone.local(2026, 11, 23, 12) do
-      post split_week_move_path(split), params: { workout_day_id: upper.id, weekday: 5 }
-      delete split_week_move_path(split)
-      assert_equal({ 0 => lower, 1 => upper }, split.week_plan(Date.current))
-      assert_match(/Lower stays on Sunday/, flash[:notice])
-      get root_path
-      assert_select "input[type=submit][value='Back to the plan'], button", text: "Back to the plan", count: 0
-    end
-  end
-
-  test "back to the plan keeps both sides of a swap when one was trained" do
-    sign_in @user
-    split = @user.splits.create!(name: "Upper Lower")
-    upper = split.workout_days.create!(day: "Upper", weekday: 1)
-    lower = split.workout_days.create!(day: "Lower", weekday: 3)
-    planned = lower.workout_exercises.create!(exercise: @bench)
-
-    travel_to Time.zone.local(2026, 11, 23, 12) do
-      post split_week_move_path(split), params: { workout_day_id: lower.id, weekday: 1 }
-      post workout_exercise_workout_sets_path(planned, date: Date.current), params: { workout_set: { weight_used: 60, reps_completed: 5 } }
-      delete split_week_move_path(split)
-      assert_equal({ 1 => lower, 3 => upper }, split.week_plan(Date.current))
-    end
-  end
-
   test "on a rest day a workout outside the split is started by picking its exercises" do
     sign_in @user
     split = @user.splits.create!(name: "Legs only")

@@ -28,7 +28,7 @@ class Split < ApplicationRecord
   def week_move_error(day, weekday, today)
     return "choose a day from today to Saturday" unless weekday && (today.wday..6).cover?(weekday)
 
-    logs = logs_of_week(today)
+    logs = user.workout_logs.where(date: today.all_week(:sunday), workout_day_id: workout_day_ids)
     return "#{day.day} is already logged this week" if logs.any? { |log| log.workout_day_id == day.id }
 
     "today already has a workout logged in #{name}" if weekday == today.wday && logs.any? { |log| log.date == today }
@@ -50,18 +50,9 @@ class Split < ApplicationRecord
     other
   end
 
-  # The moves of that week that can go back to the plan: not a trained workout (it stays on the
-  # day it was trained, as the calendar shows) and not the one it swapped with (two on one day).
-  def undoable_week_moves(date)
-    moves = moves_of_week(date).includes(:workout_day).to_a
-    logged = logs_of_week(date).pluck(:workout_day_id)
-    kept_weekdays = moves.select { |move| logged.include?(move.workout_day_id) }.map(&:weekday)
-    moves.reject { |move| logged.include?(move.workout_day_id) || kept_weekdays.include?(move.workout_day.weekday) }
-  end
-
   # Back to the plan for the week of the given date.
   def clear_week_moves(date)
-    undoable_week_moves(date).each(&:destroy)
+    moves_of_week(date).destroy_all
   end
 
   def moves_of_week(date)
@@ -69,10 +60,6 @@ class Split < ApplicationRecord
   end
 
   private
-
-  def logs_of_week(date)
-    user.workout_logs.where(date: date.all_week(:sunday), workout_day_id: workout_day_ids)
-  end
 
   # A workout back on its planned weekday needs no move.
   def place(day, weekday, date)

@@ -31,7 +31,7 @@ class Dashboard
   end
 
   def week_moved?
-    split.present? && split.undoable_week_moves(today).any?
+    split.present? && split.moves_of_week(today).exists?
   end
 
   def today_workout
