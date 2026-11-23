@@ -473,4 +473,21 @@ users:
     started_at: '2026-11-20T22:57:59Z'
     ended_at: '2026-11-20T22:58:01Z'
     paused_seconds: 0
+  - date: '2026-11-22'
+    workout: Push
+    rest_day: true
+    started_at: '2026-11-22T02:53:38Z'
+    ended_at: '2026-11-22T03:17:22Z'
+    paused_seconds: 0
+    exercises:
+    - name: Bench press
+      exercise: shared
+      equipment: free_weights
+      sets:
+      - number: 1
+        reps: 12
+        weight: '12.0'
+      - number: 2
+        reps: 12
+        weight: '20.0'
   timer_auto_start: false
