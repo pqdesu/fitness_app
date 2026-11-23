@@ -27,6 +27,7 @@ The full project context (product brief, every decision, data model, page flows,
 
 ## How to work in this repo
 
+- Run every session on the `opusplan` model (`/model opusplan`; owner, 2026-11-23): Opus thinks and plans in plan mode, then Sonnet implements once the plan is approved. Plan each feature or fix in plan mode first. A sub-agent that implements runs on Sonnet or Haiku (`model: "sonnet"` or `"haiku"`). If the session is not on `opusplan`, tell the owner at the start.
 - Work in a git worktree under `.claude/worktrees/<branch>`, on a branch named for the work (`git worktree add .claude/worktrees/<branch> -b <branch> master`). The owner asked for this on 2026-11-16, replacing the earlier "no worktrees" rule. Leave the main checkout alone: it is the owner's.
 - A server started from the main folder serves the main folder's branch, not the worktree. To let the owner see the work before merging, run a server from the worktree on another port and say which, or give them the command to check the branch out. Do not finalize work unprompted.
 - The worktree and the main folder share one development database. Say so before running a migration that drops or renames something `master` still reads.
