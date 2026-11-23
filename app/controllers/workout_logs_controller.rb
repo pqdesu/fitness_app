@@ -53,7 +53,8 @@ class WorkoutLogsController < ApplicationController
       log ||= current_user.workout_logs.create!(workout: @workout, date: Date.current, rest_day: rest_day_today?)
       exercises.each { |exercise| log.workout_log_exercises.create!(exercise:) }
     end
-    redirect_to workout_log_path(log, from: "dashboard"), notice: "#{@workout} workout started. Add your sets."
+    what = cardio_workout? ? "incline, speed and time" : "sets"
+    redirect_to workout_log_path(log, from: "dashboard"), notice: "#{@workout} workout started. Add your #{what}."
   rescue ActiveRecord::RecordInvalid => e
     redirect_to new_workout_log_path(workout: @workout), alert: "Nothing added: #{errors_of(e.record)}."
   end
@@ -81,7 +82,7 @@ class WorkoutLogsController < ApplicationController
 
   def set_workout
     @workout = params[:workout]
-    return redirect_to(root_path, alert: "Choose one of the listed workouts.") unless WorkoutDay::NAMES.include?(@workout)
+    return redirect_to(root_path, alert: "Choose one of the listed workouts.") unless WorkoutLog::WORKOUTS.include?(@workout)
 
     @todays_log = current_user.workout_logs.session_of(@workout, Date.current)
   end
@@ -92,6 +93,8 @@ class WorkoutLogsController < ApplicationController
     split = current_user.current_split
     split.present? && split.rest_day?(Date.current)
   end
+
+  def cardio_workout? = (@workout || @workout_log&.workout) == WorkoutLog::CARDIO
 
   def workout_log_params
     params.expect(workout_log: [:date, :notes])

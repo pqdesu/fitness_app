@@ -168,6 +168,70 @@ class CardioFlowTest < FlowTest
     end
   end
 
+  test "on a rest day the Today box has its own Cardio button" do
+    cardio = new_workout_log_path(workout: "Cardio")
+    # a Wednesday: the split's Push is on another day
+    travel_to Time.zone.local(2026, 11, 18, 12) do
+      sign_in @user
+      get root_path
+      assert_select ".today .today-header a[href=?]", cardio, text: /Cardio/
+      get dashboard_path
+      assert_select ".today .today-header a[href=?]", cardio, text: /Cardio/
+
+      # once today's Cardio workout is started, the button says it goes back to it
+      post workout_logs_path(workout: "Cardio"), params: { exercise_ids: [@treadmill.id] }
+      get root_path
+      assert_select ".today .today-header a[href=?]", cardio, text: "Continue cardio"
+    end
+
+    # on the split's own training day there is none
+    sign_in @user
+    get root_path
+    assert_select ".today a[href=?]", cardio, 0
+  end
+
+  test "the Cardio workout offers only cardio, and one created there is cardio" do
+    travel_to Time.zone.local(2026, 11, 18, 12) do
+      sign_in @user
+      get new_workout_log_path(workout: "Cardio")
+      assert_response :success
+      assert_select "h1", "Cardio workout"
+      assert_select "#exercise-picker .picker-name", "Treadmill"
+      assert_select "#exercise-picker .picker-group .group-name", "Cardio"
+      # the create form asks only the name: no muscle groups, equipment or one-sided
+      assert_select "#exercise-picker input[type=radio][name='exercise[muscle_group]']", 0
+      assert_select "#exercise-picker input[type=hidden][name='exercise[muscle_group]'][value='Cardio']"
+      assert_select "#exercise-picker .equipment-fields", 0
+      assert_select "#exercise-picker [name='exercise[unilateral]']", 0
+    end
+  end
+
+  test "the Cardio workout is started by its first cardio exercise, as a rest day workout" do
+    travel_to Time.zone.local(2026, 11, 18, 12) do
+      sign_in @user
+      # a weight exercise sent along is left out
+      post workout_logs_path(workout: "Cardio"), params: { exercise_ids: [@treadmill.id, @bench.id] }
+      log = @user.workout_logs.sole
+      assert_redirected_to workout_log_path(log, from: "dashboard")
+      assert_equal ["Cardio", Date.current, true, nil], [log.workout, log.date, log.rest_day?, log.workout_day]
+      assert_equal ["Treadmill"], log.workout_log_exercises.map(&:name)
+
+      # the button again opens that workout
+      get new_workout_log_path(workout: "Cardio")
+      assert_redirected_to workout_log_path(log, from: "dashboard")
+
+      # its page adds only cardio, and one typed there is cardio
+      get workout_log_path(log)
+      assert_select "#exercise-picker .picker-name", "Treadmill"
+      assert_select "#exercise-picker input[type=hidden][name='exercise[muscle_group]'][value='Cardio']"
+      post workout_log_workout_log_exercises_path(log), params: { exercise_ids: [@bench.id] }
+      assert_equal ["Treadmill"], log.workout_log_exercises.reload.map(&:name)
+      post workout_log_workout_log_exercises_path(log), params: { exercise: { name: "Jump rope", muscle_group: "Legs" } }
+      assert @user.exercises.find_by!(name: "Jump rope").cardio?
+      assert_equal %w[Treadmill Jump\ rope], log.workout_log_exercises.reload.map(&:name)
+    end
+  end
+
   test "lifting and cardio on the same day add up" do
     # a Monday, the split's Push day
     travel_to Time.zone.local(2026, 11, 16, 12) do

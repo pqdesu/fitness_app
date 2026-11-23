@@ -12,17 +12,30 @@ module ExercisePicker
 
   # What the modal lists: the catalogue and the user's own exercises.
   def picker_exercises
-    @picker_exercises ||= Exercise.visible_to(current_user).order(:name).to_a
+    @picker_exercises ||= picker_scope.order(:name).to_a
   end
+
+  # What can be picked: in a Cardio workout (cardio_workout?) only cardio exercises, so ones posted
+  # from elsewhere are left out too.
+  def picker_scope
+    scope = Exercise.visible_to(current_user)
+    cardio_workout? ? scope.where(muscle_group: "Cardio") : scope
+  end
+
+  # A controller whose workout is today's Cardio workout says so (WorkoutLog::CARDIO).
+  def cardio_workout? = false
 
   # Returns [exercises, error message]. A new exercise is returned unsaved: it is saved with the
   # row it is added to (the caller's create!), so it does not stay behind when the add fails.
   def picked_exercises
     if params[:exercise].present?
-      exercise = find_or_build_exercise(params.expect(exercise: [:name, :muscle_group, :unilateral, *Equipped::ATTRIBUTES]))
+      attributes = params.expect(exercise: [:name, :muscle_group, :unilateral, *Equipped::ATTRIBUTES])
+      # One created in a Cardio workout is cardio, whatever was sent.
+      attributes[:muscle_group] = "Cardio" if cardio_workout?
+      exercise = find_or_build_exercise(attributes)
       exercise.valid? ? [[exercise], nil] : [[], errors_of(exercise)]
     else
-      exercises = Exercise.visible_to(current_user).where(id: params[:exercise_ids]).order(:name).to_a
+      exercises = picker_scope.where(id: params[:exercise_ids]).order(:name).to_a
       exercises.any? ? [exercises, nil] : [[], "Choose at least one exercise"]
     end
   end

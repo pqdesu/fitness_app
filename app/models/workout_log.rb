@@ -14,11 +14,15 @@ class WorkoutLog < ApplicationRecord
   # A workout is logged on the day it is done, so its date is never after today; the earliest
   # date only stops a typo in the year (0001, 20026) from sending a workout where no page shows it.
   EARLIEST_DATE = Date.new(2000, 1, 1)
+  # Cardio on a rest day instead of lifting: a logged workout of its own, never a day of a split.
+  CARDIO = "Cardio".freeze
+  # What a logged workout can be: a split's workouts, or Cardio.
+  WORKOUTS = [*WorkoutDay::NAMES, CARDIO].freeze
   validates :date, presence: true
   validate :date_in_range, if: -> { new_record? || date_changed? }
   validates :notes, length: { maximum: 2000 }
   validate :ends_after_start
-  validates :workout, inclusion: { in: WorkoutDay::NAMES }
+  validates :workout, inclusion: { in: WORKOUTS }
   # One session per workout per day: sets added from any split go into the same log.
   validate :only_session_of_workout_that_day, if: -> { new_record? || date_changed? || workout_changed? }
 

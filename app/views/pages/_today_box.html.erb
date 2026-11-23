@@ -22,10 +22,17 @@
     <% if today_workout %>
       <%# Nothing is logged until the first set is added, so "Start workout" only opens the day. %>
       <%= link_to (dashboard.today_summary.exercises.positive? ? "Continue" : "Start workout"), workout_day_path(today_workout, date: today), class: "btn btn-primary btn-sm" %>
-    <% elsif dashboard.days.any? && !open %>
-      <%# A rest day: choose which workout to train anyway, from the split or outside it. %>
-      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#rest-day-start"
-              aria-expanded="false" aria-controls="rest-day-start">Start workout</button>
+    <% else %>
+      <div class="today-actions">
+        <% if dashboard.days.any? && !open %>
+          <%# A rest day: choose which workout to train anyway, from the split or outside it. %>
+          <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#rest-day-start"
+                  aria-expanded="false" aria-controls="rest-day-start">Start workout</button>
+        <% end %>
+        <%# Or cardio instead of lifting: a button of its own, to today's Cardio workout ("Continue" once it is started, like Start workout). %>
+        <% cardio_started = dashboard.week_logs.fetch(today, []).any? { |log| log.workout == WorkoutLog::CARDIO } %>
+        <%= link_to new_workout_log_path(workout: WorkoutLog::CARDIO), class: "btn btn-outline-primary btn-sm" do %><i class="fa-solid fa-person-running" aria-hidden="true"></i> <%= cardio_started ? "Continue cardio" : "Cardio" %><% end %>
+      </div>
     <% end %>
   </div>
 
@@ -48,8 +55,10 @@
     <p class="today-last">No workout is planned for <%= l today, format: "%A" %> in this split.</p>
     <% dashboard.week_logs.fetch(today, []).each do |rest_log| %>
       <% done = WorkoutSummary.new(rest_log) %>
+      <%# A Cardio workout has no sets: before its first time it says so. %>
+      <% cardio_waiting = rest_log.workout == WorkoutLog::CARDIO && done.cardio_seconds.zero? %>
       <p class="today-last today-done">
-        Logged today · <%= link_to "#{rest_log.workout}, #{sets_and_time(done.sets, done.cardio_seconds)}", workout_log_path(rest_log, from: "dashboard") %>
+        Logged today · <%= link_to "#{rest_log.workout}, #{cardio_waiting ? 'no time yet' : sets_and_time(done.sets, done.cardio_seconds)}", workout_log_path(rest_log, from: "dashboard") %>
         <% if rest_log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
       </p>
     <% end %>

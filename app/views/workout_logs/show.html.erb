@@ -131,4 +131,4 @@
 </div>
 
 <%= render "shared/exercise_picker", url: workout_log_workout_log_exercises_path(@workout_log),
-      exercises: picker_exercises, taken_ids: @log_exercises.filter_map(&:exercise_id) %>
+      exercises: picker_exercises, taken_ids: @log_exercises.filter_map(&:exercise_id), cardio: @workout_log.workout == WorkoutLog::CARDIO %>

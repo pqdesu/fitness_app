@@ -1,17 +1,19 @@
 <% back_to root_path %>
+<% cardio = @workout == WorkoutLog::CARDIO %>
 <div class="page-header">
   <div>
     <h1><%= @workout %> workout</h1>
-    <p class="text-muted mb-0"><%= l Date.current, format: :long %> <span class="chip">Not in your split</span></p>
+    <p class="text-muted mb-0"><%= l Date.current, format: :long %><% unless cardio %> <span class="chip">Not in your split</span><% end %></p>
   </div>
 </div>
 
 <div class="card">
   <div class="empty-state">
-    <i class="fa-solid fa-dumbbell"></i>
-    <p>Pick what you are doing today. The workout is saved when you add the first exercise, and your split stays as it is.</p>
+    <i class="fa-solid <%= cardio ? "fa-person-running" : "fa-dumbbell" %>" aria-hidden="true"></i>
+    <%# Cardio is never in a split, so it says nothing about the split. %>
+    <p><% if cardio %>Pick your cardio today. The workout is saved when you add the first one.<% else %>Pick what you are doing today. The workout is saved when you add the first exercise, and your split stays as it is.<% end %></p>
     <%= exercise_picker_button "btn-primary" %>
   </div>
 </div>
 
-<%= render "shared/exercise_picker", url: workout_logs_path(workout: @workout), exercises: picker_exercises, taken_ids: [] %>
+<%= render "shared/exercise_picker", url: workout_logs_path(workout: @workout), exercises: picker_exercises, taken_ids: [], cardio: %>

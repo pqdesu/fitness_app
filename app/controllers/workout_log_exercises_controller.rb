@@ -19,6 +19,7 @@ class WorkoutLogExercisesController < ApplicationController
       workout_log = current_user.workout_logs.find(params[:workout_log_id])
     end
     back ||= workout_log_path(workout_log)
+    @workout_log = workout_log # for cardio_workout?, which narrows what can be picked
 
     if params[:workout_exercise_id].present?
       entries = [workout_log.workout_log_exercises.new(workout_exercise_id: params[:workout_exercise_id])]
@@ -76,6 +77,8 @@ class WorkoutLogExercisesController < ApplicationController
   end
 
   private
+
+  def cardio_workout? = @workout_log&.workout == WorkoutLog::CARDIO
 
   # From a workout day's page (workout_day_id and date) back there, otherwise to the logged workout.
   def back_after_change
