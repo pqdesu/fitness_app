@@ -14,6 +14,10 @@
 
 # Near Future
 
+### Apple health
+
+- Integrate apple health data to the app
+
 ### Exercise page
 
 - Multiple selections of the days
