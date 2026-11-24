@@ -40,10 +40,10 @@ class SplitsController < ApplicationController
   def activate
     current_user.update!(active_split: @split)
     notice = "#{@split.name} is now your active split."
-    # Changing it from the dashboard ("Change" on the active split card) returns there;
+    # Changing it from the Home page ("Change" on the active split card) returns there;
     # anywhere else the user stays on the page they were on.
     if from_dashboard?
-      redirect_to dashboard_path, notice:, status: :see_other
+      redirect_to root_path, notice:, status: :see_other
     else
       redirect_back fallback_location: splits_path, notice:, status: :see_other
     end

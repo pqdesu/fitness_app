@@ -157,7 +157,7 @@ class CardioFlowTest < FlowTest
       get root_path
       assert_select ".today", /Logged today · Pull, 30 min/
 
-      get dashboard_path
+      get root_path
       assert_select ".week-summary div", text: /Cardio\s*30 min/
       assert_select ".week-overview-days li.has-workout .small", "1 exercise · 30 min"
       assert_select "#recent-log-#{log.id} .recent-counts", "1 exercise · 30 min"
@@ -175,7 +175,7 @@ class CardioFlowTest < FlowTest
       sign_in @user
       get root_path
       assert_select ".today .today-header a[href=?]", cardio, text: /Cardio/
-      get dashboard_path
+      get root_path
       assert_select ".today .today-header a[href=?]", cardio, text: /Cardio/
 
       # once today's Cardio workout is started, the button says it goes back to it
@@ -378,7 +378,7 @@ class CardioFlowTest < FlowTest
       assert_select ".day-in-workout .chip-done", text: "30 min"
       assert_select ".day-in-workout .text-muted", text: /Cardio · Added to this workout/
 
-      get dashboard_path
+      get root_path
       assert_equal ["1", "2", "1", "80 kg", "30 min"], css_select(".week-summary dd").map { |n| n.text.squish }
     end
   end

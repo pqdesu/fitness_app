@@ -68,7 +68,7 @@ module ApplicationHelper
     tag.span(l(time, format: "%d/%m"), class: "chip chip-day")
   end
 
-  # Where a day of the dashboard leads: the workout logged on it, or that day's list in History
+  # Where a day of the Home page's calendar leads: the workout logged on it, or that day's list in History
   # when there were several.
   def day_logs_path(logs, date)
     logs.one? ? workout_log_path(logs.first, from: "dashboard") : workout_logs_path(date: date.iso8601, from: "dashboard")
@@ -88,12 +88,11 @@ module ApplicationHelper
 
   # The app's sections: label, path, Font Awesome icon, and whether the current page belongs to it.
   # The top navbar (tablet and desktop) ends with Exercises; the phone's bottom bar has no room for
-  # it, so there Exercises is a link on the dashboard and lights the Dashboard tab.
+  # it, so there Exercises is a link on the Home page and lights the Home tab.
   def nav_sections(phone: false)
-    page = controller_name == "pages" && action_name
     sections = [
-      ["Today", root_path, "calendar-day", page == "home" || todays_workout_page?],
-      ["Dashboard", dashboard_path, "house", page.in?(%w[dashboard month]) || (phone && controller_name == "exercises")],
+      ["Home", root_path, "house",
+       controller_name == "pages" || todays_workout_page? || (phone && controller_name == "exercises")],
       ["Splits", splits_path, "layer-group",
        controller_name.in?(%w[splits workout_days workout_exercises]) && !todays_workout_page?],
       ["History", workout_logs_path, "clock-rotate-left",
@@ -102,7 +101,7 @@ module ApplicationHelper
     phone ? sections : sections << ["Exercises", exercises_path, "dumbbell", controller_name == "exercises"]
   end
 
-  # Today's workout belongs to the Today tab, not Splits or History: a workout day or one of its
+  # Today's workout belongs to the Home tab, not Splits or History: a workout day or one of its
   # exercises opened on today's date, a workout started today off the split, and today's logged workout.
   def todays_workout_page?
     date =
@@ -117,7 +116,7 @@ module ApplicationHelper
   # The short name of the page a signed-in user is on, shown in the top bar on a phone. A
   # "controller#action" key wins over the controller's own.
   PAGE_TITLES = {
-    "pages#home" => "Today", "pages" => "Dashboard", "splits#index" => "Splits", "splits" => "Split",
+    "pages" => "Home", "splits#index" => "Splits", "splits" => "Split",
     "workout_days#show" => "Workout", "workout_days" => "Workout day", "workout_exercises" => "Exercise",
     "workout_logs#index" => "History", "workout_logs" => "Workout", "workout_log_exercises" => "Exercise",
     "workout_timers" => "Timer", "exercises#index" => "Exercises", "exercises" => "Exercise",

@@ -15,6 +15,10 @@
   font-size: .85rem;
   font-weight: 600;
 
+  // The app's own focus ring, not the browser's (which takes the system's accent colour)
+  &:focus { outline: 0; }
+  &:focus-visible { outline: 2px solid $blue; outline-offset: 2px; border-radius: .25rem; }
+
   .fa-chevron-down { transition: transform .2s; }
   &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
   .when-open, &[aria-expanded="true"] .when-closed { display: none; }

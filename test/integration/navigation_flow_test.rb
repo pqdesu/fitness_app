@@ -157,20 +157,20 @@ class NavigationFlowTest < FlowTest
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
     log = @user.workout_logs.sole
 
-    # Today first, Account last; Exercises is a desktop link and, on a phone, a button on the dashboard
+    # Home first, Account last; Exercises is a desktop link and, on a phone, a button on the Home page
     {
-      root_path => %w[Today Today], dashboard_path => %w[Dashboard Dashboard], exercises_path => %w[Exercises Dashboard],
+      root_path => %w[Home Home], exercises_path => %w[Exercises Home],
       splits_path => %w[Splits Splits], split_path(split) => %w[Split Splits],
-      # today's workout, its exercises and its log light Today; another day's workout lights Splits
-      workout_day_path(day) => %w[Workout Today], workout_exercise_path(planned) => %w[Exercise Today],
-      workout_log_path(log) => %w[Workout Today], new_workout_log_path(workout: "Legs") => %w[Workout Today],
+      # today's workout, its exercises and its log light Home; another day's workout lights Splits
+      workout_day_path(day) => %w[Workout Home], workout_exercise_path(planned) => %w[Exercise Home],
+      workout_log_path(log) => %w[Workout Home], new_workout_log_path(workout: "Legs") => %w[Workout Home],
       workout_day_path(other, date: Date.current + 1) => %w[Workout Splits],
       workout_logs_path => %w[History History], edit_user_registration_path => %w[Account Account]
     }.each do |path, (title, tab)|
       get path
       assert_select ".navbar-page-title.d-md-none", { text: title, count: 1 }, "#{path} title"
       assert_select "nav.bottom-nav.fixed-bottom.d-md-none a.bottom-nav-item > span:not(.bottom-nav-icon)" do |labels|
-        assert_equal %w[Today Dashboard Splits History Account], labels.map(&:text)
+        assert_equal %w[Home Splits History Account], labels.map(&:text)
       end
       assert_select "nav.bottom-nav a.bottom-nav-item.active[aria-current=page]", { count: 1 }, "#{path} tab"
       assert_select "nav.bottom-nav a.active > span:not(.bottom-nav-icon)", tab
@@ -179,8 +179,8 @@ class NavigationFlowTest < FlowTest
     assert_select "nav.bottom-nav a[href=?]", edit_user_registration_path
     assert_select "nav.bottom-nav .dropdown-menu", false
     assert_select "nav.bottom-nav .bottom-nav-icon[aria-hidden=true] .user-initial", "L"
-    assert_equal %w[Today Dashboard Splits History Exercises], css_select(".app-navbar .navbar-collapse a.nav-link:not(.dropdown-toggle)").map(&:text)
-    get dashboard_path
+    assert_equal %w[Home Splits History Exercises], css_select(".app-navbar .navbar-collapse a.nav-link:not(.dropdown-toggle)").map(&:text)
+    get root_path
     assert_select ".page-header a.d-md-none[href=?]", exercises_path, text: "Exercises"
 
     # the bar comes after the page in the document, so a keyboard reaches the page first

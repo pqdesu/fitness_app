@@ -38,7 +38,7 @@ class ApplicationController < ActionController::Base
     redirect_to back, alert: message
   end
 
-  # The page was opened from the dashboard (its links add from=dashboard), so it goes back there.
+  # The page was opened from the Home page (its links add from=dashboard), so it goes back there.
   def from_dashboard?
     params[:from] == "dashboard"
   end

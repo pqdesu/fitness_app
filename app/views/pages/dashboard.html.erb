@@ -1,21 +1,25 @@
+<%# The Home page ("/", pages#home), what was the Today page and the dashboard in one: today's
+    workout (or on a rest day the choices, folded), the active split's week with its moves,
+    the month's calendar and recent workouts. On a phone they stack in that order; from desktop
+    width the calendar takes the left column. %>
 <% dashboard = @dashboard %>
 <% split = dashboard.split %>
 <% today = dashboard.today %>
 <div class="page-header">
   <div>
-    <p class="eyebrow">Dashboard</p>
-    <h1>Ready to train?</h1>
+    <p class="eyebrow">Today</p>
+    <h1><%= l today, format: "%A, %B %-d" %></h1>
   </div>
   <%# The phone's bottom bar has no Exercises tab; the catalogue is reached from here. %>
   <%= link_to exercises_path, class: "btn btn-light btn-sm d-md-none" do %><i class="fa-solid fa-dumbbell"></i> Exercises<% end %>
 </div>
 
 <div class="row g-4">
-  <div class="col-lg-5">
-    <%= render "calendar", today: today, weeks: dashboard.calendar_weeks, logs_by_date: dashboard.calendar_logs, states: dashboard.calendar_states, day_states: dashboard.day_states %>
-  </div>
+  <div class="col-lg-7 order-lg-2">
+    <% if split %>
+      <%= render "today_box", dashboard: dashboard, dated: false %>
+    <% end %>
 
-  <div class="col-lg-7">
     <div class="card split-card is-active h-auto">
       <% if split %>
         <div class="card-header">
@@ -35,11 +39,14 @@
         <%= render "splits/empty" %>
       <% end %>
     </div>
+  </div>
 
-    <% if split %>
-      <%= render "today_box", dashboard: dashboard %>
-    <% end %>
+  <div class="col-lg-5 order-lg-1">
+    <%= render "calendar", today: today, weeks: dashboard.calendar_weeks, logs_by_date: dashboard.calendar_logs, states: dashboard.calendar_states, day_states: dashboard.day_states %>
+  </div>
 
+  <%# Under the right column from desktop width, after the calendar on a phone. %>
+  <div class="col-lg-7 offset-lg-5 order-lg-3">
     <div class="card">
       <div class="card-header"><h2>Recent workouts</h2><%= link_to "History", workout_logs_path, class: "link-quiet" %></div>
       <% if dashboard.recent_logs.empty? %>
