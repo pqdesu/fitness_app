@@ -31,6 +31,8 @@ Rails.application.routes.draw do
     resources :workout_sets, only: [:create]
     # A cardio exercise's rows (incline, speed, time), its counterpart of sets
     resources :cardio_entries, only: [:create]
+    # Starting a cardio exercise's timer before anything is logged logs the workout (as the workout timer does)
+    resource :rest, only: [:create], controller: "rest_timers"
   end
 
   # Recording: log -> logged exercises -> sets. new and create start a workout that is not in a split.
@@ -46,7 +48,8 @@ Rails.application.routes.draw do
     patch :move, on: :member
     resources :workout_sets, only: [:create]
     resources :cardio_entries, only: [:create]
-    # The rest timer between sets: Start rest (create), Stop (update), throw it away (destroy)
+    # The rest timer between sets, and a cardio exercise's timer (the same two columns): Start (create),
+    # Stop (update), throw it away (destroy)
     resource :rest, only: [:create, :update, :destroy], controller: "rest_timers"
   end
   resources :workout_sets, only: [:update, :destroy]

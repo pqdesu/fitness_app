@@ -232,6 +232,131 @@ class CardioFlowTest < FlowTest
     end
   end
 
+  test "the cardio timer starts the workout, fills the form on Stop, and Add saves it" do
+    sign_in @user
+    planned = @day.workout_exercises.create!(exercise: @treadmill)
+    page = workout_exercise_path(planned, date: Date.current)
+
+    get page
+    assert_select "form[action^='#{workout_exercise_rest_path(planned)}'] button", /Start cardio timer/
+    # or the form by hand: folded behind its own button until it is tapped
+    assert_select "button[data-bs-target='#cardio-form-workout_exercise-#{planned.id}']", /Add manually/
+    assert_select "#cardio-form-workout_exercise-#{planned.id}.collapse:not(.show) input[name='cardio_entry[minutes]']"
+    assert_equal 0, @user.workout_logs.count
+
+    # Start logs today's workout and the exercise, as a first row would. The clock is frozen so the
+    # seconds between Start and Stop are exact (travel_to cuts off the fraction of a second).
+    freeze_time
+    post workout_exercise_rest_path(planned, date: Date.current)
+    assert_redirected_to page
+    entry = @user.workout_logs.sole.workout_log_exercises.sole
+    assert_equal planned, entry.workout_exercise
+    assert entry.rest_running?
+
+    # while it runs the incline and speed can be filled in (not the time), and leaving asks about a cardio timer
+    follow_redirect!
+    assert_select "[data-rest-running][data-rest-name='cardio']", 1
+    assert_select "[data-controller~='rest-alert']", 1
+    assert_select "#cardio-form-workout_exercise-#{planned.id}.show input[name='cardio_entry[incline]']"
+    assert_select "input[name='cardio_entry[minutes]']", 0
+    assert_select "button", text: /Add manually/, count: 0
+
+    travel 12.minutes + 3.seconds do
+      patch workout_log_exercise_rest_path(entry, workout_exercise_id: planned.id, date: Date.current)
+      assert_redirected_to page
+    end
+    assert_equal 723, entry.reload.timer_seconds
+    unfreeze_time
+
+    # the stopped time is in the form; the incline and speed are still to give
+    get page
+    assert_select "input[name='cardio_entry[minutes]'][value='12']"
+    assert_select "input[name='cardio_entry[seconds]'][value='03']"
+    post workout_exercise_cardio_entries_path(planned, date: Date.current),
+         params: { cardio_entry: { incline: "4", speed: "6.5", minutes: "12", seconds: "03" } }
+    assert_equal 723, entry.cardio_entries.sole.duration_seconds
+    assert_nil entry.reload.rest_started_at
+    assert_nil entry.rest_ended_at
+  end
+
+  test "adding while the timer runs stops it and saves its time with the incline and speed" do
+    sign_in @user
+    planned = @day.workout_exercises.create!(exercise: @treadmill)
+    freeze_time
+    post workout_exercise_rest_path(planned, date: Date.current)
+    entry = @user.workout_log_exercises.sole
+
+    travel 90.seconds do
+      post workout_exercise_cardio_entries_path(planned, date: Date.current), params: { cardio_entry: { incline: "3", speed: "7" } }
+    end
+    row = entry.cardio_entries.sole
+    assert_equal [90, 3, 7], [row.duration_seconds, row.incline, row.speed]
+    unfreeze_time
+    assert_nil entry.reload.rest_started_at
+  end
+
+  test "a Cardio workout opens its first exercise, and a timed cardio exercise stays open" do
+    sign_in @user
+    log = @user.workout_logs.create!(workout: WorkoutLog::CARDIO, date: Date.current)
+    first = log.workout_log_exercises.create!(exercise: @treadmill)
+    second = log.workout_log_exercises.create!(exercise: Exercise.create!(name: "Rower", muscle_group: "Cardio"))
+    get workout_log_path(log)
+    assert_select "#entry-#{first.id}-sets.show"
+    assert_select "#entry-#{second.id}-sets.show", 0
+
+    second.update!(rest_started_at: Time.current)
+    get workout_log_path(log)
+    assert_select "#entry-#{second.id}-sets.show"
+  end
+
+  test "a time typed over the timer's is the one saved, and the timer can be thrown away" do
+    sign_in @user
+    planned = @day.workout_exercises.create!(exercise: @treadmill)
+    post workout_exercise_rest_path(planned, date: Date.current)
+    entry = @user.workout_log_exercises.sole
+    travel(5.minutes) { patch workout_log_exercise_rest_path(entry, workout_exercise_id: planned.id, date: Date.current) }
+
+    post workout_exercise_cardio_entries_path(planned, date: Date.current), params: { cardio_entry: { minutes: "20", seconds: "" } }
+    assert_equal 1200, entry.cardio_entries.sole.duration_seconds
+
+    post workout_exercise_rest_path(planned, date: Date.current)
+    delete workout_log_exercise_rest_path(entry, workout_exercise_id: planned.id, date: Date.current)
+    assert_nil entry.reload.rest_started_at
+  end
+
+  test "the cardio timer does not start on a day to come or on an earlier day" do
+    sign_in @user
+    later = @user.splits.first.workout_days.create!(day: "Pull", weekday: (Date.current + 1).wday)
+    upcoming = later.workout_exercises.create!(exercise: @treadmill)
+    post workout_exercise_rest_path(upcoming, date: Date.current + 1)
+    assert_redirected_to workout_exercise_path(upcoming, date: Date.current + 1)
+    assert_match "Timer not started", flash[:alert]
+    assert_equal 0, @user.workout_logs.count
+
+    # an earlier day offers no Start, only typing
+    planned = @day.workout_exercises.create!(exercise: @treadmill)
+    get workout_exercise_path(planned, date: Date.current - 7)
+    assert_select ".cardio-timer", 0
+    assert_select ".collapse.show input[name='cardio_entry[minutes]']"
+  end
+
+  test "a Cardio workout has no workout timer, each cardio exercise has its own" do
+    sign_in @user
+    log = @user.workout_logs.create!(workout: WorkoutLog::CARDIO, date: Date.current)
+    entry = log.workout_log_exercises.create!(exercise: @treadmill)
+
+    get workout_log_path(log)
+    assert_select ".timer-card", 0
+    assert_select "form[action='#{workout_log_exercise_rest_path(entry)}'] button", /Start cardio timer/
+
+    # other workouts keep theirs
+    lifting = @day.workout_logs.create!(date: Date.current)
+    lifting.workout_log_exercises.create!(exercise: @treadmill)
+    get workout_log_path(lifting)
+    assert_select ".timer-card"
+    assert_select ".cardio-timer"
+  end
+
   test "lifting and cardio on the same day add up" do
     # a Monday, the split's Push day
     travel_to Time.zone.local(2026, 11, 16, 12) do

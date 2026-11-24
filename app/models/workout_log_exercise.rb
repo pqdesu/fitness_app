@@ -30,7 +30,14 @@ class WorkoutLogExercise < ApplicationRecord
   # Cardio has no equipment: it says so wherever a lift's equipment is written.
   def equipment_label = cardio? ? "Cardio" : super
 
+  # rest_started_at and rest_ended_at are this logged exercise's timer: the rest before a set of a
+  # lift, or the time of a cardio exercise (a logged exercise is one or the other).
   def rest_running? = rest_started_at.present? && rest_ended_at.nil?
+
+  # A stopped timer in seconds, to fill the cardio form with; nil when there is none.
+  def timer_seconds
+    (rest_ended_at - rest_started_at).round if rest_started_at && rest_ended_at
+  end
 
   # The rest stopped with Stop, in seconds, for the set added next; the timer is then done.
   def take_rest!
