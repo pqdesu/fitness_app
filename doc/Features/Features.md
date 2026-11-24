@@ -10,8 +10,6 @@
 
 ### Exercise page
 
-- Admins are also able to delete exercises already created with a small button on the side of the name in the modal.
-
 ---
 
 # Near Future
@@ -53,6 +51,7 @@
 - Timer for exercise
 - Add Cardio as a exercise as well with inputs for incline, speed and time, for now. Also since it is Cardio it has to be a completly different thing then the weight training exercises.
 - I want a button to add cardio if the day is rest day, instead of weight lifiting I will do cardio and that needs to be different, a new button only for Cardio.
+- Admins are also able to delete exercises already created with a small button on the side of the name in the modal.
 
 ### Calendar
 

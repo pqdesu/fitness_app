@@ -104,6 +104,44 @@ class ExercisesFlowTest < FlowTest
     assert_redirected_to exercises_path
   end
 
+  test "an admin deletes an exercise from the Add exercises modal" do
+    day = @admin.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    day.workout_exercises.create!(exercise: @bench)
+    own = Exercise.create!(name: "Cable fly", user: @user)
+    users_day = @user.splits.create!(name: "Mine").workout_days.create!(day: "Push", weekday: 1)
+
+    # a normal user has no × in the modal, not even for their own exercise
+    sign_in @user
+    get workout_day_path(users_day)
+    assert_select ".picker-row", text: /Cable fly/
+    assert_select ".picker-delete", 0
+
+    # an admin has one on every row, each asking first; a shared exercise is deleted for everyone
+    sign_in @admin
+    page = workout_day_path(day)
+    get page
+    assert_select ".picker-row a.picker-delete[href=?][data-turbo-method=delete][data-turbo-confirm=?]",
+                  exercise_path(@squat), "Delete Squat for everyone?"
+    assert_select ".picker-row.is-taken a.picker-delete[href=?]", exercise_path(@bench)
+    assert_select ".picker-delete", count: css_select(".picker-row").size
+
+    # deleting goes back to the page the modal is on
+    delete exercise_path(@squat), headers: { "HTTP_REFERER" => "http://www.example.com#{page}" }
+    assert_redirected_to page
+    assert_not Exercise.exists?(@squat.id)
+    assert_match "Squat deleted", flash[:notice]
+
+    # one in a plan is kept, with the explanation, on the same page
+    delete exercise_path(@bench), headers: { "HTTP_REFERER" => "http://www.example.com#{page}" }
+    assert_redirected_to page
+    assert Exercise.exists?(@bench.id)
+    assert_match "was not deleted", flash[:alert]
+
+    # someone else's own exercise is not the admin's to see, so not to delete
+    delete exercise_path(own)
+    assert_response :not_found
+  end
+
   test "the muscle group is chosen from the list, not typed" do
     sign_in @admin
     get edit_exercise_path(@bench)

@@ -1,6 +1,12 @@
 // "Are you sure?" box (shared/_confirm, confirm_dialog.js): a small centred card over a tinted
 // page, the question in bold, the detail below, then Cancel and the red button side by side.
+// It can open over another modal (an admin's × in "Add exercises"): both are Bootstrap's 1055 and the
+// later one in the page would win, so it sits higher, with its own backdrop (the second one) between them.
+.modal-backdrop ~ .modal-backdrop { z-index: $zindex-modal + 5; }
+
 .confirm-modal {
+  z-index: $zindex-modal + 10;
+
   .modal-dialog { max-width: 22rem; margin-left: auto; margin-right: auto; padding: 0 1rem; }
 
   .modal-content {
