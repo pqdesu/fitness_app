@@ -519,6 +519,11 @@ users:
         seconds: 2745
   timer_auto_start: false
   auto_warm_up: false
+- email: notadmin@example.com
+  admin: false
+  time_zone: Asia/Tokyo
+  timer_auto_start: false
+  auto_warm_up: false
 equipment:
 - name: Dumbbell
   kind: free_weights

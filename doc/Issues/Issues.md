@@ -98,6 +98,18 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `cardio-timer`: a Cardio workout has no workout timer, so nothing else ends a cardio timer that was started and forgotten. It runs until Stop, Stop and add, or the throw-away ×, like a rest timer left running, and the leave-page box only asks when leaving by a link.
 
+### Keyboard focus leaves "Add exercises" after a cancelled delete
+
+- From `exercise-picker-delete`: an admin's × in "Add exercises" opens the confirm box as a second Bootstrap modal, which takes over the focus trap. After Cancel the pop-up stays open, but Tab can move focus to the page behind it until the pop-up is closed and opened again. Mouse and touch are not affected. Not tried with a screen reader.
+
+### Deleting a shared exercise from the pop-up affects every user
+
+- From `exercise-picker-delete`: the × is one tap and a confirm away while picking exercises. Deleting a shared exercise removes it from everyone's catalogue and unlinks it from their past workouts (the names stay, but those entries no longer follow later edits of the exercise). The confirm says "for everyone", but does not say who used it. One in anyone's plan is refused.
+
+### The pop-up's delete not tried on a real phone
+
+- From `exercise-picker-delete`: the × and the confirm box over "Add exercises" were checked in Chrome at 390 px inside a frame, not with device emulation or on a phone. Not verified: how easy the × is to hit with a thumb next to the row's checkbox, and the pop-up on the split page, a logged workout and a new workout (same partial, only the workout day's was opened).
+
 ## General
 
 ### Muscle group and equipment pills not tried on a real phone

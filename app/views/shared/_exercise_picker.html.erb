@@ -31,10 +31,19 @@
               <% group_exercises.each do |exercise| %>
                 <% taken = taken_ids.include?(exercise.id) %>
                 <label class="picker-row <%= "is-taken" if taken %>">
-                  <%= check_box_tag "exercise_ids[]", exercise.id, false, id: "#{id}_#{exercise.id}", class: "form-check-input", disabled: taken %>
-                  <span class="picker-name"><%= exercise.name %></span>
+                  <%# Named by the name alone, so an admin's × inside the label is not read as part of it. %>
+                  <%= check_box_tag "exercise_ids[]", exercise.id, false, id: "#{id}_#{exercise.id}", class: "form-check-input", disabled: taken,
+                                                                         aria: { labelledby: "#{id}_#{exercise.id}_name" } %>
+                  <span class="picker-name" id="<%= id %>_<%= exercise.id %>_name"><%= exercise.name %></span>
                   <% if taken %><span class="text-muted small">Added</span><% end %>
                   <% unless exercise.shared? %><span class="chip">Yours</span><% end %>
+                  <% if current_user.admin? %>
+                    <%# A link, not button_to: this row is inside the "Add selected" form, and forms do not nest. %>
+                    <%= link_to exercise_path(exercise), class: "btn btn-link btn-sm text-danger picker-delete",
+                          "aria-label": "Delete #{exercise.name}", title: "Delete #{exercise.name}",
+                          data: { turbo_method: :delete, turbo_action: "advance",
+                                  turbo_confirm: "Delete #{exercise.name}#{' for everyone' if exercise.shared?}?" } do %><i class="fa-solid fa-xmark" aria-hidden="true"></i><% end %>
+                  <% end %>
                 </label>
               <% end %>
               </div>

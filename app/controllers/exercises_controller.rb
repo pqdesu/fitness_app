@@ -42,11 +42,12 @@ class ExercisesController < ApplicationController
     end
   end
 
+  # Back to the page it was deleted from: the Exercises page, or one with the "Add exercises" modal.
   def destroy
     if @exercise.destroy
-      redirect_to exercises_path, notice: "#{@exercise.name} deleted.", status: :see_other
+      redirect_back_or_to exercises_path, notice: "#{@exercise.name} deleted.", status: :see_other
     else
-      redirect_to exercises_path, alert: "#{@exercise.name} was not deleted: #{errors_of(@exercise)}", status: :see_other
+      redirect_back_or_to exercises_path, alert: "#{@exercise.name} was not deleted: #{errors_of(@exercise)}", status: :see_other
     end
   end
 
