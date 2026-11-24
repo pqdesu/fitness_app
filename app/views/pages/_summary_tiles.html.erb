@@ -4,5 +4,5 @@
   <div><dt>Exercises</dt><dd><%= summary.exercises %></dd></div>
   <div><dt>Sets</dt><dd><%= summary.sets %></dd></div>
   <div><dt>Top weight</dt><dd><%= summary.top_weight ? weight_number(summary.top_weight) : "–" %><% if summary.top_weight %><small> kg</small><% end %></dd></div>
-  <% if summary.cardio_seconds.positive? %><div><dt>Cardio</dt><dd><%# A number stays with its unit when the tile wraps ("1 h 3 min"). %><%= safe_join(duration_text(summary.cardio_seconds).scan(/\d+ \S+/).map { |part| tag.span(part, class: "text-nowrap") }, " ") %></dd></div><% end %>
+  <% if summary.cardio_seconds.positive? %><div class="week-summary-wide"><dt>Cardio</dt><dd><%# A number stays with its unit when the tile wraps ("1 h 3 min"). %><%= safe_join(duration_text(summary.cardio_seconds).scan(/\d+ \S+/).map { |part| tag.span(part, class: "text-nowrap") }, " ") %></dd></div><% end %>
 </dl>

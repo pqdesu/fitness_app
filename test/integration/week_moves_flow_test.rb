@@ -11,9 +11,10 @@ class WeekMovesFlowTest < FlowTest
 
     # Tuesday: nothing planned
     travel_to Time.zone.local(2026, 11, 17, 12) do
-      get dashboard_path
+      get root_path
       assert_select ".today-title", "Rest day"
-      assert_select ".today-header button.btn-primary[data-bs-target='#rest-day-start']", "Start workout"
+      # the choices fold like the box's other lists: closed, behind "Show workouts"
+      assert_select ".today button.toggle-days[data-bs-target='#rest-day-start'][aria-expanded=false]", text: /Show workouts/
       # one pill per workout of the split, by name only; its pop-up trains it as an extra
       assert_equal %w[Push Pull], css_select("#rest-day-start.collapse:not(.show) button[data-bs-toggle='modal']").map(&:text)
       assert_select "#rest-start-0 a[href=?]", workout_day_path(push, date: Date.current), text: "Train as extra"
@@ -29,7 +30,7 @@ class WeekMovesFlowTest < FlowTest
       assert log.rest_day?
       assert_equal 2, split.workout_days.reload.count
 
-      get dashboard_path
+      get root_path
       assert_select ".today", /Logged today · Pull, 1 set/
       assert_select ".today .chip-rest", "Rest day"
       assert_select ".recent-row .chip-rest", "Rest day"
@@ -254,12 +255,13 @@ class WeekMovesFlowTest < FlowTest
       assert_select ".today .eyebrow", false # the page heading has the date
     end
 
-    # Tuesday: a rest day, with the choices shown, not behind a button
+    # Tuesday: a rest day, with the choices folded behind "Show workouts" (owner, 2026-11-24)
     travel_to Time.zone.local(2026, 11, 17, 12) do
       get root_path
       assert_select ".today-title", "Rest day"
       assert_select ".today-header button[data-bs-target='#rest-day-start']", false
-      assert_equal %w[Push Pull], css_select("#rest-day-start.collapse.show button[data-bs-toggle='modal']").map(&:text)
+      assert_select ".today button.toggle-days[data-bs-target='#rest-day-start']", text: /Show workouts/
+      assert_equal %w[Push Pull], css_select("#rest-day-start.collapse:not(.show) button[data-bs-toggle='modal']").map(&:text)
       assert_select "#rest-start-1 a[href=?]", workout_day_path(pull, date: Date.current), text: "Train as extra"
       assert_select "#rest-day-start a[href=?]", new_workout_log_path(workout: "Legs")
 

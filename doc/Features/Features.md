@@ -4,8 +4,6 @@
 
 ### Home page
 
-- Today and Dashboard pages seems redundant to have in the app, I want to have 1 consolidated page like a home page. Please combine all the features into 1. Do not make abrupt changes, I will chose what I want to add or remove. For now just need to combine it.
-
 ### Calendar
 
 ### Exercise page
@@ -97,3 +95,4 @@
 - Make the Recent workout a dropdown, extend it to show it in more details and keep a summary of it at first.
 - Also do the same for the Active split to extend and show the weeksdays.
 - Have a today check as well not only the weekly but another box with todays workout and if none then have a button to start the workout so I can start adding the exercises done to be added to my workout. Like a simple quick button to start it
+- Today and Dashboard pages seems redundant to have in the app, I want to have 1 consolidated page like a home page. Please combine all the features into 1. Do not make abrupt changes, I will chose what I want to add or remove. For now just need to combine it.

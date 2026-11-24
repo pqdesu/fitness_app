@@ -74,7 +74,7 @@ class SplitsFlowTest < FlowTest
 
   test "one split is active, is ringed on the splits page and shown on the dashboard" do
     sign_in @user
-    get dashboard_path
+    get root_path
     assert_select ".split-card .empty-state a[href=?]", new_split_path
 
     ppl = @user.splits.create!(name: "PPL")
@@ -106,17 +106,17 @@ class SplitsFlowTest < FlowTest
     assert_select ".header-actions form[action=?]", activate_split_path(ppl)
 
     # the dashboard shows the active split and its week
-    get dashboard_path
+    get root_path
     assert_select ".split-card.is-active h2", "Upper lower"
     assert_select ".split-card.is-active .week a.is-set .week-label", "Upper"
     assert_select ".split-card.is-active a[href=?]", splits_path(from: "dashboard"), text: "Change"
 
     # changed from the dashboard: "Change" opens the splits, and choosing one returns to the dashboard
     get splits_path(from: "dashboard")
-    assert_select ".back-link[href=?]", dashboard_path
+    assert_select ".back-link[href=?]", root_path
     assert_select ".split-card:not(.is-active) form[action=?]", activate_split_path(ppl, from: "dashboard")
     patch activate_split_path(ppl, from: "dashboard"), headers: { "HTTP_REFERER" => splits_url(from: "dashboard") }
-    assert_redirected_to dashboard_path
+    assert_redirected_to root_path
     follow_redirect!
     assert_select ".split-card.is-active h2", "PPL"
     patch activate_split_path(upper_lower)

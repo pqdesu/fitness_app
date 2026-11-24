@@ -8,7 +8,7 @@ class DashboardFlowTest < FlowTest
     push = split.workout_days.create!(day: "Push", weekday: 1)
 
     travel_to Time.zone.local(2026, 11, 16, 12) do
-      get dashboard_path
+      get root_path
       assert_select ".stat-tile", 0
       assert_equal %w[0 0 0 –], css_select(".week-summary dd").map { |n| n.text.squish }
       assert_select ".week-overview-days li", 7
@@ -27,7 +27,7 @@ class DashboardFlowTest < FlowTest
       # a session of last week is not part of this week
       push.workout_logs.create!(date: Date.new(2026, 11, 9)).workout_log_exercises.create!(name: "Old").workout_sets.create!(reps_completed: 5, weight_used: 200)
 
-      get dashboard_path
+      get root_path
       # workouts, exercises, sets, top weight
       assert_equal ["1", "2", "3", "72.5 kg"], css_select(".week-summary dd").map { |n| n.text.squish }
       assert_select ".week-overview-days li.has-workout", 1
@@ -54,7 +54,10 @@ class DashboardFlowTest < FlowTest
     get workout_log_path(log, from: "dashboard")
     assert_select "form[action=?] input[name=_method][value=delete]", workout_log_path(log, from: "dashboard")
     delete workout_log_path(log, from: "dashboard")
-    assert_redirected_to dashboard_path
+    assert_redirected_to root_path
+    # the dashboard is the Home page now; an old link to it lands there
+    get "/dashboard"
+    assert_redirected_to root_path
     assert_not WorkoutLog.exists?(log.id)
 
     # from anywhere else it still goes to History
@@ -73,7 +76,7 @@ class DashboardFlowTest < FlowTest
     log.workout_log_exercises.create!(name: "Cable fly")
 
     travel_to Time.zone.local(2026, 11, 16, 12) do
-      get dashboard_path
+      get root_path
       row = ".recent-row"
       # collapsed summary: name, date and sets, split
       assert_select "#{row} .recent-toggle[aria-expanded=false][data-bs-target='#recent-log-#{log.id}']", 1
@@ -105,7 +108,7 @@ class DashboardFlowTest < FlowTest
 
     # Monday 16 November 2026
     travel_to Time.zone.local(2026, 11, 16, 12) do
-      get dashboard_path
+      get root_path
       assert_select "a[href=?]", new_split_path, count: 0
 
       # the month, Sunday first, with this week's row and today marked
@@ -124,7 +127,8 @@ class DashboardFlowTest < FlowTest
       assert_select ".week .week-day.is-today.is-set .week-label", "Push"
 
       # today's workout, nothing logged before
-      assert_select ".today .eyebrow", /Today · Monday, November 16/
+      assert_select ".page-header h1", "Monday, November 16"
+      assert_select ".today .eyebrow", false # the page heading has the date
       assert_select ".today-title", "Push day"
       # nothing is logged yet, so the button starts the workout by opening its day, on today's date
       assert_select ".today a.btn-primary[href=?]", workout_day_path(push, date: Date.current), text: "Start workout"
@@ -146,7 +150,7 @@ class DashboardFlowTest < FlowTest
       # today's own sets are not "last time"
       push.workout_logs.create!(date: Date.current).workout_log_exercises.create!(name: "Today lift")
 
-      get dashboard_path
+      get root_path
       assert_select ".today-last a[href=?]", workout_log_path(last, from: "dashboard"), text: "Monday, November 9"
       # with how many exercises and sets it had, as today's workout says once it has sets
       assert_select ".today-last .last-counts", "2 exercises\u00a0· 5 sets"
@@ -179,13 +183,13 @@ class DashboardFlowTest < FlowTest
       pull_log = pull_day.workout_logs.create!(date: Date.new(2026, 11, 9))
       someone_else = @admin.splits.create!(name: "Theirs").workout_days.create!(day: "Legs", weekday: 1)
       someone_else.workout_logs.create!(date: Date.new(2026, 11, 10))
-      get dashboard_path
+      get root_path
       assert_equal %w[2 9 16], css_select(".calendar-day.has-workout").map(&:text)
       assert_select "a.calendar-day[href=?]", workout_logs_path(date: "2026-11-09", from: "dashboard"), text: "9"
       assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push and Pull workouts"
       get workout_logs_path(date: "2026-11-09", from: "dashboard")
       assert_select "h1", "Workouts on November 09, 2026"
-      assert_select ".back-link[href=?]", dashboard_path, count: 1
+      assert_select ".back-link[href=?]", root_path, count: 1
       assert_select "table.app-table tbody tr", 2
       assert_select "a[href=?]", workout_log_path(pull_log, from: "dashboard")
       assert_select "a[href=?]", workout_log_path(last, from: "dashboard")
@@ -197,12 +201,12 @@ class DashboardFlowTest < FlowTest
       get workout_logs_path(date: "not-a-date")
       assert_redirected_to workout_logs_path
       pull_log.destroy!
-      get dashboard_path
+      get root_path
 
-      # the ring is around the split only; today's exercises are in their own box below it
+      # the ring is around the split only; today's exercises are in their own box above it
       assert_select ".split-card.is-active .week", 1
       assert_select ".split-card.is-active .today, .split-card.is-active .last-lifts", 0
-      assert_select ".split-card.is-active + .card.today .last-lifts", 1
+      assert_select ".card.today:has(+ .split-card.is-active) .last-lifts", 1
 
       # opened from the dashboard, last time's workout goes back to the dashboard
       get workout_log_path(last, from: "dashboard")
@@ -223,7 +227,7 @@ class DashboardFlowTest < FlowTest
       someone_else.workout_logs.create!(date: Date.new(2026, 11, 19)).workout_log_exercises.create!(name: "Not mine")
       patch activate_split_path(upper_lower)
 
-      get dashboard_path
+      get root_path
       assert_select ".today-title", "Lower day"
       assert_select ".today-last a[href=?]", workout_log_path(legs_log, from: "dashboard"), text: "Thursday, November 19"
       assert_select ".today-last .last-source", /Legs in PPL/
@@ -234,7 +238,7 @@ class DashboardFlowTest < FlowTest
     # Tuesday: nothing planned
     travel_to Time.zone.local(2026, 11, 17, 12) do
       logs_before = WorkoutLog.count
-      get dashboard_path
+      get root_path
       assert_select ".today-title", "Rest day"
       assert_select ".today", /No workout is planned for Tuesday/
       # a rest day can still start any workout of the split: its pop-up opens that workout day
@@ -268,7 +272,7 @@ class DashboardFlowTest < FlowTest
 
     # Tuesday: Push again, in the new split
     travel_to Time.zone.local(2026, 11, 17, 12) do
-      get dashboard_path
+      get root_path
       assert_select ".today-title", "Push day"
       assert_select ".today-last a[href=?]", workout_log_path(log, from: "dashboard"), text: "Monday, November 16"
       assert_select ".today-last .last-source", /from a deleted split/
@@ -297,17 +301,17 @@ class DashboardFlowTest < FlowTest
 
     # 01:00 UTC on Tuesday 1 December is still Monday 30 November in São Paulo and already Tuesday in Tokyo
     travel_to Time.utc(2026, 12, 1, 1) do
-      get dashboard_path
+      get root_path
       assert_select "body[data-time-zone=?]", "Etc/UTC"
       assert_select ".calendar-card h2", "December 2026"
       assert_select ".today-title", "Rest day"
 
       cookies[:time_zone] = "America/Sao_Paulo"
-      get dashboard_path
+      get root_path
       assert_select "body[data-time-zone=?][data-reloadable=true]", "America/Sao_Paulo"
       assert_select ".calendar-card h2", "November 2026"
       assert_select ".calendar-day.is-today", text: "30"
-      assert_select ".today .eyebrow", /Monday, November 30/
+      assert_select ".page-header h1", "Monday, November 30"
       assert_select ".today-title", "Push day"
 
       # sets are logged under the user's own date too
@@ -315,7 +319,7 @@ class DashboardFlowTest < FlowTest
       assert_equal Date.new(2026, 11, 30), @user.workout_logs.last.date
 
       cookies[:time_zone] = "Asia/Tokyo"
-      get dashboard_path
+      get root_path
       assert_select ".calendar-card h2", "December 2026"
       assert_select ".today-title", "Rest day"
 
@@ -324,14 +328,14 @@ class DashboardFlowTest < FlowTest
 
       # a zone the server does not know falls back to the last one it did know
       cookies[:time_zone] = "Not/AZone"
-      get dashboard_path
+      get root_path
       assert_select "body[data-time-zone=?]", "Asia/Tokyo"
       assert_equal "Asia/Tokyo", @user.reload.time_zone
 
       # a browser that has not reported a zone yet (new session, no JavaScript) starts in the saved one
       cookies.delete :time_zone
       @user.update_column(:time_zone, "America/Sao_Paulo")
-      get dashboard_path
+      get root_path
       assert_select "body[data-time-zone=?]", "America/Sao_Paulo"
       assert_select ".today-title", "Push day"
     end
@@ -348,7 +352,7 @@ class DashboardFlowTest < FlowTest
       last = upper.workout_logs.create!(date: Date.new(2026, 11, 15))
       last.workout_log_exercises.create!(name: "Old lift").workout_sets.create!(reps_completed: 6, weight_used: 80)
 
-      get dashboard_path
+      get root_path
       assert_equal ["Old lift"], css_select(".last-lifts .row-title").map(&:text)
       assert_select ".today-lifts", 0
 
@@ -358,7 +362,7 @@ class DashboardFlowTest < FlowTest
       # an exercise opened today without a set yet is not listed
       today.workout_log_exercises.create!(name: "No sets yet")
 
-      get dashboard_path
+      get root_path
       assert_select ".today-done a[href=?]", workout_log_path(today, from: "dashboard"), text: "2 sets"
       assert_equal ["Bench press"], css_select(".today-lifts .row-title").map(&:text)
       assert_equal ["70 kg × 5 reps"], css_select(".today-lifts .top-set").map { |n| n.text.squish }
@@ -376,7 +380,7 @@ class DashboardFlowTest < FlowTest
     push = split.workout_days.create!(day: "Push", weekday: 1)
 
     travel_to Time.zone.local(2026, 11, 16, 12) do
-      get dashboard_path
+      get root_path
       assert_select ".calendar-card h2 button.calendar-toggle[data-bs-target='#calendar-body'][aria-expanded=true]", "November 2026"
       assert_select ".calendar-card #calendar-body.collapse.show .calendar", 1
       assert_select ".calendar-card a[href=?]", dashboard_month_path, text: "Month"
@@ -401,7 +405,7 @@ class DashboardFlowTest < FlowTest
       # the calendar is there without its fold, and the logged day links to its workout
       assert_select ".calendar-toggle", 0
       assert_select "a.calendar-day.has-workout", text: "16"
-      assert_select ".nav-link.active", text: "Dashboard"
+      assert_select ".nav-link.active", text: "Home"
     end
   end
 
@@ -418,7 +422,7 @@ class DashboardFlowTest < FlowTest
       legs.workout_logs.create!(date: Date.new(2026, 11, 20)) # opened, nothing in it
       @user.workout_logs.create!(workout: "Pull", date: Date.new(2026, 11, 17)).workout_log_exercises.create!(name: "Row")
 
-      get dashboard_path
+      get root_path
       # the 16th was a planned day and trained: filled, and a link
       assert_select "a.calendar-day.is-planned.has-workout", text: "16"
       # the 18th was planned and passed with nothing logged: dotted, and a link to add the workout late
@@ -449,7 +453,7 @@ class DashboardFlowTest < FlowTest
       assert_nil @user.workout_logs.find_by(date: "2026-11-18")
       post workout_day_workout_log_exercises_path(pull, date: "2026-11-18"), params: { exercise_ids: [@bench.id] }
       assert @user.workout_logs.exists?(workout: "Pull", date: "2026-11-18")
-      get dashboard_path
+      get root_path
       assert_select "a.calendar-day.is-planned.has-workout", text: "18"
       assert_select ".week .week-day.is-extra", 1
       assert_select ".week .week-day.is-set.is-today", 1

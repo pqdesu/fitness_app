@@ -1,9 +1,10 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: { registrations: "users/registrations" }
-  # Signed out the landing page; signed in the Today page: today's workout, or on a rest day what
-  # to train instead. The dashboard (month, week, recent workouts) is its own page.
+  # Signed out the landing page; signed in the Home page: today's workout (or on a rest day what to
+  # train instead), this week, the month's calendar and recent workouts.
   root to: "pages#home"
-  get "dashboard", to: "pages#dashboard"
+  # The dashboard was its own page until it joined the Today page as Home; old links land there.
+  get "dashboard", to: redirect("/")
   # The month of the dashboard's calendar: its totals, splits and exercises
   get "dashboard/month", to: "pages#month", as: :dashboard_month
 

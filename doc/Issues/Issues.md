@@ -12,6 +12,10 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 ## Home page
 
+### The Home page seen only on a rest day, in headless Chrome
+
+- From `today-dashboard-consolidation`: the merged Home page was checked at 390 px and 1280 px in headless Chrome, on a rest day only (the development data's Tuesday). Not seen: a day with a planned workout (Start workout or Continue beside the title, today's sets), a user with no split, and a real phone. On a phone the Exercises button sits on its own line under the long date heading. From desktop width, Recent workouts sits under the right column, so a calendar taller than the Today box and the split card together would leave a gap above it; not seen with real data.
+
 ### Missed days follow today's plan, even in old weeks
 
 - From `calendar-month-and-missed-days`: a day is "planned" or "missed" by the active split's plan with that week's moves. A week trained under an earlier split, or before a weekday was changed, is judged by today's plan, so it can show a missed (dotted) day that was never planned then, or an off-plan ring on a day that was. Not verified on real old data beyond the November sample.
@@ -136,17 +140,9 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `workout-timer`: leaving the workout with the browser's back button, a swipe back or by closing the tab does not ask about a paused timer; only the app's links (the back arrow, the menu, Plan) do.
 
-### Deleting a workout opened from Today goes to the dashboard
-
-- From `bottom-navbar-mobile`: the Today page's box shares its links with the dashboard's, and they carry `?from=dashboard`. Opening a logged workout from Today and deleting it returns to the dashboard (`/dashboard`), not to Today. Its back arrow follows the pages visited, so it still returns to Today.
-
 ### Bottom bar not tried on a real phone
 
 - From `bottom-navbar-mobile`: the bottom tab bar, the back arrow in the top bar's corner and the iPhone safe-area padding (`viewport-fit=cover`) were checked only in desktop Chrome inside a 390 px frame. Not verified: that the tabs clear the iPhone home indicator, that a phone turned sideways keeps the page clear of the notch, the tap feel, and the fixed back arrow while Safari's toolbar slides. A flash card can also cover the back arrow for up to 5 seconds.
-
-### A week move without a Referer lands on Today
-
-- From `bottom-navbar-mobile`: "Move a workout" and "Back to the plan" return to the page they were sent from by its Referer. A browser that sends none (a strict privacy setting) lands on Today even when the move was made on the dashboard. The move is still saved. Not verified on such a browser.
 
 ### Exercises page pages a big muscle group
 
@@ -227,6 +223,18 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 - Currently on calendar the workout days appeared to be missed (white color on calendar) and week appears to be done (filled with blue), but yesterday I missed the workoutday and still is colored as if I did the workout - Check /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074724.png and /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074728.png. I want on calendat to be filled wtih blue if a workout was logged and white like it is now if the workout has no logs. ON the week do the same. Also have a different way to show whihc day of the week it is by having a circle around the day.
 - Cause: on the calendar the only filled circle was today, and a logged day was a white ring; on the week strip every planned day was filled whether or not it was trained. A workout left with nothing in it (Friday 20: an Upper log with no exercise) counted as logged.
 - Fixed on `calendar-month-and-missed-days` (owner's rules, 2026-11-24, same on the calendar and the week strip): a day of the plan (with that week's moves) is filled blue from today on, or once trained; a planned day that passed with nothing logged is dotted (a link to add the workout late); a workout on a day the plan did not have is a light ring; today has a ring around it. "Logged" is an exercise added or the timer started, so a workout with nothing in it is not logged. Every day has a tooltip and a halo when pointed at.
+
+### Deleting a workout opened from Today goes to the dashboard
+
+- From `bottom-navbar-mobile`: the Today page's box shares its links with the dashboard's, and they carry `?from=dashboard`. Opening a logged workout from Today and deleting it returns to the dashboard (`/dashboard`), not to Today. Its back arrow follows the pages visited, so it still returns to Today.
+
+- Fixed on `today-dashboard-consolidation`: Today and the dashboard are one Home page at `/`, so deleting a workout opened from it returns there (`/dashboard` now redirects to `/`).
+
+### A week move without a Referer lands on Today
+
+- From `bottom-navbar-mobile`: "Move a workout" and "Back to the plan" return to the page they were sent from by its Referer. A browser that sends none (a strict privacy setting) lands on Today even when the move was made on the dashboard. The move is still saved. Not verified on such a browser.
+
+- Fixed on `today-dashboard-consolidation`: there is one Home page now, so landing on it is landing where the move was made.
 
 ## Exercise page
 
