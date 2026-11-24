@@ -4,12 +4,25 @@
 
 ### Calendar and week
 
-- Currently on calendar the workout days appeared to be missed (white color on calendar) and week appears to be done (filled with blue), but yesterday I missed the workoutday and still is colored as if I did the workout - Check /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074724.png and /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074728.png. I want on calendat to be filled wtih blue if a workout was logged and white like it is now if the workout has no logs. ON the week do the same. Also have a different way to show whihc day of the week it is by having a circle around the day.
 - Small UI issue on calendar. The numbers appeared to be slight off center. Check /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 080640.png
 
 # Potential issues
 
 Risks a branch knowingly left behind: not seen as a bug yet, but they could become one. Each says which branch it comes from. When one is seen for real it moves up to the open issues; when it is fixed it moves to "Issues resolved".
+
+## Home page
+
+### Missed days follow today's plan, even in old weeks
+
+- From `calendar-month-and-missed-days`: a day is "planned" or "missed" by the active split's plan with that week's moves. A week trained under an earlier split, or before a weekday was changed, is judged by today's plan, so it can show a missed (dotted) day that was never planned then, or an off-plan ring on a day that was. Not verified on real old data beyond the November sample.
+
+### A workout with nothing in it still shows in some places
+
+- From `calendar-month-and-missed-days`: the calendar, "This week" and the workout totals ignore a workout with no exercise and no timer, but Recent workouts, "Last time" and "Move a workout" (`Dashboard#movable_days`) still count it, so Friday's empty Upper still reads "0 sets" in Recent workouts and a workout moved off an empty log is refused as "already trained".
+
+### The calendar's day hover and missed-day links not tried on a real mouse and phone
+
+- From `calendar-month-and-missed-days`: headless Chrome reports no hover, so the halo was only checked by forcing its rule on (the rule's `(hover: hover)` wrapper itself was not exercised). Tapping a missed day on a real phone, and the dotted look at 390 px on a real screen, were not tried.
 
 ## Exercise page
 
@@ -196,6 +209,12 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 ### Split override
 
 - Currently because I logged 2 workouts for the day I can only see the previously set on. Please delete the old one from the db also check if it is still possible to log workouts on the same day. It should only be possible if the split changes.
+
+### Calendar and week showed a missed day as done
+
+- Currently on calendar the workout days appeared to be missed (white color on calendar) and week appears to be done (filled with blue), but yesterday I missed the workoutday and still is colored as if I did the workout - Check /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074724.png and /home/pedro/code/pqdesu/fitness_app/doc/Features/Pics/Screenshot 2026-11-21 074728.png. I want on calendat to be filled wtih blue if a workout was logged and white like it is now if the workout has no logs. ON the week do the same. Also have a different way to show whihc day of the week it is by having a circle around the day.
+- Cause: on the calendar the only filled circle was today, and a logged day was a white ring; on the week strip every planned day was filled whether or not it was trained. A workout left with nothing in it (Friday 20: an Upper log with no exercise) counted as logged.
+- Fixed on `calendar-month-and-missed-days` (owner's rules, 2026-11-24, same on the calendar and the week strip): a day of the plan (with that week's moves) is filled blue from today on, or once trained; a planned day that passed with nothing logged is dotted (a link to add the workout late); a workout on a day the plan did not have is a light ring; today has a ring around it. "Logged" is an exercise added or the timer started, so a workout with nothing in it is not logged. Every day has a tooltip and a halo when pointed at.
 
 ## Exercise page
 

@@ -12,7 +12,7 @@
 
 <div class="row g-4">
   <div class="col-lg-5">
-    <%= render "calendar", today: today, weeks: dashboard.calendar_weeks, logs_by_date: dashboard.calendar_logs %>
+    <%= render "calendar", today: today, weeks: dashboard.calendar_weeks, logs_by_date: dashboard.calendar_logs, states: dashboard.calendar_states, day_states: dashboard.day_states %>
   </div>
 
   <div class="col-lg-7">
@@ -26,7 +26,7 @@
           <% if dashboard.several_splits? %><%= link_to "Change", splits_path(from: "dashboard"), class: "link-quiet" %><% end %>
         </div>
         <div class="card-body">
-          <%= render "splits/week", split: split, workout_days: dashboard.days, plan: dashboard.week_plan, today: today.wday %>
+          <%= render "splits/week", split: split, workout_days: dashboard.days, plan: dashboard.week_plan, states: dashboard.week_states, today: today.wday %>
           <%= render "week_moves", dashboard: dashboard, split: split %>
           <%= render "week_overview", dates: dashboard.week_dates, logs_by_date: dashboard.week_logs, summary: dashboard.week_summary, today: today %>
         </div>

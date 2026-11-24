@@ -6,9 +6,6 @@
 
 ### Calendar
 
-- Make possible to open the Month of the calendar by clicking the name of the month to open a page of the month with the data of the splits, sets, weight, exercises done etc.
-- Have the month be a dropdown as well, expand it when you click the month.
-
 ### Exercise page
 
 - Admins are also able to delete exercises already created with a small button on the side of the name in the modal.
@@ -55,6 +52,8 @@
 
 - Should only have the day highlighted if workout was resgistered that day
 - The highlighted day should be interactive. I can click on it to see the recorded exercises and workout
+- Make possible to open the Month of the calendar by clicking the name of the month to open a page of the month with the data of the splits, sets, weight, exercises done etc.
+- Have the month be a dropdown as well, expand it when you click the month.
 
 ### Split Page
 

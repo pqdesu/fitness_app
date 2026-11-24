@@ -1,0 +1,19 @@
+// The month page: one row per split and per exercise
+.month-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 1.25rem;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: .75rem;
+    padding: .625rem 0;
+    border-top: 1px solid $line;
+  }
+  li:first-child { border-top: 0; }
+  // A long exercise name wraps instead of pushing the row wider than the phone
+  li > :first-child { min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+  li > :last-child { flex-shrink: 0; white-space: nowrap; text-align: right; }
+}

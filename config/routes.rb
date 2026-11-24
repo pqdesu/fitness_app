@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   # to train instead. The dashboard (month, week, recent workouts) is its own page.
   root to: "pages#home"
   get "dashboard", to: "pages#dashboard"
+  # The month of the dashboard's calendar: its totals, splits and exercises
+  get "dashboard/month", to: "pages#month", as: :dashboard_month
 
   # Exercises: the shared catalogue (admins manage it) and each user's own exercises
   resources :exercises, except: [:show]
