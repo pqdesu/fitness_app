@@ -4,6 +4,8 @@
 
 ### Home page
 
+- Today and Dashboard pages seems redundant to have in the app, I want to have 1 consolidated page like a home page. Please combine all the features into 1. Do not make abrupt changes, I will chose what I want to add or remove. For now just need to combine it.
+
 ### Calendar
 
 ### Exercise page
