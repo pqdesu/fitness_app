@@ -69,4 +69,15 @@ class WorkoutLogTest < ActiveSupport::TestCase
       assert_equal Date.new(2026, 11, 16), log.reload.date
     end
   end
+
+  test "a log counts as logged once an exercise was added or its timer was started" do
+    log = @day.workout_logs.create!(date: Date.current)
+    assert_not log.logged?, "a log with nothing in it is not a workout done"
+
+    log.workout_log_exercises.create!(name: "Bench press")
+    assert log.reload.logged?
+
+    timed = @day.workout_logs.create!(date: Date.current - 7, started_at: Time.current)
+    assert timed.logged?
+  end
 end

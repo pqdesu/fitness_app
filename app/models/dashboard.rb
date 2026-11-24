@@ -72,7 +72,34 @@ class Dashboard
   # The calendar marks the days a workout was logged on: date => workout logs.
   def calendar_logs
     @calendar_logs ||= user.workout_logs.where(date: calendar_weeks.first.first..calendar_weeks.last.last)
-                           .order(:id).group_by(&:date)
+                           .includes(:workout_log_exercises).order(:id).group_by(&:date)
+  end
+
+  # Answers how each day stands and which workout day the plan has on it.
+  def day_states = @day_states ||= DayStates.new(user, split, today)
+
+  # How each day of the calendar stands, by date (see day_states).
+  def calendar_states = @calendar_states ||= day_states.of(calendar_weeks.flatten, calendar_logs)
+
+  # The same for this week, by weekday (0 = Sunday).
+  def week_states = @week_states ||= day_states.of(week_dates, week_logs).transform_keys(&:wday)
+
+  # This month's workout logs, with their exercises and sets, oldest first.
+  def month_logs
+    @month_logs ||= user.workout_logs.where(date: today.all_month).with_sets.includes(workout_day: :split)
+                        .order(:date, :id).to_a
+  end
+
+  def month_summary
+    @month_summary ||= WorkoutSummary.new(month_logs)
+  end
+
+  # split => its summary of the month, the busiest first; nil is the workouts outside any split
+  # (a deleted split, or a workout trained as an extra).
+  def month_by_split
+    month_logs.group_by { |log| log.workout_day&.split }
+              .transform_values { |logs| WorkoutSummary.new(logs) }
+              .sort_by { |_split, summary| -summary.workouts }
   end
 
   # This week, Sunday to Saturday.

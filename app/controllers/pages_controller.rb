@@ -14,4 +14,9 @@ class PagesController < ApplicationController
   def dashboard
     @dashboard = Dashboard.new(current_user, Date.current)
   end
+
+  # What was done this month: the totals, each split's and each exercise's share.
+  def month
+    @dashboard = Dashboard.new(current_user, Date.current)
+  end
 end

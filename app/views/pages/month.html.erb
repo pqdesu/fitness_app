@@ -1,0 +1,55 @@
+<% dashboard = @dashboard %>
+<% summary = dashboard.month_summary %>
+<% back_to dashboard_path %>
+<div class="page-header">
+  <div>
+    <p class="eyebrow">Month</p>
+    <h1><%= l dashboard.today, format: "%B %Y" %></h1>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <%= render "calendar", today: dashboard.today, weeks: dashboard.calendar_weeks, logs_by_date: dashboard.calendar_logs, states: dashboard.calendar_states, day_states: dashboard.day_states, foldable: false %>
+  </div>
+
+  <div class="col-lg-7">
+    <% if summary.workouts.zero? %>
+      <div class="card">
+        <div class="empty-state">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <p>No workouts logged this month.</p>
+        </div>
+      </div>
+    <% else %>
+      <div class="card">
+        <div class="card-header"><h2>Totals</h2></div>
+        <div class="card-body"><%= render "summary_tiles", summary: summary %></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Splits</h2></div>
+        <ul class="month-list">
+          <% dashboard.month_by_split.each do |split, split_summary| %>
+            <li>
+              <span><%= split ? link_to(split.name, split, class: "row-title") : "No split" %></span>
+              <span class="text-muted small"><%= pluralize(split_summary.workouts, "workout") %> · <%= sets_and_time(split_summary.sets, split_summary.cardio_seconds) %></span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>Exercises</h2></div>
+        <ul class="month-list">
+          <% summary.by_exercise.each do |name, sets, top_weight, cardio_seconds| %>
+            <li>
+              <span><%= name %></span>
+              <span class="text-muted small"><%= [sets_and_time(sets, cardio_seconds), (("#{weight_number(top_weight)} kg") if top_weight)].compact.join(" · ") %></span>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</div>

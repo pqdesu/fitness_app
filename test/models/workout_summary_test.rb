@@ -57,4 +57,12 @@ class WorkoutSummaryTest < ActiveSupport::TestCase
 
     assert_equal [0, 0, 0, nil], [summary.workouts, summary.exercises, summary.sets, summary.top_weight]
   end
+
+  test "by exercise: sets and heaviest weight of each, the most sets first" do
+    monday = log_with(@push, Date.new(2026, 11, 16), { "Bench press" => [[8, 60], [6, 80]], "Dips" => [[12, nil]] })
+    wednesday = log_with(@pull, Date.new(2026, 11, 18), { "Bench press" => [[5, 100]], "Row" => [[10, 70]] })
+
+    assert_equal [["Bench press", 3, 100, 0], ["Dips", 1, nil, 0], ["Row", 1, 70, 0]],
+                 WorkoutSummary.new([monday, wednesday]).by_exercise
+  end
 end

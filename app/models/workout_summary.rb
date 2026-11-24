@@ -7,7 +7,7 @@ class WorkoutSummary
   end
 
   def workouts
-    @logs.size
+    @logs.count(&:logged?)
   end
 
   # Exercises that have at least one set or cardio row, each counted once however many workouts it was done in.
@@ -22,7 +22,16 @@ class WorkoutSummary
   # The heaviest weight of any set; nil when only bodyweight sets (or none) were recorded. A
   # bodyweight exercise's weight is only what was added or taken off, so it is not a top weight.
   def top_weight
-    lifts.reject(&:bodyweight?).flat_map(&:workout_sets).filter_map(&:weight_used).max
+    heaviest(lifts)
+  end
+
+  # One row per exercise, the one with most sets first: [name, sets, heaviest weight, cardio seconds].
+  def by_exercise
+    rows = lifts.group_by(&:name).map do |name, entries|
+      [name, entries.sum { |lift| lift.workout_sets.size }, heaviest(entries),
+       entries.sum { |lift| lift.cardio_entries.sum(&:duration_seconds) }]
+    end
+    rows.sort_by { |name, sets, *| [-sets, name] }
   end
 
   # The time of every cardio row, in seconds.
@@ -35,6 +44,10 @@ class WorkoutSummary
   end
 
   private
+
+  def heaviest(entries)
+    entries.reject(&:bodyweight?).flat_map(&:workout_sets).filter_map(&:weight_used).max
+  end
 
   def lifts
     @lifts ||= @logs.flat_map(&:workout_log_exercises).select { |lift| lift.workout_sets.any? || lift.cardio_entries.any? }

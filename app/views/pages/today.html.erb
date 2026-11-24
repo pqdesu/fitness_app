@@ -20,7 +20,7 @@
         <%= link_to split.name, split, class: "link-quiet" %>
       </div>
       <div class="card-body">
-        <%= render "splits/week", split: split, workout_days: dashboard.days, plan: dashboard.week_plan, today: dashboard.today.wday %>
+        <%= render "splits/week", split: split, workout_days: dashboard.days, plan: dashboard.week_plan, states: dashboard.week_states, today: dashboard.today.wday %>
         <%= render "week_moves", dashboard: dashboard, split: split %>
       </div>
     </div>

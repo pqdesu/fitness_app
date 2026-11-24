@@ -41,6 +41,10 @@ class WorkoutLog < ApplicationRecord
 
   # The timer starts on the day the workout is done, so only on today's workout. Once started it
   # pauses, resumes and stops on any day, and the workout keeps its own date.
+  # Something was recorded: an exercise was added, or the timer was started. A workout left with
+  # nothing (every exercise taken out again) is not a workout done, so the calendar and week skip it.
+  def logged? = started_at.present? || workout_log_exercises.any?
+
   def timer_today?
     date == Date.current
   end

@@ -32,3 +32,7 @@ $rest-text: #8A5A00;
 // logged on. The muted text grey, so they still read (4.7:1 even on this week's tinted row); a
 // lighter weight than the month's own days keeps them secondary.
 $outside-day: $muted;
+// A day trained that the plan did not have (calendar and week): a light ring, lighter than the blue of a planned day.
+$extra-ring: #8C93F0;
+// The halo drawn around a day of the calendar or the week when it is pointed at.
+$hover-halo: color-mix(in srgb, #{$blue} 35%, transparent);

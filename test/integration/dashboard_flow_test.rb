@@ -161,7 +161,7 @@ class DashboardFlowTest < FlowTest
       assert_equal %w[2 9 16], css_select(".calendar-day.has-workout").map(&:text)
       assert_select "a.calendar-day.has-workout[href=?]", workout_log_path(last, from: "dashboard"), text: "9"
       # a table of cells, not a grid (which promises arrow-key moves); a logged day's link sits inside its cell
-      assert_select ".calendar[role=table] [role=row] [role=cell] > a.calendar-day", 3
+      assert_select ".calendar[role=table] [role=row] [role=cell] > a.calendar-day.has-workout", 3
       assert_select ".calendar[role=grid], .calendar [role=gridcell], .calendar a[role]", 0
       assert_select "a.calendar-day.has-workout[href=?]", workout_log_path(older, from: "dashboard"), text: "2"
       assert_select "a.calendar-day.has-workout.is-today[aria-current=date]", text: "16"
@@ -367,6 +367,99 @@ class DashboardFlowTest < FlowTest
       # last time is still one tap away, but its sets no longer stand in for today's
       assert_select ".last-lifts", 0
       assert_select ".today-previous a[href=?]", workout_log_path(last, from: "dashboard"), text: "Sunday, November 15"
+    end
+  end
+
+  test "the calendar's month name folds it, and Month opens the month's totals, splits and exercises" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+
+    travel_to Time.zone.local(2026, 11, 16, 12) do
+      get dashboard_path
+      assert_select ".calendar-card h2 button.calendar-toggle[data-bs-target='#calendar-body'][aria-expanded=true]", "November 2026"
+      assert_select ".calendar-card #calendar-body.collapse.show .calendar", 1
+      assert_select ".calendar-card a[href=?]", dashboard_month_path, text: "Month"
+
+      get dashboard_month_path
+      assert_response :success
+      assert_select ".empty-state", /No workouts logged this month/
+
+      log = push.workout_logs.create!(date: Date.current)
+      bench = log.workout_log_exercises.create!(name: "Bench press")
+      bench.workout_sets.create!(reps_completed: 8, weight_used: 60)
+      bench.workout_sets.create!(reps_completed: 6, weight_used: 72.5)
+      # October is not part of November
+      push.workout_logs.create!(date: Date.new(2026, 10, 26)).workout_log_exercises.create!(name: "Old").workout_sets.create!(reps_completed: 5, weight_used: 200)
+
+      get dashboard_month_path
+      assert_select "h1", "November 2026"
+      assert_equal ["1", "1", "2", "72.5 kg"], css_select(".week-summary dd").map { |n| n.text.squish }
+      assert_select ".month-list li", text: /PPL\s+1 workout · 2 sets/
+      assert_select ".month-list li", text: /Bench press\s+2 sets · 72.5 kg/
+      assert_select ".month-list li", text: /Old/, count: 0
+      # the calendar is there without its fold, and the logged day links to its workout
+      assert_select ".calendar-toggle", 0
+      assert_select "a.calendar-day.has-workout", text: "16"
+      assert_select ".nav-link.active", text: "Dashboard"
+    end
+  end
+
+  test "the calendar and the week strip fill a planned day, dot a missed one and ring one off the plan" do
+    sign_in @user
+    split = @user.splits.create!(name: "PPL")
+    push = split.workout_days.create!(day: "Push", weekday: 1)
+    pull = split.workout_days.create!(day: "Pull", weekday: 3)
+    legs = split.workout_days.create!(day: "Legs", weekday: 5)
+
+    # Friday 20 November 2026
+    travel_to Time.zone.local(2026, 11, 20, 12) do
+      push.workout_logs.create!(date: Date.new(2026, 11, 16)).workout_log_exercises.create!(name: "Bench").workout_sets.create!(reps_completed: 8)
+      legs.workout_logs.create!(date: Date.new(2026, 11, 20)) # opened, nothing in it
+      @user.workout_logs.create!(workout: "Pull", date: Date.new(2026, 11, 17)).workout_log_exercises.create!(name: "Row")
+
+      get dashboard_path
+      # the 16th was a planned day and trained: filled, and a link
+      assert_select "a.calendar-day.is-planned.has-workout", text: "16"
+      # the 18th was planned and passed with nothing logged: dotted, and a link to add the workout late
+      assert_select "a.calendar-day.is-missed[href=?][title=?]", workout_day_path(pull, date: "2026-11-18"),
+                    "Wednesday, November 18: Pull missed. Add it.", text: "18"
+      # every day has a tooltip: what was trained, what is planned, or just the date
+      assert_select "a.calendar-day.is-planned[title=?]", "Monday, November 16: Push workout", text: "16"
+      assert_select "span.calendar-day.is-planned[title=?]", "Friday, November 20: Legs planned", text: "20"
+      assert_select "span.calendar-day[title=?]", "Thursday, November 19", text: "19"
+      # the 17th was trained off the plan: a light ring, and a link
+      assert_select "a.calendar-day.is-extra.has-workout", text: "17"
+      # today (Friday, planned, nothing in it yet) is filled with its ring, and not a link
+      assert_select "span.calendar-day.is-today.is-planned", text: "20"
+      assert_select "a.calendar-day", text: "20", count: 0
+      # a day to come that the plan has is filled too; a day off the plan with nothing is plain
+      assert_select "span.calendar-day.is-planned", text: "27"
+      assert_select ".calendar-day.is-planned, .calendar-day.is-missed, .calendar-day.is-extra", text: "19", count: 0
+
+      # the same on the week strip: Monday filled, Wednesday dotted, Tuesday a light ring
+      assert_select ".week .week-day.is-missed", 1
+      assert_select ".week .week-day.is-missed .week-label", "Pull"
+      assert_select ".week a.week-day.is-missed[title=?]", "Wednesday: Pull, missed. Add it."
+      assert_select ".week a.week-day.is-extra[title=?]", "Tuesday: add a workout day, trained off the plan"
+
+      # clicking the missed day opens that workout on that date, and the first exercise logs it there
+      get workout_day_path(pull, date: "2026-11-18")
+      assert_select "p.text-muted", /Wednesday, November 18/
+      assert_nil @user.workout_logs.find_by(date: "2026-11-18")
+      post workout_day_workout_log_exercises_path(pull, date: "2026-11-18"), params: { exercise_ids: [@bench.id] }
+      assert @user.workout_logs.exists?(workout: "Pull", date: "2026-11-18")
+      get dashboard_path
+      assert_select "a.calendar-day.is-planned.has-workout", text: "18"
+      assert_select ".week .week-day.is-extra", 1
+      assert_select ".week .week-day.is-set.is-today", 1
+      # the week's list leaves out the empty workout of today
+      assert_select ".week-overview-days li.is-today", text: /Rest/
+
+      # the split page shows only the plan
+      get split_path(split)
+      assert_select ".week .week-day.is-missed, .week .week-day.is-extra", 0
+      assert_select ".week .week-day.is-set", 3
     end
   end
 end

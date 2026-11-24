@@ -93,7 +93,7 @@ module ApplicationHelper
     page = controller_name == "pages" && action_name
     sections = [
       ["Today", root_path, "calendar-day", page == "home" || todays_workout_page?],
-      ["Dashboard", dashboard_path, "house", page == "dashboard" || (phone && controller_name == "exercises")],
+      ["Dashboard", dashboard_path, "house", page.in?(%w[dashboard month]) || (phone && controller_name == "exercises")],
       ["Splits", splits_path, "layer-group",
        controller_name.in?(%w[splits workout_days workout_exercises]) && !todays_workout_page?],
       ["History", workout_logs_path, "clock-rotate-left",

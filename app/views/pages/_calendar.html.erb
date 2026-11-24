@@ -1,12 +1,27 @@
 <%#
   The month of `today`, with this week's row and today marked. A day is highlighted only when a
   workout was logged on it, and then it is a link to what was recorded: the workout itself, or the
-  day's list in History when there were several. Locals: today, weeks (the month, as weeks of
-  seven dates), logs_by_date (date => workout logs).
+  day's list in History when there were several. On the dashboard the month's name folds the
+  calendar and "Month" opens the month page. Locals: today, weeks (the month, as weeks of seven
+  dates), logs_by_date (date => workout logs), states (date => :planned, :missed or :extra, from
+  Dashboard#calendar_states), day_states (Dashboard#day_states, for the plan's workout on a day), foldable (false on the month page itself). A day of the plan is
+  filled blue, a planned day that passed with nothing logged is dotted, a workout off the plan is
+  a light ring, and today has a ring around it. Every day has a tooltip (day_title). A missed day
+  links to the workout of the plan on that date, to log it late.
 %>
+<% foldable = local_assigns.fetch(:foldable, true) %>
+<% states = local_assigns.fetch(:states, {}) %>
+<% day_states = local_assigns[:day_states] %>
 <div class="card calendar-card">
-  <div class="card-header"><h2><%= l today, format: "%B %Y" %></h2></div>
-  <div class="card-body">
+  <div class="card-header">
+    <% if foldable %>
+      <h2><button type="button" class="calendar-toggle" data-bs-toggle="collapse" data-bs-target="#calendar-body" aria-expanded="true" aria-controls="calendar-body"><%= l today, format: "%B %Y" %><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></h2>
+      <%= link_to "Month", dashboard_month_path, class: "link-quiet" %>
+    <% else %>
+      <h2><%= l today, format: "%B %Y" %></h2>
+    <% end %>
+  </div>
+  <div class="<%= class_names("card-body", "collapse show": foldable) %>" id="calendar-body">
     <div class="calendar" role="table" aria-label="<%= l today, format: "%B %Y" %>">
       <div class="calendar-week calendar-head" role="row">
         <% Date::DAYNAMES.each do |name| %><span role="columnheader" aria-label="<%= name %>"><%= name.first %></span><% end %>
@@ -15,17 +30,23 @@
         <div class="<%= class_names("calendar-week", "is-current-week": week.include?(today)) %>" role="row">
           <% week.each do |date| %>
             <% logs = logs_by_date.fetch(date, []) %>
-            <% classes = class_names("calendar-day", "is-today": date == today, "is-outside": date.month != today.month, "has-workout": logs.any?) %>
+            <% logged = logs.any?(&:logged?) %>
+            <%# The days of the months before and after only show what was trained. %>
+            <% state = states[date] if logged || date.month == today.month %>
+            <% classes = class_names("calendar-day", "is-today": date == today, "is-outside": date.month != today.month, "has-workout": logged,
+                                     "is-planned": state == :planned, "is-missed": state == :missed, "is-extra": state == :extra) %>
             <% current = ("date" if date == today) %>
+            <% plan_day = day_states.day_on(date) if state.in?(%i[planned missed]) %>
+            <% title = day_title(date, state, logs, plan_day) %>
             <%# A table, read cell by cell; a logged day keeps its link inside its cell, so it is still announced as a link. %>
             <div role="cell">
-              <% if logs.any? %>
-                <% workouts = "#{logs.map(&:workout).to_sentence} #{'workout'.pluralize(logs.size)}" %>
-                <%= link_to date.day, day_logs_path(logs, date),
-                      class: classes, "aria-current": current,
-                      title: workouts, "aria-label": "#{l date, format: '%A, %B %-d'}: #{workouts}" %>
+              <% if logged %>
+                <%= link_to date.day, day_logs_path(logs, date), class: classes, "aria-current": current, title:, "aria-label": title %>
+              <% elsif state == :missed %>
+                <%# Forgot to log it: the workout of the plan on that day, to add it now. %>
+                <%= link_to date.day, workout_day_path(plan_day, date: date.iso8601), class: classes, "aria-current": current, title:, "aria-label": title %>
               <% else %>
-                <%= tag.span date.day, class: classes, "aria-current": current %>
+                <%= tag.span date.day, class: classes, "aria-current": current, title:, "aria-label": title %>
               <% end %>
             </div>
           <% end %>
