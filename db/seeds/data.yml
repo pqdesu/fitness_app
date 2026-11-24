@@ -32,6 +32,14 @@ exercises:
   muscle_group: Core
 - name: Pokemon
   muscle_group: Core
+- name: Treadmill
+  muscle_group: Cardio
+- name: Stationary bike
+  muscle_group: Cardio
+- name: Stair climber
+  muscle_group: Cardio
+- name: Elliptical
+  muscle_group: Cardio
 users:
 - email: admin@example.com
   admin: true
@@ -492,6 +500,23 @@ users:
       - number: 2
         reps: 12
         weight: '20.0'
+  - date: '2026-11-24'
+    workout: Cardio
+    rest_day: true
+    paused_seconds: 0
+    exercises:
+    - name: Treadmill
+      exercise: shared
+      equipment: free_weights
+      cardio:
+      - number: 1
+        incline: '5.0'
+        speed: '10.0'
+        seconds: 5
+      - number: 2
+        incline: '10.0'
+        speed: '5.0'
+        seconds: 2745
   timer_auto_start: false
   auto_warm_up: false
 equipment:

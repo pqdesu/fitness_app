@@ -69,6 +69,22 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `exercise-page-features` (feature 7): the week overview's Cardio tile shows only in a week with cardio, and sits alone on a second row under the four others, so the box is taller that week.
 
+### The cardio timer shares the rest timer's columns
+
+- From `cardio-timer`: a cardio exercise's timer is stored in `rest_started_at` and `rest_ended_at` of its logged exercise, the same two columns as a lift's rest. If an exercise is edited between Cardio and another muscle group while a timer is running or stopped, the page could show that time as the other kind. Not tried; it needs an admin editing the group at that moment.
+
+### The cardio timer not tried on a real phone
+
+- From `cardio-timer`: the timer, "Add manually" and "Stop and add" were tried in a desktop-width browser on a copy of the development database, not at 390 px and not on a phone. The "Did you forget to stop your cardio timer?" box on leaving the page, and the folded and opened cards of a Cardio workout, are covered by tests of the markup only, not seen working.
+
+### A failed manual add folds the cardio form again
+
+- From `cardio-timer`: on today's workout the form is folded behind "Add manually". If an add is refused (for example no time typed), the page reloads with the form folded again, and the message sits above a form to open once more.
+
+### A cardio timer left running keeps counting
+
+- From `cardio-timer`: a Cardio workout has no workout timer, so nothing else ends a cardio timer that was started and forgotten. It runs until Stop, Stop and add, or the throw-away ×, like a rest timer left running, and the leave-page box only asks when leaving by a link.
+
 ## General
 
 ### Muscle group and equipment pills not tried on a real phone

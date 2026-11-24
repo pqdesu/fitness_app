@@ -20,7 +20,12 @@ class CardioEntriesController < ApplicationController
         back = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
       end
 
+      # Adding while the cardio timer runs stops it: the row takes its time unless one was typed.
+      entry.update!(rest_ended_at: Time.current) if entry.rest_running?
       cardio_entry = entry.cardio_entries.new(cardio_entry_params)
+      cardio_entry.duration_seconds ||= entry.timer_seconds
+      # The cardio timer is done once the row has the time.
+      entry.take_rest!
       # A row that is not saved must not leave an empty workout behind.
       raise ActiveRecord::Rollback unless cardio_entry.save
     end

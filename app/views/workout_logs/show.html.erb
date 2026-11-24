@@ -18,11 +18,15 @@
   </div>
 </div>
 
-<%= render "workout_logs/timer", log: @workout_log, start_path: (workout_log_timer_path(@workout_log) if @workout_log.timer_today?),
-      autostart: current_user.timer_auto_start? %>
+<%# A Cardio workout has no workout timer: each cardio exercise has its own (cardio_entries/_timer). %>
+<% cardio_workout = @workout_log.workout == WorkoutLog::CARDIO %>
+<% unless cardio_workout %>
+  <%= render "workout_logs/timer", log: @workout_log, start_path: (workout_log_timer_path(@workout_log) if @workout_log.timer_today?),
+        autostart: current_user.timer_auto_start? %>
+<% end %>
 <%# Before the paused-timer alert, so it asks first and each asks once (rest_alert_controller.js). %>
 <%= render "workout_sets/rest_alert" %>
-<%= render "workout_logs/timer_alert", log: @workout_log, leave: true %>
+<%= render "workout_logs/timer_alert", log: @workout_log, leave: true unless cardio_workout %>
 
 <div class="row g-4">
   <%# Its exercises and sets are this workout: their links are not leaving it (workout_logs/_timer_alert). %>
@@ -41,9 +45,11 @@
     <% @log_exercises.each_with_index do |entry, i| %>
       <% sets = entry.workout_sets.sort_by(&:set_number) %>
       <% top = entry.top_set %>
-      <%# Cardio is logged as incline, speed and time: no sets, equipment or rest timer. %>
+      <%# Cardio is logged as incline, speed and time: no sets, equipment or rest timer (it has its own timer). %>
       <% cardio = entry.cardio? %>
       <% panel_id = "entry-#{entry.id}-sets" %>
+      <%# A Cardio workout opens its first exercise, and a cardio exercise whose timer has started is open: that is where its timer is. %>
+      <% open = cardio && ((cardio_workout && i.zero?) || entry.rest_started_at.present?) %>
       <%# Each exercise starts folded: its name, sets and heaviest set; the arrow opens its sets and
           the add-set form (fold_controller.js keeps it open when a save refreshes the page). %>
       <div class="<%= class_names("card entry-card", "just-moved": flash[:moved] == entry.id) %>" id="entry-<%= entry.id %>" data-sortable-url="<%= move_workout_log_exercise_path(entry) %>" data-controller="fold" data-action="turbo:before-morph-attribute->fold#keep">
@@ -63,17 +69,18 @@
               <%= menu_delete "Remove from workout", workout_log_exercise_path(entry), confirm: "Remove #{entry.name} and its sets from this workout?" %>
             <% end %>
             <button type="button" class="btn btn-light btn-sm entry-toggle fold-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
-                    aria-expanded="false" aria-controls="<%= panel_id %>" aria-label="Sets of <%= entry.name %>" data-fold-target="toggle">
+                    aria-expanded="<%= open %>" aria-controls="<%= panel_id %>" aria-label="Sets of <%= entry.name %>" data-fold-target="toggle">
               <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
             </button>
           </div>
         </div>
 
-        <div class="collapse" id="<%= panel_id %>" data-fold-target="panel">
+        <div class="<%= class_names("collapse", show: open) %>" id="<%= panel_id %>" data-fold-target="panel">
           <% if cardio %>
             <% if entry.cardio_entries.any? %><%= render "cardio_entries/table", cardio_entries: entry.cardio_entries %><% end %>
             <div class="card-footer">
-              <%= render "cardio_entries/form", parent: entry, last: entry.cardio_entries.last %>
+              <%= render "cardio_entries/timer", entry:, date: @workout_log.date, back: {} %>
+              <%= render "cardio_entries/form", parent: entry, last: entry.cardio_entries.last, entry: %>
             </div>
           <% else %>
             <% if sets.any? %>

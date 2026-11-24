@@ -44,10 +44,12 @@ export default class extends Controller {
     const running = [...document.querySelectorAll("[data-rest-running]")].map((element) => element.dataset.restRunning)
     if (running.length === 0) return
 
+    // A cardio exercise's timer says so (data-rest-name="cardio"); a rest does not need to.
+    const name = document.querySelector("[data-rest-running]").dataset.restName || "rest"
     this.hold(event, {
-      title: "Did you forget to stop your rest timer?",
+      title: `Did you forget to stop your ${name} timer?`,
       detail: "Stop it before you go, or go back to the page.",
-      primary: "Stop rest", secondary: "Back to page"
+      primary: `Stop ${name}`, secondary: "Back to page"
     }, async (choice) => {
       if (choice !== "primary") return
 

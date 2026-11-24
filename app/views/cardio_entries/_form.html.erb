@@ -1,12 +1,19 @@
 <%#
   "Add" for a cardio exercise: incline, speed and time, pre-filled with the last row so repeating it is
   a single tap. Only the time is needed (a bike has no incline). Locals: parent (the planned exercise or
-  the logged exercise), last (the last row, or nil), and for a planned exercise date (see LoggingDate).
+  the logged exercise), last (the last row, or nil), entry (the logged exercise, for its cardio timer:
+  a stopped timer's time fills the time; while it runs the incline and speed can be filled in and the
+  button stops it and saves its time), and for a planned exercise date (see LoggingDate).
+  On today's workout, with no timer started, the form is folded behind "Add manually" (cardio_entries/_timer).
 %>
+<% entry = local_assigns[:entry] %>
+<% running = entry&.rest_running? %>
+<% folded = (local_assigns[:date] || entry&.workout_log&.date) == Date.current && !entry&.rest_started_at %>
 <% suffix = "#{parent.model_name.param_key}_#{parent.id}" %>
 <% url = local_assigns[:date] ? polymorphic_path([parent, CardioEntry], date: date) : polymorphic_path([parent, CardioEntry]) %>
-<% minutes, seconds = last&.duration_seconds&.divmod(60) %>
+<% minutes, seconds = (entry&.timer_seconds || last&.duration_seconds)&.divmod(60) %>
 <%# While the workout's timer is paused, adding asks to resume it first (workout_logs/_timer_alert). %>
+<div class="<%= class_names("collapse", show: !folded) %>" id="cardio-form-<%= parent.model_name.param_key %>-<%= parent.id %>">
 <%= form_with model: [parent, CardioEntry.new], url:, class: "row g-2 align-items-end inline-form set-form cardio-form",
       data: { alert_when_paused: "add" } do |f| %>
   <div class="col-6">
@@ -19,6 +26,7 @@
     <%= f.number_field :speed, value: weight_number(last&.speed), step: "any", min: 0, placeholder: "–", inputmode: "decimal",
           class: "form-control", id: "speed_#{suffix}" %>
   </div>
+  <% unless running %>
   <div class="col-3">
     <%= f.label :minutes, "Min", class: "form-label", for: "minutes_#{suffix}" %>
     <%# Not required: a row under a minute is typed in seconds alone; an empty time is refused by the row. %>
@@ -28,7 +36,9 @@
     <%= f.label :seconds, "Sec", class: "form-label", for: "seconds_#{suffix}" %>
     <%= f.number_field :seconds, value: seconds && format("%02d", seconds), min: 0, max: 59, placeholder: "0", inputmode: "numeric", class: "form-control", id: "seconds_#{suffix}" %>
   </div>
-  <div class="col-6 d-grid">
-    <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add<% end %>
+  <% end %>
+  <div class="<%= running ? "col-12" : "col-6" %> d-grid">
+    <%= f.button class: "btn btn-primary" do %><% if running %><i class="fa-solid fa-stop"></i> Stop and add<% else %><i class="fa-solid fa-plus"></i> Add<% end %><% end %>
   </div>
 <% end %>
+</div>

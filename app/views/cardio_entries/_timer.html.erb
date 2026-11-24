@@ -1,0 +1,35 @@
+<%#
+  A cardio exercise's timer, where a lift has its rest timer: Start, then Stop, and the stopped time
+  fills the Add form below (cardio_entries/_form), which saves it. Typing the time still works.
+  Started on today's workout only. It uses the logged exercise's rest columns, so a planned exercise
+  with nothing logged yet starts it through the plan (which logs the workout, as its first row would).
+  Locals: entry (the logged exercise, or nil), planned (the planned exercise, for its page, or nil),
+  date (the day the page logs on), and back (the exercise page's workout_exercise_id and date).
+  Idle, it offers two ways to log: Start cardio timer, or Add manually, which opens the form below.
+%>
+<% entry = local_assigns[:entry] %>
+<% planned = local_assigns[:planned] %>
+<% today = date == Date.current %>
+<% if entry&.rest_started_at || today %>
+  <% timer_path = entry ? workout_log_exercise_rest_path(entry, **local_assigns.fetch(:back, {})) : workout_exercise_rest_path(planned, date:) %>
+  <div class="rest-timer cardio-timer">
+    <% if entry&.rest_running? %>
+      <%# rest_alert_controller.js asks before leaving the page while it runs. %>
+      <span class="rest-label" data-rest-running="<%= workout_log_exercise_rest_path(entry) %>" data-rest-name="cardio">
+        <i class="fa-solid fa-stopwatch" aria-hidden="true"></i> Cardio
+        <strong class="rest-clock" role="timer" data-controller="timer" data-timer-start-value="<%= entry.rest_started_at.iso8601 %>"><%= clock_duration((Time.current - entry.rest_started_at).to_i) %></strong>
+      </span>
+      <%= button_to timer_path, method: :patch, class: "btn btn-light", "aria-label": "Stop cardio timer" do %><i class="fa-solid fa-stop" aria-hidden="true"></i> Stop<% end %>
+    <% elsif entry&.rest_ended_at %>
+      <span class="rest-label"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i> Cardio <strong><%= cardio_time(entry.timer_seconds) %></strong></span>
+      <span class="text-muted small">in the form below</span>
+      <%= button_to timer_path, method: :delete, class: "btn btn-light btn-sm", "aria-label": "Throw away the cardio time" do %><i class="fa-solid fa-xmark" aria-hidden="true"></i><% end %>
+    <% else %>
+      <% form_id = "cardio-form-#{(planned || entry).model_name.param_key}-#{(planned || entry).id}" %>
+      <%= button_to timer_path, class: "btn btn-light" do %><i class="fa-solid fa-stopwatch" aria-hidden="true"></i> Start cardio timer<% end %>
+      <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#<%= form_id %>" aria-expanded="false" aria-controls="<%= form_id %>">
+        <i class="fa-solid fa-pen" aria-hidden="true"></i> Add manually
+      </button>
+    <% end %>
+  </div>
+<% end %>
