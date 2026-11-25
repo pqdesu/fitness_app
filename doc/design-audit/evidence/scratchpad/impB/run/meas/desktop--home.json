@@ -1,0 +1,493 @@
+{
+ "url": "http://127.0.0.1:3001/",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 37,
+ "small": [
+  {
+   "d": "a.nav-link.active \"Home\"",
+   "w": 58.4,
+   "h": 34.5,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.nav-link \"Splits\"",
+   "w": 55.6,
+   "h": 34.5,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.nav-link \"History\"",
+   "w": 67.7,
+   "h": 34.5,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.nav-link \"Exercises\"",
+   "w": 84.8,
+   "h": 34.5,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a#userMenu.nav-link.dropdown-toggle.user-chip \"A admin@example.com Admin\"",
+   "w": 289.5,
+   "h": 42,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.btn.btn-primary.btn-sm \"Continue\"",
+   "w": 75.5,
+   "h": 29.7,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a \"5 sets\"",
+   "w": 37.1,
+   "h": 15,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a \"Saturday, November 21\"",
+   "w": 142.9,
+   "h": 15,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.row-title \"U/R/L/U/L\"",
+   "w": 85.3,
+   "h": 21,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.link-quiet \"Change\"",
+   "w": 51,
+   "h": 20.4,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "button[button].calendar-toggle \"November 2026\"",
+   "w": 151.2,
+   "h": 20.2,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.link-quiet \"Month\"",
+   "w": 42.3,
+   "h": 20.4,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-planned \"Monday, November 16: Upper workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-planned \"Wednesday, November 18: Lower workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.is-missed \"Friday, November 20: Upper missed. Add i\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-planned \"Saturday, November 21: Lower workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-extra \"Sunday, November 22: Push workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.is-missed \"Monday, November 23: Upper missed. Add i\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-extra \"Tuesday, November 24: Cardio workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.is-today.has-workout \"Wednesday, November 25: Lower and Full B\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.link-quiet \"History\"",
+   "w": 47.7,
+   "h": 20.4,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": false
+  }
+ ],
+ "headings": [
+  "H1 Wednesday, November 25 (28px)",
+  "H2 Lower day (16.8px)",
+  "H2 U/R/L/U/L (16.8px)",
+  "H2 November 2026 (16.8px)",
+  "H2 Recent workouts (16.8px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN",
+  "NAV[aria-label=Sections] (hidden)"
+ ],
+ "inputs": [
+  {
+   "d": "input[radio]#move_day_10.form-check-input \"10\"",
+   "name": "workout_day_id",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Upper\n            Monday",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#move_day_12.form-check-input \"12\"",
+   "name": "workout_day_id",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Upper\n            Friday",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#move_day_13.form-check-input \"13\"",
+   "name": "workout_day_id",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Lower\n            Saturday",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#move_to_3.btn-check \"3\"",
+   "name": "weekday",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Today\n              Lower",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#move_to_4.btn-check \"4\"",
+   "name": "weekday",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Thu\n              Free",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#move_to_5.btn-check \"5\"",
+   "name": "weekday",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Fri\n              Upper",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#move_to_6.btn-check \"6\"",
+   "name": "weekday",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Sat\n              Lower",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[submit].btn.btn-primary.w-100 \"Move for this week\"",
+   "name": "commit",
+   "type": "submit",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 0,
+   "labelText": null,
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": false,
+   "fontSize": "15px"
+  }
+ ],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Plus Jakarta Sans 800 normal",
+  "Font Awesome 6 Free 900 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 1343,
+ "ax": [
+  {
+   "role": "link",
+   "name": "FitnessApp"
+  },
+  {
+   "role": "link",
+   "name": "Continue"
+  },
+  {
+   "role": "button",
+   "name": "Show exercises"
+  },
+  {
+   "role": "link",
+   "name": "Change"
+  },
+  {
+   "role": "link",
+   "name": "Sunday: add a workout day, trained off the plan"
+  },
+  {
+   "role": "link",
+   "name": "Monday: Upper, missed. Add it."
+  },
+  {
+   "role": "link",
+   "name": "Tuesday: add a workout day, trained off the plan"
+  },
+  {
+   "role": "link",
+   "name": "Wednesday: Lower"
+  },
+  {
+   "role": "link",
+   "name": "Thursday: add a workout day"
+  },
+  {
+   "role": "link",
+   "name": "Friday: Upper"
+  },
+  {
+   "role": "link",
+   "name": "Saturday: Lower"
+  },
+  {
+   "role": "button",
+   "name": " Move a workout"
+  },
+  {
+   "role": "button",
+   "name": "Show days"
+  },
+  {
+   "role": "link",
+   "name": "Month"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Home"
+  },
+  {
+   "role": "link",
+   "name": "Splits"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Exercises"
+  },
+  {
+   "role": "button",
+   "name": "A admin@example.com Admin"
+  },
+  {
+   "role": "link",
+   "name": "5 sets"
+  },
+  {
+   "role": "link",
+   "name": "Saturday, November 21"
+  },
+  {
+   "role": "link",
+   "name": "U/R/L/U/L"
+  },
+  {
+   "role": "button",
+   "name": "November 2026"
+  },
+  {
+   "role": "button",
+   "name": "Full Body November 25, 2026 · 13 sets Push/Pull/Legs + Upper/Lower hybrid (winter cut, 12 weeks)"
+  },
+  {
+   "role": "button",
+   "name": "Lower November 25, 2026 · 5 sets U/R/L/U/L"
+  },
+  {
+   "role": "button",
+   "name": "Cardio November 24, 2026 · 45 min 50 s Rest day"
+  },
+  {
+   "role": "button",
+   "name": "Push November 22, 2026 · 2 sets Rest day"
+  },
+  {
+   "role": "button",
+   "name": "Lower November 21, 2026 · 0 sets U/R/L/U/L"
+  },
+  {
+   "role": "link",
+   "name": "Monday, November 16: Upper workout"
+  },
+  {
+   "role": "link",
+   "name": "Wednesday, November 18: Lower workout"
+  },
+  {
+   "role": "link",
+   "name": "Friday, November 20: Upper missed. Add it."
+  },
+  {
+   "role": "link",
+   "name": "Saturday, November 21: Lower workout"
+  },
+  {
+   "role": "link",
+   "name": "Sunday, November 22: Push workout"
+  },
+  {
+   "role": "link",
+   "name": "Monday, November 23: Upper missed. Add it."
+  },
+  {
+   "role": "link",
+   "name": "Tuesday, November 24: Cardio workout"
+  },
+  {
+   "role": "link",
+   "name": "Wednesday, November 25: Lower and Full Body workouts"
+  }
+ ]
+}

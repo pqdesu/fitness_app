@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Readout New Look</title>
+<meta name="description" content="A new look for the fitness app: a graphite instrument panel with one signal colour, shown as five phone screens in light and dark.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+/* ============ Tokens ============ */
+:root {
+  color-scheme: light;
+  --bg: #EDEDEA;          /* page */
+  --surface: #F8F8F6;     /* cards, bars */
+  --surface-2: #E3E4E0;   /* fields, sunk rows, chips */
+  --line: #D8D9D4;        /* hairlines */
+  --line-strong: #B9BAB4; /* field and outline-button borders */
+  --ink: #121314;         /* text, planned days */
+  --muted: #5F6166;       /* secondary text */
+  --faint: #9A9C9F;       /* decoration only, never text */
+  --signal: #FF5A1F;      /* the one colour: live, now, the main action */
+  --signal-press: #E84A10;
+  --signal-ink: #B83D0B;  /* signal as text on light */
+  --signal-soft: #FFE5DA;
+  --on-signal: #0B0B0B;
+  --danger: #C81E3A;
+  --danger-soft: #FBE3E7;
+  --scrim: rgba(18,19,20,.42);
+  --sheet-shadow: 0 -1px 0 var(--line), 0 -18px 48px rgba(18,19,20,.14);
+
+  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px; --s12: 48px;
+  --r-xs: 6px; --r-sm: 10px; --r-md: 12px; --r-lg: 16px; --r-sheet: 22px; --r-pill: 999px;
+
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --ease-enter: cubic-bezier(.22,1,.36,1);
+  --ease-exit: cubic-bezier(.4,0,1,1);
+  --t-press: 90ms; --t-hover: 150ms; --t-panel: 200ms; --t-sheet: 280ms; --t-breathe: 2400ms;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0E0F10; --surface: #17181A; --surface-2: #202124; --line: #2A2C2F; --line-strong: #3C3F43;
+  --ink: #EDEDE9; --muted: #A0A2A6; --faint: #63666A;
+  --signal: #FF6A2B; --signal-press: #FF8452; --signal-ink: #FF8148; --signal-soft: #3A1C0F; --on-signal: #0B0B0B;
+  --danger: #FF6170; --danger-soft: #3A1418;
+  --scrim: rgba(0,0,0,.6);
+  --sheet-shadow: 0 -1px 0 var(--line-strong), 0 -18px 48px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0E0F10; --surface: #17181A; --surface-2: #202124; --line: #2A2C2F; --line-strong: #3C3F43;
+    --ink: #EDEDE9; --muted: #A0A2A6; --faint: #63666A;
+    --signal: #FF6A2B; --signal-press: #FF8452; --signal-ink: #FF8148; --signal-soft: #3A1C0F; --on-signal: #0B0B0B;
+    --danger: #FF6170; --danger-soft: #3A1418;
+    --scrim: rgba(0,0,0,.6);
+    --sheet-shadow: 0 -1px 0 var(--line-strong), 0 -18px 48px rgba(0,0,0,.5);
+  }
+}
+
+/* ============ Base ============ */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 15px/22px var(--font); font-feature-settings: "tnum" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, p { margin: 0; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+svg.i { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: square; stroke-linejoin: miter; }
+svg.i.sm { width: 16px; height: 16px; }
+svg.i.lg { width: 22px; height: 22px; }
+.mono { font-family: var(--mono); }
+.micro { font: 500 11px/16px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+/* ============ Concept page shell ============ */
+.page { max-width: 1344px; margin: 0 auto; padding: 40px 48px 96px; }
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 14px; }
+.mark { width: 40px; height: 40px; border-radius: 11px; background: var(--ink); color: var(--bg); display: grid; place-items: center; }
+.mark svg { width: 22px; height: 22px; }
+.page-head h1 { font: 600 40px/44px var(--font); letter-spacing: -.035em; }
+.page-head .lede { margin-top: 10px; max-width: 640px; color: var(--muted); font-size: 16px; line-height: 24px; }
+.theme-switch { display: inline-flex; padding: 3px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface); }
+.theme-switch button { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-weight: 500; font-size: 14px; transition: background var(--t-hover) var(--ease), color var(--t-hover) var(--ease); }
+.theme-switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+.section-label { display: flex; align-items: baseline; gap: 12px; margin: 48px 0 20px; }
+.section-label h2 { font: 600 22px/28px var(--font); letter-spacing: -.02em; }
+
+/* design system panel */
+.ds { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+.ds-card { grid-column: span 4; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; min-width: 0; }
+.ds-card.wide { grid-column: span 8; }
+.ds-card.full { grid-column: 1 / -1; }
+.ds-card h3 { margin-bottom: 16px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+.sw { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; background: var(--surface); }
+.sw i { display: block; height: 44px; border-bottom: 1px solid var(--line); }
+.sw b { display: block; padding: 8px 10px 0; font: 500 12px/16px var(--font); }
+.sw code { display: block; padding: 0 10px 8px; font: 400 11px/16px var(--mono); color: var(--muted); }
+.sw-bg i { background: var(--bg); } .sw-surface i { background: var(--surface); } .sw-surface-2 i { background: var(--surface-2); }
+.sw-line i { background: var(--line); } .sw-line-strong i { background: var(--line-strong); } .sw-ink i { background: var(--ink); }
+.sw-muted i { background: var(--muted); } .sw-signal i { background: var(--signal); } .sw-signal-ink i { background: var(--signal-ink); }
+.sw-signal-soft i { background: var(--signal-soft); } .sw-danger i { background: var(--danger); } .sw-faint i { background: var(--faint); }
+.hex-dark { display: none; }
+:root[data-theme="dark"] .hex-light { display: none; } :root[data-theme="dark"] .hex-dark { display: inline; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hex-light { display: none; } :root:not([data-theme="light"]) .hex-dark { display: inline; } }
+
+.type-row { display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); }
+.type-row:first-of-type { border-top: 0; }
+.type-row .micro { white-space: nowrap; }
+.t-readout { font: 500 48px/52px var(--mono); letter-spacing: -.03em; }
+.t-title { font: 600 28px/32px var(--font); letter-spacing: -.03em; }
+.t-h2 { font: 600 17px/24px var(--font); letter-spacing: -.01em; }
+.t-num { font: 500 20px/24px var(--mono); letter-spacing: -.01em; }
+.t-body { font: 400 15px/22px var(--font); }
+.t-meta { font: 400 13px/18px var(--font); color: var(--muted); }
+.spec { font: 400 12px/18px var(--mono); color: var(--muted); }
+
+.space-row { display: flex; align-items: center; gap: 12px; padding: 5px 0; }
+.space-row code { width: 70px; font: 400 12px/16px var(--mono); color: var(--muted); }
+.space-row i { display: block; height: 10px; background: var(--signal); border-radius: 2px; }
+.sp1 i { width: 4px; } .sp2 i { width: 8px; } .sp3 i { width: 12px; } .sp4 i { width: 16px; } .sp5 i { width: 20px; } .sp6 i { width: 24px; } .sp8 i { width: 32px; } .sp12 i { width: 48px; }
+
+.radii { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.radii div { aspect-ratio: 1; border: 1.5px solid var(--ink); display: grid; place-items: end start; padding: 8px; font: 400 11px/14px var(--mono); color: var(--muted); }
+.radii .r1 { border-radius: var(--r-xs); } .radii .r2 { border-radius: var(--r-sm); } .radii .r3 { border-radius: var(--r-md); } .radii .r4 { border-radius: var(--r-lg); } .radii .r5 { border-radius: 26px; }
+.elev { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+.elev div { height: 64px; border-radius: var(--r-sm); padding: 8px; font: 400 11px/14px var(--mono); color: var(--muted); background: var(--surface); }
+.elev .e0 { border: 1px solid var(--line); }
+.elev .e1 { border: 1px solid var(--line-strong); background: var(--surface-2); }
+.elev .e2 { box-shadow: var(--sheet-shadow); border: 1px solid var(--line); }
+
+.curves { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.curve { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px; }
+.curve svg { width: 100%; height: 64px; display: block; }
+.curve path { fill: none; stroke: var(--signal); stroke-width: 2; }
+.curve line { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 2 3; }
+.curve b { display: block; font: 500 12px/16px var(--font); margin-top: 6px; }
+.curve code { display: block; font: 400 11px/15px var(--mono); color: var(--muted); }
+.durations { margin-top: 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.durations div { border-top: 2px solid var(--ink); padding-top: 6px; font: 400 11px/15px var(--mono); color: var(--muted); }
+.durations b { display: block; color: var(--ink); font-weight: 500; }
+
+.icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+.icons span { aspect-ratio: 1; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--r-sm); color: var(--ink); }
+
+.states { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.state-col { display: grid; gap: 10px; align-content: start; }
+.state-col .micro { margin-bottom: 2px; }
+.state-item { display: grid; grid-template-columns: 74px 1fr; gap: 10px; align-items: center; }
+.state-item > span { font: 400 11px/14px var(--mono); color: var(--muted); }
+
+/* screens */
+.screens { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 48px 32px; }
+.screen { width: min(390px, 100%); }
+.screen-label { display: flex; justify-content: space-between; align-items: baseline; margin: 0 4px 12px; }
+.screen-label b { font: 600 15px/20px var(--font); }
+.phone {
+  position: relative; width: 100%; border-radius: 40px; overflow: hidden;
+  background: var(--bg); border: 1px solid var(--line-strong);
+  box-shadow: 0 0 0 6px var(--surface), 0 0 0 7px var(--line);
+}
+
+/* ============ App: chrome ============ */
+.status { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 26px 0 30px; font: 600 15px/1 var(--font); }
+.status .bars { display: flex; gap: 6px; align-items: center; }
+.status .bars i { display: block; width: 18px; height: 10px; border-radius: 3px; border: 1.5px solid var(--ink); position: relative; }
+.status .bars i::after { content: ""; position: absolute; inset: 1.5px 5px 1.5px 1.5px; background: var(--ink); border-radius: 1px; }
+.status .bars em { display: block; width: 16px; height: 10px; background: linear-gradient(90deg, var(--ink) 0 3px, transparent 3px 4px, var(--ink) 4px 7px, transparent 7px 8px, var(--ink) 8px 11px, transparent 11px 12px, var(--faint) 12px); clip-path: polygon(0 100%, 100% 0, 100% 100%); }
+
+.appbar { height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 16px; }
+.appbar .title { font: 600 17px/24px var(--font); letter-spacing: -.01em; }
+.appbar .spacer { flex: 1; }
+.appbar .logo { width: 32px; height: 32px; border-radius: 9px; background: var(--ink); color: var(--bg); display: grid; place-items: center; }
+.appbar .logo svg { width: 18px; height: 18px; }
+
+.content { padding: 4px 16px 24px; display: grid; gap: 12px; }
+.page-title { padding: 8px 4px 8px; }
+.page-title h1 { font: 600 28px/32px var(--font); letter-spacing: -.03em; }
+.page-title p { margin-top: 4px; }
+.title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+.tabbar {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding: 0 8px 22px;
+}
+.tab { position: relative; display: grid; justify-items: center; gap: 3px; padding: 10px 0 4px; color: var(--muted); font: 500 11px/14px var(--font); text-decoration: none; border-radius: var(--r-sm); }
+.tab[aria-current="page"] { color: var(--ink); }
+.tab[aria-current="page"]::before { content: ""; position: absolute; top: -1px; left: 50%; width: 24px; height: 2px; margin-left: -12px; background: var(--signal); }
+.tab .avatar { width: 22px; height: 22px; border-radius: var(--r-pill); border: 1.5px solid currentColor; display: grid; place-items: center; font: 600 10px/1 var(--mono); }
+
+/* ============ App: components ============ */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); }
+.card-pad { padding: 16px; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; }
+.card-head h2 { font: 600 17px/24px var(--font); letter-spacing: -.01em; }
+.card-head h2 .count { font: 500 15px/24px var(--mono); color: var(--muted); margin-left: 6px; }
+.divider { height: 1px; background: var(--line); margin: 0 16px; }
+.divider.full { margin: 0; }
+.link { display: inline-flex; align-items: center; gap: 4px; color: var(--ink); font-weight: 500; font-size: 14px; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.link:active { text-decoration-color: var(--ink); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 48px; padding: 0 18px; border-radius: var(--r-md);
+  border: 1px solid var(--line-strong); background: transparent; color: var(--ink);
+  font: 600 15px/1 var(--font); letter-spacing: -.005em; white-space: nowrap; text-decoration: none;
+  transition: transform var(--t-press) var(--ease), background-color var(--t-hover) var(--ease), border-color var(--t-hover) var(--ease);
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.btn-primary { background: var(--signal); border-color: var(--signal); color: var(--on-signal); }
+.btn-ink { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.btn-sm { height: 36px; padding: 0 12px; font-size: 14px; border-radius: var(--r-sm); }
+.btn-block { width: 100%; }
+.btn-icon { width: 40px; height: 40px; padding: 0; border-radius: var(--r-sm); border-color: transparent; color: var(--muted); }
+.btn-icon.round { border-radius: var(--r-pill); border-color: var(--line); color: var(--ink); background: var(--surface); }
+.btn:active, .btn.is-pressed { transform: translateY(1px) scale(.98); }
+.btn:active, .btn.is-pressed { background-color: var(--surface-2); }
+.btn-primary:active, .btn-primary.is-pressed { background-color: var(--signal-press); border-color: var(--signal-press); }
+.btn-ink:active, .btn-ink.is-pressed { background-color: var(--muted); border-color: var(--muted); }
+.btn-icon:active { background-color: var(--surface-2); }
+.btn.is-focus { outline: 2px solid var(--signal); outline-offset: 2px; }
+.btn[disabled] { background: var(--surface-2); border-color: var(--line); color: var(--faint); cursor: not-allowed; transform: none; }
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { border-color: var(--ink); }
+  .btn-primary:hover { border-color: var(--signal); background-color: color-mix(in srgb, var(--signal) 88%, var(--ink)); }
+  .btn-ink:hover { background-color: color-mix(in srgb, var(--ink) 86%, var(--bg)); }
+  .btn-icon:hover { background-color: var(--surface-2); border-color: transparent; color: var(--ink); }
+  .btn.is-hover { border-color: var(--ink); }
+}
+.btn-primary.is-hover { background-color: color-mix(in srgb, var(--signal) 88%, var(--ink)); }
+
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: var(--r-xs); background: var(--surface-2); color: var(--ink); font: 500 12px/1 var(--mono); white-space: nowrap; }
+.chip.done { background: var(--signal-soft); color: var(--signal-ink); }
+.chip.rest { background: transparent; border: 1px dashed var(--line-strong); color: var(--muted); }
+.chip.gone { background: transparent; color: var(--muted); padding: 0; text-decoration: line-through; text-decoration-color: var(--faint); }
+
+.live { display: inline-flex; align-items: center; gap: 8px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--r-pill); background: var(--signal-soft); color: var(--signal-ink); font: 500 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--signal); flex: none; }
+.dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--signal); animation: breathe var(--t-breathe) var(--ease) infinite; }
+@keyframes breathe { 0% { transform: scale(1); opacity: .9; } 70%, 100% { transform: scale(2.6); opacity: 0; } }
+.live.paused { background: var(--surface-2); color: var(--muted); }
+.live.paused .dot { background: transparent; border: 1.5px solid var(--muted); }
+.live.paused .dot::after { display: none; }
+.live.idle { background: transparent; border: 1px solid var(--line-strong); color: var(--muted); }
+.live.idle .dot { background: var(--faint); } .live.idle .dot::after { display: none; }
+.live.finished { background: var(--surface-2); color: var(--ink); }
+.live.finished .dot { background: var(--ink); } .live.finished .dot::after { display: none; }
+
+/* rows */
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 8px 10px 12px; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.row:first-child { border-top: 0; }
+.row:active { background: var(--surface-2); }
+.row .grip { color: var(--faint); margin-right: -2px; }
+.row .main { flex: 1; min-width: 0; }
+.row .name { font: 600 16px/22px var(--font); letter-spacing: -.01em; }
+.row .meta { font: 400 13px/18px var(--font); color: var(--muted); }
+.row .chev { color: var(--muted); }
+.row .tail { display: flex; align-items: center; gap: 2px; }
+
+/* today box */
+.today { overflow: hidden; }
+.today .top { padding: 16px 16px 14px; display: grid; gap: 12px; }
+.today .when { display: flex; justify-content: space-between; align-items: center; }
+.today h2 { font: 600 22px/28px var(--font); letter-spacing: -.02em; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 13px/18px var(--font); color: var(--muted); }
+.facts b { color: var(--ink); font: 500 13px/18px var(--mono); }
+.lift-list { list-style: none; margin: 0; padding: 0 16px; }
+.lift-list li { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.fold + .lift-list li:first-child { border-top: 0; padding-top: 2px; }
+.row .btn-icon { width: 36px; height: 36px; margin-right: -8px; }
+.lift-list li b { font: 500 15px/20px var(--mono); }
+.lift-list li b span { color: var(--muted); font-weight: 400; }
+.fold { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; background: transparent; border: 0; border-top: 1px solid var(--line); font: 500 14px/20px var(--font); color: var(--ink); text-align: left; }
+.fold svg { color: var(--muted); }
+.last { padding: 12px 16px 16px; font: 400 13px/18px var(--font); color: var(--muted); border-top: 1px solid var(--line); }
+.last a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+
+/* week strip + calendar */
+.split-name { font: 600 22px/28px var(--mono); letter-spacing: -.02em; }
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 4px 12px 0; }
+.wd { display: grid; justify-items: center; gap: 6px; }
+.wd small { font: 500 10px/12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); min-height: 12px; }
+.day { width: 40px; height: 40px; border-radius: var(--r-pill); display: grid; place-items: center; font: 500 14px/1 var(--mono); color: var(--ink); position: relative; text-decoration: none; }
+.day.is-planned { background: var(--ink); color: var(--bg); }
+.day.is-missed { border: 1.5px dashed var(--muted); }
+.day.is-extra { border: 1.5px solid var(--line-strong); }
+.day.is-extra::after { content: ""; position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.day.is-today { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--signal); }
+.day.is-outside { color: var(--muted); font-weight: 400; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); }
+.stat { padding: 12px 0 12px 16px; border-left: 1px solid var(--line); }
+.stat:first-child { border-left: 0; }
+.stat .micro { font-size: 10px; letter-spacing: .07em; }
+.stat b { display: block; margin-top: 2px; font: 500 22px/28px var(--mono); letter-spacing: -.02em; }
+.stat b small { font: 400 12px/1 var(--mono); color: var(--muted); margin-left: 2px; }
+.stat.wide { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; padding-right: 16px; }
+.split-actions { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
+
+.cal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 6px; }
+.cal-head h2 { display: inline-flex; align-items: center; gap: 6px; font: 600 17px/24px var(--font); letter-spacing: -.01em; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 6px; padding: 4px 8px 14px; justify-items: center; }
+.cal .dow { font: 500 10px/24px var(--mono); letter-spacing: .06em; color: var(--muted); }
+.cal .this-week { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(7, 1fr); justify-items: center; width: 100%; background: var(--surface-2); border-radius: var(--r-pill); padding: 2px 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 16px 14px; font: 400 11px/16px var(--mono); color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+.legend .l-p { background: var(--ink); } .legend .l-m { border: 1.5px dashed var(--muted); } .legend .l-e { border: 1.5px solid var(--line-strong); } .legend .l-t { box-shadow: 0 0 0 2px var(--signal); }
+
+.recent .row { min-height: 68px; }
+.recent .row .meta .mono { color: var(--ink); }
+
+/* timer */
+.timer { padding: 16px; display: grid; gap: 14px; }
+.timer .meta-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 400 13px/18px var(--font); color: var(--muted); }
+.clock { font: 500 56px/56px var(--mono); letter-spacing: -.04em; }
+.clock .colon { color: var(--faint); margin: 0 -.14em; }
+.sweep { height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.sweep i { display: block; height: 100%; width: 100%; background: var(--signal); transform-origin: left; animation: sweep 60s linear infinite; animation-delay: -26s; }
+@keyframes sweep { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* exercise page */
+.set-table { padding: 0 16px; }
+.set-head { display: grid; grid-template-columns: 32px 1fr 1fr 40px; gap: 12px; padding: 0 0 8px; }
+.set { display: grid; grid-template-columns: 32px 1fr 1fr 40px; gap: 12px; align-items: center; padding: 10px 0 8px; border-top: 1px solid var(--line); }
+.set-no { width: 28px; height: 28px; border-radius: var(--r-xs); background: var(--surface-2); display: grid; place-items: center; font: 500 13px/1 var(--mono); }
+.set .num { font: 500 22px/28px var(--mono); letter-spacing: -.02em; }
+.set .num small { font: 400 12px/1 var(--mono); color: var(--muted); margin-left: 3px; letter-spacing: 0; }
+.set-extra { grid-column: 2 / -1; display: flex; gap: 8px; align-items: center; padding-bottom: 2px; }
+.ghost-note { flex: 1; height: 32px; display: flex; align-items: center; padding: 0 10px; border-radius: var(--r-xs); border: 1px dashed var(--line-strong); font-size: 13px; color: var(--muted); }
+.tag-btn { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px; border-radius: var(--r-xs); border: 1px solid var(--line-strong); background: transparent; font: 500 12px/1 var(--font); color: var(--muted); }
+.tag-btn.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.rest-line { display: flex; align-items: center; gap: 10px; padding: 2px 0 6px 44px; font: 400 12px/16px var(--mono); color: var(--muted); }
+.rest-line::after { content: ""; flex: 1; height: 1px; background: repeating-linear-gradient(90deg, var(--line-strong) 0 3px, transparent 3px 6px); }
+.rest-line svg { color: var(--muted); }
+.add-set { margin: 4px 16px 16px; padding: 14px; border-radius: var(--r-md); background: var(--surface-2); display: grid; gap: 12px; }
+.add-set .head { display: flex; justify-content: space-between; align-items: center; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.field label { display: block; margin-bottom: 6px; }
+.input {
+  width: 100%; height: 56px; padding: 0 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  font: 500 24px/1 var(--mono); letter-spacing: -.02em; outline: none;
+  transition: border-color var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease);
+}
+.input-wrap { position: relative; }
+.input-wrap .unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font: 400 13px/1 var(--mono); color: var(--muted); pointer-events: none; }
+.input:focus, .input.is-focus { border-color: var(--signal); box-shadow: 0 0 0 3px var(--signal-soft); }
+.input.text { font: 400 16px/1 var(--font); letter-spacing: 0; height: 48px; }
+.tag-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: var(--r-pill); border: 1px solid var(--line-strong); background: var(--surface); font: 500 13px/1 var(--font); color: var(--ink); }
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.rest-btn { justify-self: start; }
+.rest-btn.running { border-color: var(--signal); color: var(--signal-ink); }
+
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; gap: 3px; border-radius: var(--r-sm); background: var(--surface-2); }
+.seg button { height: 40px; border: 0; border-radius: 8px; background: transparent; font: 500 14px/1 var(--font); color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line-strong); }
+.select-row { display: flex; justify-content: space-between; align-items: center; height: 48px; padding: 0 12px 0 14px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); font-size: 14px; }
+.select-row span:last-child { display: inline-flex; gap: 4px; align-items: center; color: var(--muted); }
+.stack { display: grid; gap: 10px; }
+
+/* history */
+.h-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 14px 12px 14px 16px; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.h-row:first-child { border-top: 0; }
+.h-row:active { background: var(--surface-2); }
+.h-date { font: 500 12px/16px var(--mono); letter-spacing: .04em; color: var(--muted); text-transform: uppercase; }
+.h-date.today { color: var(--signal-ink); }
+.h-name { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 600 17px/24px var(--font); letter-spacing: -.01em; }
+.h-sub { font: 400 13px/18px var(--font); color: var(--muted); }
+.h-time { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font: 400 13px/18px var(--font); color: var(--muted); }
+.h-time > span { white-space: nowrap; }
+.h-time b { color: var(--ink); font-weight: 500; }
+.h-side { grid-row: 1 / span 4; grid-column: 2; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; }
+
+/* empty */
+.empty { display: grid; justify-items: center; gap: 12px; padding: 28px 24px 24px; text-align: center; }
+.empty .glyph { width: 48px; height: 48px; border-radius: var(--r-md); border: 1px dashed var(--line-strong); display: grid; place-items: center; color: var(--muted); }
+.empty p { color: var(--muted); font-size: 14px; line-height: 20px; max-width: 280px; }
+
+/* picker sheet */
+.behind { filter: none; }
+.scrim { position: absolute; inset: 0; background: var(--scrim); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 64px; background: var(--surface); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: var(--sheet-shadow); display: flex; flex-direction: column; overflow: hidden; }
+.grabber { width: 36px; height: 4px; border-radius: 2px; background: var(--line-strong); margin: 8px auto 0; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 20px; }
+.sheet-head h2 { font: 600 20px/28px var(--font); letter-spacing: -.02em; }
+.sheet-body { flex: 1; overflow: hidden; padding: 0 20px; }
+.group { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 48px; padding: 0; background: transparent; border: 0; border-top: 1px solid var(--line); }
+.group .micro { color: var(--ink); }
+.group .n { font: 400 12px/1 var(--mono); color: var(--muted); display: inline-flex; gap: 8px; align-items: center; }
+.pick { display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 0 0 2px; font-size: 15px; }
+.pick .nm { flex: 1; }
+.pick.taken { color: var(--muted); }
+.box { width: 22px; height: 22px; border-radius: var(--r-xs); border: 1.5px solid var(--line-strong); display: grid; place-items: center; flex: none; background: var(--surface); }
+.box svg { width: 14px; height: 14px; stroke-width: 2.25; opacity: 0; }
+.box.on { background: var(--signal); border-color: var(--signal); color: var(--on-signal); }
+.box.on svg, .box.dis svg { opacity: 1; }
+.box.dis { background: var(--surface-2); border-color: var(--line); color: var(--muted); }
+.pick .x { color: var(--faint); width: 32px; height: 32px; }
+.sheet-foot { padding: 12px 20px 30px; border-top: 1px solid var(--line); background: var(--surface); }
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.choices button { height: 40px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: transparent; font: 500 14px/1 var(--font); }
+.choices button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+/* layout at phone width */
+@media (max-width: 1100px) {
+  .ds-card, .ds-card.wide { grid-column: 1 / -1; }
+  .states { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .page { padding: 24px 16px 64px; }
+  .page-head h1 { font-size: 32px; line-height: 36px; }
+  .states { grid-template-columns: 1fr; }
+  .radii { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .curves { grid-template-columns: 1fr; }
+  .phone { border-radius: 32px; }
+}
+@media (max-width: 430px) {
+  /* on a real phone the frames bleed to the edges, so each screen is the true 390 px */
+  .screens { margin: 0 -16px; gap: 40px; }
+  .screen { width: 100%; }
+  .screen-label { margin: 0 16px 12px; }
+  .phone { border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
+}
+@media (max-width: 400px) {
+  .stat { padding-left: 12px; }
+  .stat b { font-size: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot::after, .sweep i { animation: none; }
+  .sweep i { transform: scaleX(.43); }
+  .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+<!-- Icon sprite: 24px grid, 1.75 stroke, square caps, mitred joins -->
+<svg width="0" height="0" class="sr" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5.5v-6h-5v6H4z"/></symbol>
+  <symbol id="i-splits" viewBox="0 0 24 24"><path d="M12 4 3.5 8.5 12 13l8.5-4.5zM3.5 12.5 12 17l8.5-4.5M3.5 16.5 12 21l8.5-4.5"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v3.5H8M12 8v4.5l3 2"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5.5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9.5 6 6 6-6"/></symbol>
+  <symbol id="i-chev-u" viewBox="0 0 24 24"><path d="m6 14.5 6-6 6 6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 6v12M15 6v12"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><path d="M7 7h10v10H7z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="m5 19 1-4.5L15.5 5 19 8.5 9.5 18zM13 7.5l3.5 3.5"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01" stroke-width="3"/></symbol>
+  <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M3 12h18M6.5 8v8M17.5 8v8M4 10v4M20 10v4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-timer" viewBox="0 0 24 24"><path d="M12 21a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15zM12 9.5v4M9.5 3h5M18.5 6.5l1.5-1.5"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M4 4h7.5l8.5 8.5-7.5 7.5L4 11.5zM8.5 8.5h.01" /></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13.5M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M6 12h.01M12 12h.01M18 12h.01" stroke-width="3"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+  <symbol id="i-auto" viewBox="0 0 24 24"><path d="M12 20a8 8 0 1 0 0-16zM12 4a8 8 0 1 0 0 16"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M6 3.5h12v17H6zM9 8.5h6M9 12h6M9 15.5h4"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 5h14v10l-4 4H5zM15 19v-4h4"/></symbol>
+</svg>
+
+<div class="page">
+  <header class="page-head">
+    <div>
+      <div class="brand">
+        <span class="mark"><svg class="i"><use href="#i-dumbbell"/></svg></span>
+        <span class="micro">Fitness app · new look · concept</span>
+      </div>
+      <h1 style="margin-top:18px">Readout</h1>
+      <p class="lede">The phone becomes a gym instrument: graphite and bone, hairlines instead of shadows, numbers set in a mono face like a display. One signal orange marks what is live and what to press next. Everything else stays quiet.</p>
+    </div>
+    <div class="theme-switch" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="light" aria-pressed="false"><svg class="i sm"><use href="#i-sun"/></svg>Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false"><svg class="i sm"><use href="#i-moon"/></svg>Dark</button>
+      <button type="button" data-set-theme="auto" aria-pressed="true"><svg class="i sm"><use href="#i-auto"/></svg>Auto</button>
+    </div>
+  </header>
+
+  <!-- ================= Design system ================= -->
+  <div class="section-label"><h2>System</h2><span class="micro">tokens · both themes</span></div>
+  <div class="ds">
+    <div class="ds-card wide">
+      <h3 class="micro">Palette <span class="hex-light">· light</span><span class="hex-dark">· dark</span></h3>
+      <div class="swatches">
+        <div class="sw sw-bg"><i></i><b>bg</b><code><span class="hex-light">#EDEDEA</span><span class="hex-dark">#0E0F10</span></code></div>
+        <div class="sw sw-surface"><i></i><b>surface</b><code><span class="hex-light">#F8F8F6</span><span class="hex-dark">#17181A</span></code></div>
+        <div class="sw sw-surface-2"><i></i><b>surface-2</b><code><span class="hex-light">#E3E4E0</span><span class="hex-dark">#202124</span></code></div>
+        <div class="sw sw-line"><i></i><b>line</b><code><span class="hex-light">#D8D9D4</span><span class="hex-dark">#2A2C2F</span></code></div>
+        <div class="sw sw-line-strong"><i></i><b>line-strong</b><code><span class="hex-light">#B9BAB4</span><span class="hex-dark">#3C3F43</span></code></div>
+        <div class="sw sw-faint"><i></i><b>faint</b><code><span class="hex-light">#9A9C9F</span><span class="hex-dark">#63666A</span></code></div>
+        <div class="sw sw-muted"><i></i><b>muted</b><code><span class="hex-light">#5F6166</span><span class="hex-dark">#A0A2A6</span></code></div>
+        <div class="sw sw-ink"><i></i><b>ink</b><code><span class="hex-light">#121314</span><span class="hex-dark">#EDEDE9</span></code></div>
+        <div class="sw sw-signal"><i></i><b>signal</b><code><span class="hex-light">#FF5A1F</span><span class="hex-dark">#FF6A2B</span></code></div>
+        <div class="sw sw-signal-ink"><i></i><b>signal-ink</b><code><span class="hex-light">#B83D0B</span><span class="hex-dark">#FF8148</span></code></div>
+        <div class="sw sw-signal-soft"><i></i><b>signal-soft</b><code><span class="hex-light">#FFE5DA</span><span class="hex-dark">#3A1C0F</span></code></div>
+        <div class="sw sw-danger"><i></i><b>danger</b><code><span class="hex-light">#C81E3A</span><span class="hex-dark">#FF6170</span></code></div>
+      </div>
+      <p class="spec" style="margin-top:14px">Signal means live, today or the main action. Never decoration. Text on signal is #0B0B0B (6.6:1). muted on surface: 5.6:1 light, 6.6:1 dark.</p>
+    </div>
+    <div class="ds-card">
+      <h3 class="micro">Spacing · 4px base</h3>
+      <div class="space-row sp1"><code>s1 4</code><i></i></div>
+      <div class="space-row sp2"><code>s2 8</code><i></i></div>
+      <div class="space-row sp3"><code>s3 12</code><i></i></div>
+      <div class="space-row sp4"><code>s4 16</code><i></i><span class="spec">gutter, card padding</span></div>
+      <div class="space-row sp5"><code>s5 20</code><i></i></div>
+      <div class="space-row sp6"><code>s6 24</code><i></i></div>
+      <div class="space-row sp8"><code>s8 32</code><i></i></div>
+      <div class="space-row sp12"><code>s12 48</code><i></i><span class="spec">tap target</span></div>
+    </div>
+
+    <div class="ds-card wide">
+      <h3 class="micro">Type · Geist + Geist Mono · tabular figures</h3>
+      <div class="type-row"><span class="micro">Readout</span><div><span class="t-readout clock">0<span class="colon">:</span>35<span class="colon">:</span>26</span><div class="spec">Mono 500 · 56/56 · -0.04em · clock only</div></div></div>
+      <div class="type-row"><span class="micro">Title</span><div><span class="t-title">Hip thrust</span><div class="spec">Geist 600 · 28/32 · -0.03em · one a page</div></div></div>
+      <div class="type-row"><span class="micro">Number</span><div><span class="t-num">90<small class="spec"> kg</small> &nbsp;8<small class="spec"> reps</small></span><div class="spec">Mono 500 · 22/28 · weights, reps, stats</div></div></div>
+      <div class="type-row"><span class="micro">Heading</span><div><span class="t-h2">In this workout</span><div class="spec">Geist 600 · 17/24 · -0.01em · card titles, row names 16/22</div></div></div>
+      <div class="type-row"><span class="micro">Body</span><div><span class="t-body">Machine · Bull · Legs</span><div class="spec">Geist 400 · 15/22 · fields 16px (no iOS zoom)</div></div></div>
+      <div class="type-row"><span class="micro">Meta</span><div><span class="t-meta">Started 10:28 PM</span><div class="spec">Geist 400 · 13/18 · muted</div></div></div>
+      <div class="type-row"><span class="micro">Micro</span><div><span class="micro" style="color:var(--ink)">Still to do</span><div class="spec">Mono 500 · 11/16 · +0.08em · uppercase</div></div></div>
+    </div>
+    <div class="ds-card">
+      <h3 class="micro">Radii</h3>
+      <div class="radii"><div class="r1">6</div><div class="r2">10</div><div class="r3">12</div><div class="r4">16</div><div class="r5">22</div></div>
+      <p class="spec" style="margin-top:10px">6 chips, set numbers · 10 fields · 12 buttons · 16 cards · 22 sheet top · 999 only for day dots, status and tag pills.</p>
+      <h3 class="micro" style="margin-top:20px">Elevation</h3>
+      <div class="elev"><div class="e0">0 · hairline</div><div class="e1">sunk · field</div><div class="e2">sheet only</div></div>
+      <p class="spec" style="margin-top:10px">No card shadows. Depth is 1px lines and a step of surface. One shadow in the app: sheets and modals.</p>
+    </div>
+
+    <div class="ds-card wide">
+      <h3 class="micro">Motion</h3>
+      <div class="curves">
+        <div class="curve"><svg viewBox="0 0 100 60" preserveAspectRatio="none"><line x1="0" y1="58" x2="100" y2="2"/><path d="M0 58 C20 10, 20 2, 100 2"/></svg><b>ease</b><code>cubic-bezier(.2,.8,.2,1)</code><code>press, hover, folds</code></div>
+        <div class="curve"><svg viewBox="0 0 100 60" preserveAspectRatio="none"><line x1="0" y1="58" x2="100" y2="2"/><path d="M0 58 C22 2, 36 2, 100 2"/></svg><b>ease-enter</b><code>cubic-bezier(.22,1,.36,1)</code><code>sheet in, flash in</code></div>
+        <div class="curve"><svg viewBox="0 0 100 60" preserveAspectRatio="none"><line x1="0" y1="58" x2="100" y2="2"/><path d="M0 58 C40 58, 100 2, 100 2"/></svg><b>ease-exit</b><code>cubic-bezier(.4,0,1,1)</code><code>sheet out, dismiss</code></div>
+      </div>
+      <div class="durations">
+        <div><b>90ms</b>press</div><div><b>150ms</b>hover, field</div><div><b>200ms</b>fold, menu</div><div><b>280ms</b>sheet in · 200 out</div><div><b>2.4s</b>live dot</div>
+      </div>
+      <p class="spec" style="margin-top:12px">Press: translateY(1px) scale(.98). Transform and opacity only. Nothing moves on scroll. Reduced motion: the live dot and the seconds sweep stand still.</p>
+    </div>
+    <div class="ds-card">
+      <h3 class="micro">Icons · 24 grid · 1.75 stroke · square caps</h3>
+      <div class="icons">
+        <span><svg class="i"><use href="#i-home"/></svg></span><span><svg class="i"><use href="#i-splits"/></svg></span><span><svg class="i"><use href="#i-history"/></svg></span><span><svg class="i"><use href="#i-dumbbell"/></svg></span>
+        <span><svg class="i"><use href="#i-plus"/></svg></span><span><svg class="i"><use href="#i-pause"/></svg></span><span><svg class="i"><use href="#i-stop"/></svg></span><span><svg class="i"><use href="#i-play"/></svg></span>
+        <span><svg class="i"><use href="#i-timer"/></svg></span><span><svg class="i"><use href="#i-tag"/></svg></span><span><svg class="i"><use href="#i-pen"/></svg></span><span><svg class="i"><use href="#i-grip"/></svg></span>
+        <span><svg class="i"><use href="#i-check"/></svg></span><span><svg class="i"><use href="#i-x"/></svg></span><span><svg class="i"><use href="#i-swap"/></svg></span><span><svg class="i"><use href="#i-more"/></svg></span>
+        <span><svg class="i"><use href="#i-back"/></svg></span><span><svg class="i"><use href="#i-chev-r"/></svg></span><span><svg class="i"><use href="#i-arrow"/></svg></span><span><svg class="i"><use href="#i-note"/></svg></span>
+      </div>
+      <p class="spec" style="margin-top:10px">Outline only, one weight. Filled only for a set number or a checked box.</p>
+    </div>
+
+    <div class="ds-card full">
+      <h3 class="micro">States</h3>
+      <div class="states">
+        <div class="state-col">
+          <span class="micro">Main action</span>
+          <div class="state-item"><span>rest</span><button class="btn btn-primary btn-block" type="button"><svg class="i"><use href="#i-plus"/></svg>Add set</button></div>
+          <div class="state-item"><span>hover</span><button class="btn btn-primary btn-block is-hover" type="button"><svg class="i"><use href="#i-plus"/></svg>Add set</button></div>
+          <div class="state-item"><span>pressed</span><button class="btn btn-primary btn-block is-pressed" type="button"><svg class="i"><use href="#i-plus"/></svg>Add set</button></div>
+          <div class="state-item"><span>focus</span><button class="btn btn-primary btn-block is-focus" type="button"><svg class="i"><use href="#i-plus"/></svg>Add set</button></div>
+          <div class="state-item"><span>disabled</span><button class="btn btn-primary btn-block" type="button" disabled><svg class="i"><use href="#i-plus"/></svg>Add set</button></div>
+        </div>
+        <div class="state-col">
+          <span class="micro">Second action, field</span>
+          <div class="state-item"><span>rest</span><button class="btn btn-block" type="button"><svg class="i"><use href="#i-pause"/></svg>Pause</button></div>
+          <div class="state-item"><span>pressed</span><button class="btn btn-block is-pressed" type="button"><svg class="i"><use href="#i-pause"/></svg>Pause</button></div>
+          <div class="state-item"><span>focus</span><button class="btn btn-block is-focus" type="button"><svg class="i"><use href="#i-pause"/></svg>Pause</button></div>
+          <div class="state-item"><span>field</span><div class="input-wrap"><input class="input" value="90" aria-label="Weight, rest state"><span class="unit">kg</span></div></div>
+          <div class="state-item"><span>focus</span><div class="input-wrap"><input class="input is-focus" value="92.5" aria-label="Weight, focused"><span class="unit">kg</span></div></div>
+        </div>
+        <div class="state-col">
+          <span class="micro">Workout timer</span>
+          <div class="state-item"><span>idle</span><span><span class="live idle"><span class="dot"></span>Not started</span></span></div>
+          <div class="state-item"><span>running</span><span><span class="live"><span class="dot"></span>Running</span></span></div>
+          <div class="state-item"><span>paused</span><span><span class="live paused"><span class="dot"></span>Paused · 4 min 12 s</span></span></div>
+          <div class="state-item"><span>finished</span><span><span class="live finished"><span class="dot"></span>Finished</span></span></div>
+          <div class="state-item"><span>chips</span><span style="display:flex;gap:6px;flex-wrap:wrap"><span class="chip done"><svg class="i sm"><use href="#i-check"/></svg>3 sets</span><span class="chip">U/R/L/U/L</span><span class="chip rest">Rest day</span><span class="chip gone">Deleted</span></span></div>
+          <div class="state-item"><span>days</span><span style="display:flex;gap:8px"><span class="day is-planned">27</span><span class="day is-planned is-today">25</span><span class="day is-missed">23</span><span class="day is-extra">24</span><span class="day">26</span></span></div>
+        </div>
+        <div class="state-col">
+          <span class="micro">Empty state</span>
+          <div class="card">
+            <div class="card-head"><h2>Recent workouts</h2><a class="link" href="#">History</a></div>
+            <div class="divider full"></div>
+            <div class="empty"><span class="glyph"><svg class="i lg"><use href="#i-list"/></svg></span><p>No workouts logged yet. Open a workout day, open an exercise and add your first set.</p></div>
+          </div>
+          <div class="card today">
+            <div class="top">
+              <div class="when"><span class="micro">Today · Lower</span><span class="live idle"><span class="dot"></span>Not started</span></div>
+              <div class="facts"><span>Last time · heaviest</span></div>
+            </div>
+            <ul class="lift-list"><li>Hip thrust <b>90 kg <span>×</span> 8</b></li><li>Squat <b>110 kg <span>×</span> 6</b></li></ul>
+            <div style="padding:12px 16px 16px"><button class="btn btn-primary btn-block" type="button"><svg class="i"><use href="#i-play"/></svg>Start workout</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Screens ================= -->
+  <div class="section-label"><h2>Screens</h2><span class="micro">390 × phone · real data · Wednesday 25 November 2026</span></div>
+  <div class="screens">
+
+    <!-- A · Home -->
+    <section class="screen" aria-label="Home">
+      <div class="screen-label"><b>Home</b><span class="micro">A</span></div>
+      <div class="phone">
+        <div class="status"><span>11:03</span><span class="bars"><em></em><i></i></span></div>
+        <div class="appbar">
+          <span class="logo"><svg class="i"><use href="#i-dumbbell"/></svg></span>
+          <span class="spacer"></span>
+          <a class="btn btn-sm" href="#"><svg class="i sm"><use href="#i-dumbbell"/></svg>Exercises</a>
+        </div>
+        <div class="content">
+          <div class="page-title"><span class="micro">Today</span><h1>Wednesday, November 25</h1></div>
+
+          <div class="card today">
+            <div class="top">
+              <div class="when"><h2>Lower day</h2><span class="chip done"><svg class="i sm"><use href="#i-check"/></svg>Logged today</span></div>
+              <div class="facts"><span><b>2</b> exercises</span><span><a class="link" href="#" style="font-size:13px"><b>5</b>&nbsp;sets</a></span><span>top <b>110 kg</b></span></div>
+            </div>
+            <button class="fold" type="button" aria-expanded="true">Hide exercises<svg class="i"><use href="#i-chev-u"/></svg></button>
+            <ul class="lift-list"><li>Hip thrust <b>90 kg <span>×</span> 8</b></li><li>Squat <b>110 kg <span>×</span> 6</b></li></ul>
+            <div style="padding:12px 16px 14px"><a class="btn btn-primary btn-block" href="#"><svg class="i"><use href="#i-arrow"/></svg>Continue</a></div>
+            <div class="last">Last time · <a href="#">Saturday, November 21</a> · 0 exercises · 0 sets · Lower in U/R/L/U/L</div>
+          </div>
+
+          <div class="card">
+            <div class="card-head" style="align-items:flex-start">
+              <div><span class="micro">Active split</span><div class="split-name">U/R/L/U/L</div></div>
+              <a class="link" href="#">Change</a>
+            </div>
+            <div class="week">
+              <div class="wd"><a class="day is-extra" href="#" title="Sunday 22 · Push, off the plan">S</a><small></small></div>
+              <div class="wd"><a class="day is-missed" href="#" title="Monday 23 · Upper, missed">M</a><small>Upper</small></div>
+              <div class="wd"><a class="day is-extra" href="#" title="Tuesday 24 · Cardio, off the plan">T</a><small></small></div>
+              <div class="wd"><a class="day is-planned is-today" href="#" title="Today · Lower">W</a><small style="color:var(--signal-ink)">Lower</small></div>
+              <div class="wd"><span class="day" title="Thursday 26 · rest">T</span><small></small></div>
+              <div class="wd"><span class="day is-planned" title="Friday 27 · Upper">F</span><small>Upper</small></div>
+              <div class="wd"><span class="day is-planned" title="Saturday 28 · Lower">S</span><small>Lower</small></div>
+            </div>
+            <div class="split-actions"><span class="micro">This week</span><a class="btn btn-sm" href="#"><svg class="i sm"><use href="#i-swap"/></svg>Move a workout</a></div>
+            <div class="stats">
+              <div class="stat"><span class="micro">Workouts</span><b>3</b></div>
+              <div class="stat"><span class="micro">Exercises</span><b>4</b></div>
+              <div class="stat"><span class="micro">Sets</span><b>7</b></div>
+              <div class="stat"><span class="micro">Top</span><b>110<small>kg</small></b></div>
+              <div class="stat wide"><span class="micro">Cardio</span><b>45 min 50 s</b></div>
+            </div>
+            <button class="fold" type="button" aria-expanded="false">Show days<svg class="i"><use href="#i-chev-d"/></svg></button>
+          </div>
+
+          <div class="card">
+            <div class="cal-head"><h2>November 2026<svg class="i sm"><use href="#i-chev-u"/></svg></h2><a class="link" href="#">Month</a></div>
+            <div class="cal">
+              <span class="dow">S</span><span class="dow">M</span><span class="dow">T</span><span class="dow">W</span><span class="dow">T</span><span class="dow">F</span><span class="dow">S</span>
+              <span class="day">1</span><span class="day">2</span><span class="day">3</span><span class="day">4</span><span class="day">5</span><span class="day">6</span><span class="day">7</span>
+              <span class="day">8</span><span class="day">9</span><span class="day">10</span><span class="day">11</span><span class="day">12</span><span class="day">13</span><span class="day">14</span>
+              <span class="day">15</span><a class="day is-planned" href="#">16</a><span class="day">17</span><a class="day is-planned" href="#">18</a><span class="day">19</span><a class="day is-missed" href="#">20</a><a class="day is-planned" href="#">21</a>
+              <div class="this-week"><a class="day is-extra" href="#">22</a><a class="day is-missed" href="#">23</a><a class="day is-extra" href="#">24</a><a class="day is-planned is-today" href="#">25</a><span class="day">26</span><span class="day is-planned">27</span><span class="day is-planned">28</span></div>
+              <span class="day">29</span><span class="day is-planned">30</span><span class="day is-outside">1</span><span class="day is-outside">2</span><span class="day is-outside">3</span><span class="day is-outside">4</span><span class="day is-outside">5</span>
+            </div>
+            <div class="legend"><span><i class="l-p"></i>planned</span><span><i class="l-m"></i>missed</span><span><i class="l-e"></i>extra</span><span><i class="l-t"></i>today</span></div>
+          </div>
+
+          <div class="card recent">
+            <div class="card-head"><h2>Recent workouts</h2><a class="link" href="#">History</a></div>
+            <ul class="rows">
+              <li><a class="row" href="#"><div class="main"><div class="name">Lower</div><div class="meta"><span class="mono">Nov 25</span> · 5 sets · <span class="chip">U/R/L/U/L</span></div></div><svg class="i chev"><use href="#i-chev-d"/></svg></a></li>
+              <li><a class="row" href="#"><div class="main"><div class="name">Cardio</div><div class="meta"><span class="mono">Nov 24</span> · 45 min 50 s · <span class="chip rest">Rest day</span></div></div><svg class="i chev"><use href="#i-chev-d"/></svg></a></li>
+              <li><a class="row" href="#"><div class="main"><div class="name">Push</div><div class="meta"><span class="mono">Nov 22</span> · 2 sets · <span class="chip rest">Rest day</span></div></div><svg class="i chev"><use href="#i-chev-d"/></svg></a></li>
+              <li><a class="row" href="#"><div class="main"><div class="name">Lower</div><div class="meta"><span class="mono">Nov 21</span> · 0 sets · <span class="chip">U/R/L/U/L</span></div></div><svg class="i chev"><use href="#i-chev-d"/></svg></a></li>
+              <li><a class="row" href="#"><div class="main"><div class="name">Upper</div><div class="meta"><span class="mono">Nov 20</span> · 0 sets · <span class="chip">U/R/L/U/L</span></div></div><svg class="i chev"><use href="#i-chev-d"/></svg></a></li>
+            </ul>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Main">
+          <a class="tab" href="#" aria-current="page"><svg class="i lg"><use href="#i-home"/></svg>Home</a>
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-splits"/></svg>Splits</a>
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-history"/></svg>History</a>
+          <a class="tab" href="#"><span class="avatar">A</span>Account</a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- B · Today's workout -->
+    <section class="screen" aria-label="Today's workout">
+      <div class="screen-label"><b>Today's workout</b><span class="micro">B</span></div>
+      <div class="phone">
+        <div class="status"><span>11:03</span><span class="bars"><em></em><i></i></span></div>
+        <div class="appbar">
+          <a class="btn btn-icon round" href="#" aria-label="Back"><svg class="i"><use href="#i-back"/></svg></a>
+          <span class="title">Workout</span><span class="spacer"></span>
+          <a class="btn btn-sm" href="#">Plan</a>
+        </div>
+        <div class="content">
+          <div class="page-title">
+            <span class="micro" style="color:var(--signal-ink)">Today · Wednesday, November 25</span>
+            <h1>Lower</h1>
+            <p class="t-meta"><span class="mono" style="color:var(--ink)">2</span> exercises · <span class="mono" style="color:var(--ink)">5</span> sets</p>
+          </div>
+
+          <div class="card timer">
+            <div class="meta-line"><span class="live"><span class="dot"></span>Running</span><span>Started 10:28 PM</span></div>
+            <div class="clock js-clock" aria-live="off">0<span class="colon">:</span>35<span class="colon">:</span>26</div>
+            <div class="sweep" aria-hidden="true"><i></i></div>
+            <div class="pair">
+              <button class="btn" type="button"><svg class="i"><use href="#i-pause"/></svg>Pause</button>
+              <button class="btn" type="button"><svg class="i" style="color:var(--danger)"><use href="#i-stop"/></svg>Stop</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>In this workout<span class="count">2</span></h2><button class="btn btn-primary btn-sm" type="button"><svg class="i sm"><use href="#i-plus"/></svg>Add exercise</button></div>
+            <ul class="rows" style="border-top:1px solid var(--line)">
+              <li><a class="row" href="#"><svg class="i grip"><use href="#i-grip"/></svg><div class="main"><div class="name">Hip thrust</div><div class="meta">Machine · Bull · Legs</div></div><span class="chip done"><svg class="i sm"><use href="#i-check"/></svg>3 sets</span><span class="btn btn-icon" role="button" aria-label="Rename"><svg class="i sm"><use href="#i-pen"/></svg></span><svg class="i chev"><use href="#i-chev-r"/></svg></a></li>
+              <li><a class="row" href="#"><svg class="i grip"><use href="#i-grip"/></svg><div class="main"><div class="name">Squat</div><div class="meta">Machine · Bull · Legs</div></div><span class="chip done"><svg class="i sm"><use href="#i-check"/></svg>2 sets</span><span class="btn btn-icon" role="button" aria-label="Rename"><svg class="i sm"><use href="#i-pen"/></svg></span><svg class="i chev"><use href="#i-chev-r"/></svg></a></li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2>Still to do<span class="count">5</span></h2><span class="micro">drag in</span></div>
+            <ul class="rows" style="border-top:1px solid var(--line)">
+              <li><a class="row" href="#"><svg class="i grip"><use href="#i-grip"/></svg><div class="main"><div class="name">Romanian deadlift</div><div class="meta">Free weights · Legs</div></div><span class="btn btn-icon" role="button" aria-label="Rename"><svg class="i sm"><use href="#i-pen"/></svg></span><svg class="i chev"><use href="#i-chev-r"/></svg></a></li>
+              <li><a class="row" href="#"><svg class="i grip"><use href="#i-grip"/></svg><div class="main"><div class="name">Leg extension</div><div class="meta">Machine · Bull · Legs</div></div><span class="btn btn-icon" role="button" aria-label="Rename"><svg class="i sm"><use href="#i-pen"/></svg></span><svg class="i chev"><use href="#i-chev-r"/></svg></a></li>
+              <li><a class="row" href="#"><svg class="i grip"><use href="#i-grip"/></svg><div class="main"><div class="name">Adductor</div><div class="meta">Machine · Bull · Legs</div></div><span class="btn btn-icon" role="button" aria-label="Rename"><svg class="i sm"><use href="#i-pen"/></svg></span><svg class="i chev"><use href="#i-chev-r"/></svg></a></li>
+              <li><a class="row" href="#"><svg class="i grip"><use href="#i-grip"/></svg><div class="main"><div class="name">Calf raise</div><div class="meta">Machine · Bull · Calves</div></div><span class="btn btn-icon" role="button" aria-label="Rename"><svg class="i sm"><use href="#i-pen"/></svg></span><svg class="i chev"><use href="#i-chev-r"/></svg></a></li>
+              <li><a class="row" href="#"><svg class="i grip"><use href="#i-grip"/></svg><div class="main"><div class="name">Crunch</div><div class="meta">Free weights · Core</div></div><span class="btn btn-icon" role="button" aria-label="Rename"><svg class="i sm"><use href="#i-pen"/></svg></span><svg class="i chev"><use href="#i-chev-r"/></svg></a></li>
+            </ul>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Main">
+          <a class="tab" href="#" aria-current="page"><svg class="i lg"><use href="#i-home"/></svg>Home</a>
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-splits"/></svg>Splits</a>
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-history"/></svg>History</a>
+          <a class="tab" href="#"><span class="avatar">A</span>Account</a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- C · Exercise while logging -->
+    <section class="screen" aria-label="Exercise">
+      <div class="screen-label"><b>Exercise, logging</b><span class="micro">C</span></div>
+      <div class="phone">
+        <div class="status"><span>11:03</span><span class="bars"><em></em><i></i></span></div>
+        <div class="appbar">
+          <a class="btn btn-icon round" href="#" aria-label="Back"><svg class="i"><use href="#i-back"/></svg></a>
+          <span class="title">Exercise</span><span class="spacer"></span>
+          <button class="btn btn-icon" type="button" aria-label="More"><svg class="i"><use href="#i-more"/></svg></button>
+        </div>
+        <div class="content">
+          <div class="page-title"><span class="micro">Lower · today</span><h1>Hip thrust</h1><p class="t-meta">Machine · Bull</p></div>
+
+          <div class="card">
+            <div class="card-head"><h2>Today</h2><span class="micro">Nov 25, 2026</span></div>
+            <div class="set-table">
+              <div class="set-head micro"><span>Set</span><span>Weight</span><span>Reps</span><span></span></div>
+              <div class="set"><span class="set-no">1</span><span class="num">60<small>kg</small></span><span class="num">12</span><button class="btn btn-icon" type="button" aria-label="Set 1 actions"><svg class="i"><use href="#i-more"/></svg></button>
+                <div class="set-extra"><button class="tag-btn on" type="button"><svg class="i sm"><use href="#i-tag"/></svg>Warm-up</button><span class="ghost-note">Add a note</span></div></div>
+              <div class="rest-line"><svg class="i sm"><use href="#i-timer"/></svg>Rest 2 min 5 s</div>
+              <div class="set" style="border-top:0"><span class="set-no">2</span><span class="num">80<small>kg</small></span><span class="num">10</span><button class="btn btn-icon" type="button" aria-label="Set 2 actions"><svg class="i"><use href="#i-more"/></svg></button>
+                <div class="set-extra"><button class="tag-btn" type="button"><svg class="i sm"><use href="#i-tag"/></svg>Tag</button><span class="ghost-note">Add a note</span></div></div>
+              <div class="rest-line"><svg class="i sm"><use href="#i-timer"/></svg>Rest 2 min 5 s</div>
+              <div class="set" style="border-top:0"><span class="set-no">3</span><span class="num">90<small>kg</small></span><span class="num">8</span><button class="btn btn-icon" type="button" aria-label="Set 3 actions"><svg class="i"><use href="#i-more"/></svg></button>
+                <div class="set-extra"><button class="tag-btn" type="button"><svg class="i sm"><use href="#i-tag"/></svg>Tag</button><span class="ghost-note">Add a note</span></div></div>
+            </div>
+
+            <form class="add-set" onsubmit="return false">
+              <div class="head"><span class="micro" style="color:var(--ink)">Set 4</span><button class="btn btn-sm rest-btn js-rest" type="button"><svg class="i sm"><use href="#i-timer"/></svg><span>Start rest</span></button></div>
+              <div class="fields">
+                <div class="field"><label class="micro" for="w">Weight</label><div class="input-wrap"><input class="input is-focus" id="w" inputmode="decimal" value="90"><span class="unit">kg</span></div></div>
+                <div class="field"><label class="micro" for="r">Reps</label><div class="input-wrap"><input class="input" id="r" inputmode="numeric" value="8"><span class="unit">reps</span></div></div>
+              </div>
+              <div class="tag-pills" role="group" aria-label="Tags">
+                <button class="pill" type="button" aria-pressed="false">Assisted</button>
+                <button class="pill" type="button" aria-pressed="false">Drop set</button>
+                <button class="pill" type="button" aria-pressed="false">Warm-up</button>
+              </div>
+              <button class="btn btn-primary btn-block" type="submit"><svg class="i"><use href="#i-plus"/></svg>Add set</button>
+            </form>
+          </div>
+
+          <div class="card card-pad stack">
+            <div style="display:flex;justify-content:space-between;align-items:center"><h2 class="t-h2">Note</h2><span class="micro">Today</span></div>
+            <div style="display:flex;gap:8px"><input class="input text" placeholder="Anything to remember about this exercise today" aria-label="Note"><button class="btn btn-ink" type="button" aria-label="Save note" style="width:48px;padding:0"><svg class="i"><use href="#i-arrow"/></svg></button></div>
+          </div>
+
+          <div class="card card-pad stack">
+            <h2 class="t-h2">Equipment</h2>
+            <div class="seg" role="group" aria-label="Equipment"><button type="button" aria-pressed="false">Free weights</button><button type="button" aria-pressed="true">Machine</button><button type="button" aria-pressed="false">Bodyweight</button></div>
+            <div class="select-row"><span>Type of machine</span><span>Not set<svg class="i sm"><use href="#i-chev-d"/></svg></span></div>
+            <div class="select-row"><span>Machine</span><span>Not set<svg class="i sm"><use href="#i-chev-d"/></svg></span></div>
+            <div class="field"><label class="micro" for="brand">Machine brand</label><input class="input text" id="brand" value="Bull"></div>
+            <button class="btn btn-block" type="button">Save equipment</button>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Main">
+          <a class="tab" href="#" aria-current="page"><svg class="i lg"><use href="#i-home"/></svg>Home</a>
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-splits"/></svg>Splits</a>
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-history"/></svg>History</a>
+          <a class="tab" href="#"><span class="avatar">A</span>Account</a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- D · History -->
+    <section class="screen" aria-label="History">
+      <div class="screen-label"><b>History</b><span class="micro">D</span></div>
+      <div class="phone">
+        <div class="status"><span>11:03</span><span class="bars"><em></em><i></i></span></div>
+        <div class="appbar"><span class="logo"><svg class="i"><use href="#i-dumbbell"/></svg></span></div>
+        <div class="content">
+          <div class="page-title"><span class="micro">History</span><h1>Logged workouts</h1></div>
+          <div class="card">
+            <a class="h-row" href="#">
+              <span class="h-date today">Wed · Nov 25, 2026</span>
+              <span class="h-name">Lower <span class="chip">U/R/L/U/L</span></span>
+              <span class="h-sub">2 exercises · 5 sets</span>
+              <span class="h-time"><span class="live" style="height:20px"><span class="dot"></span>Running</span><span>Started 10:28 PM</span></span>
+              <span class="h-side"><svg class="i chev muted"><use href="#i-chev-r"/></svg><button class="btn btn-icon" type="button" aria-label="Edit timer"><svg class="i"><use href="#i-pen"/></svg></button></span>
+            </a>
+            <a class="h-row" href="#">
+              <span class="h-date">Tue · Nov 24, 2026</span>
+              <span class="h-name">Cardio <span class="chip rest">Rest day</span><span class="chip gone">Deleted</span></span>
+              <span class="h-sub">1 exercise · 45 min 50 s</span>
+              <span class="h-side"><svg class="i chev muted"><use href="#i-chev-r"/></svg></span>
+            </a>
+            <a class="h-row" href="#">
+              <span class="h-date">Sun · Nov 22, 2026</span>
+              <span class="h-name">Push <span class="chip rest">Rest day</span><span class="chip gone">Deleted</span></span>
+              <span class="h-sub">1 exercise · 2 sets</span>
+              <span class="h-time"><svg class="i sm"><use href="#i-timer"/></svg><span>11:53 AM ~ 12:17 PM ·</span><span><b>23 min 44 s</b></span></span>
+              <span class="h-side"><svg class="i chev muted"><use href="#i-chev-r"/></svg><button class="btn btn-icon" type="button" aria-label="Edit timer"><svg class="i"><use href="#i-pen"/></svg></button></span>
+            </a>
+            <a class="h-row" href="#">
+              <span class="h-date">Sat · Nov 21, 2026</span>
+              <span class="h-name">Lower <span class="chip">U/R/L/U/L</span></span>
+              <span class="h-sub">0 exercises · 0 sets</span>
+              <span class="h-time"><svg class="i sm"><use href="#i-timer"/></svg><span>7:57 AM ~ 7:58 AM ·</span><span><b>2 s</b></span></span>
+              <span class="h-side"><svg class="i chev muted"><use href="#i-chev-r"/></svg><button class="btn btn-icon" type="button" aria-label="Edit timer"><svg class="i"><use href="#i-pen"/></svg></button></span>
+            </a>
+            <a class="h-row" href="#">
+              <span class="h-date">Fri · Nov 20, 2026</span>
+              <span class="h-name">Upper <span class="chip">U/R/L/U/L</span></span>
+              <span class="h-sub">0 exercises · 0 sets</span>
+              <span class="h-side"><svg class="i chev muted"><use href="#i-chev-r"/></svg></span>
+            </a>
+            <a class="h-row" href="#">
+              <span class="h-date">Wed · Nov 18, 2026</span>
+              <span class="h-name">Lower <span class="chip">U/R/L/U/L</span></span>
+              <span class="h-sub">7 exercises · 19 sets</span>
+              <span class="h-side"><svg class="i chev muted"><use href="#i-chev-r"/></svg></span>
+            </a>
+            <a class="h-row" href="#">
+              <span class="h-date">Mon · Nov 16, 2026</span>
+              <span class="h-name">Upper <span class="chip">U/R/L/U/L</span></span>
+              <span class="h-sub">9 exercises · 27 sets</span>
+              <span class="h-side"><svg class="i chev muted"><use href="#i-chev-r"/></svg></span>
+            </a>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Main">
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-home"/></svg>Home</a>
+          <a class="tab" href="#"><svg class="i lg"><use href="#i-splits"/></svg>Splits</a>
+          <a class="tab" href="#" aria-current="page"><svg class="i lg"><use href="#i-history"/></svg>History</a>
+          <a class="tab" href="#"><span class="avatar">A</span>Account</a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- E · Picker sheet -->
+    <section class="screen" aria-label="Add exercises">
+      <div class="screen-label"><b>Add exercises</b><span class="micro">E</span></div>
+      <div class="phone" style="height:844px">
+        <div class="behind" aria-hidden="true">
+          <div class="status"><span>11:03</span><span class="bars"><em></em><i></i></span></div>
+          <div class="appbar"><span class="btn btn-icon round"><svg class="i"><use href="#i-back"/></svg></span><span class="title">Workout</span></div>
+        </div>
+        <div class="scrim"></div>
+        <div class="sheet" role="dialog" aria-label="Add exercises">
+          <div class="grabber"></div>
+          <div class="sheet-head"><h2>Add exercises</h2><button class="btn btn-icon" type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
+          <div class="sheet-body">
+            <button class="group" type="button"><span class="micro">Back</span><span class="n">3<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <button class="group" type="button"><span class="micro">Biceps</span><span class="n">1<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <button class="group" type="button"><span class="micro">Calves</span><span class="n">1<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <button class="group" type="button"><span class="micro">Cardio</span><span class="n">4<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <button class="group" type="button"><span class="micro">Chest</span><span class="n">2<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <button class="group" type="button"><span class="micro">Core</span><span class="n">3<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <button class="group" type="button" aria-expanded="true"><span class="micro">Legs</span><span class="n">6<svg class="i sm"><use href="#i-chev-u"/></svg></span></button>
+            <label class="pick"><span class="box"><svg class="i"><use href="#i-check"/></svg></span><span class="nm">Adductor</span><span class="chip">Yours</span><button class="btn btn-icon x" type="button" aria-label="Delete Adductor"><svg class="i sm"><use href="#i-x"/></svg></button></label>
+            <label class="pick taken"><span class="box dis"><svg class="i"><use href="#i-check"/></svg></span><span class="nm">Hip thrust</span><span class="micro">Added</span><span class="chip">Yours</span><button class="btn btn-icon x" type="button" aria-label="Delete Hip thrust"><svg class="i sm"><use href="#i-x"/></svg></button></label>
+            <label class="pick"><span class="box"><svg class="i"><use href="#i-check"/></svg></span><span class="nm">Leg extension</span><span class="chip">Yours</span><button class="btn btn-icon x" type="button" aria-label="Delete Leg extension"><svg class="i sm"><use href="#i-x"/></svg></button></label>
+            <label class="pick"><span class="box on"><svg class="i"><use href="#i-check"/></svg></span><span class="nm">Leg press</span><button class="btn btn-icon x" type="button" aria-label="Delete Leg press"><svg class="i sm"><use href="#i-x"/></svg></button></label>
+            <label class="pick"><span class="box"><svg class="i"><use href="#i-check"/></svg></span><span class="nm">Romanian deadlift</span><button class="btn btn-icon x" type="button" aria-label="Delete Romanian deadlift"><svg class="i sm"><use href="#i-x"/></svg></button></label>
+            <label class="pick taken"><span class="box dis"><svg class="i"><use href="#i-check"/></svg></span><span class="nm">Squat</span><span class="micro">Added</span><button class="btn btn-icon x" type="button" aria-label="Delete Squat"><svg class="i sm"><use href="#i-x"/></svg></button></label>
+            <button class="group" type="button"><span class="micro">Shoulders</span><span class="n">2<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <button class="group" type="button"><span class="micro">Triceps</span><span class="n">1<svg class="i sm"><use href="#i-chev-d"/></svg></span></button>
+            <div class="group" style="border-top:1px solid var(--line)"><span class="micro">Create your own</span></div>
+            <div class="stack">
+              <div class="field"><label class="micro" for="nm">Exercise name</label><input class="input text" id="nm" placeholder="Bench press"></div>
+              <div class="choices" role="group" aria-label="Muscle group"><button type="button" aria-pressed="true">Other</button><button type="button">Chest</button><button type="button">Back</button><button type="button">Shoulders</button><button type="button">Biceps</button><button type="button">Triceps</button></div>
+            </div>
+          </div>
+          <div class="sheet-foot"><button class="btn btn-primary btn-block" type="button">Add selected</button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var buttons = document.querySelectorAll('[data-set-theme]');
+  function apply(t) {
+    if (t === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.setTheme === t)); });
+  }
+  var saved = 'auto';
+  try { saved = localStorage.getItem('readout-theme') || 'auto'; } catch (e) {}
+  var q = new URLSearchParams(location.search).get('theme');
+  apply(q || saved);
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      apply(b.dataset.setTheme);
+      try { localStorage.setItem('readout-theme', b.dataset.setTheme); } catch (e) {}
+    });
+  });
+
+  // The workout clock counts up from the logged start (0:35:26 when the page opened).
+  var start = Date.now() - 2126 * 1000;
+  function fmt(s) { var h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, x = s % 60; return h + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0'); }
+  var clocks = document.querySelectorAll('.js-clock');
+  function tick() { var t = fmt(Math.floor((Date.now() - start) / 1000)); clocks.forEach(function (c) { if (c.classList.contains('clock')) c.innerHTML = t.split(':').join('<span class="colon">:</span>'); else c.textContent = t; }); }
+  if (!q) setInterval(tick, 1000);
+
+  // Start rest becomes a running rest with Stop, as the rest timer does.
+  var rest = document.querySelector('.js-rest'), restStart = 0, restTimer;
+  rest.addEventListener('click', function () {
+    var label = rest.querySelector('span');
+    if (restTimer) { clearInterval(restTimer); restTimer = null; rest.classList.remove('running'); label.textContent = 'Start rest'; return; }
+    restStart = Date.now(); rest.classList.add('running');
+    var upd = function () { var s = Math.floor((Date.now() - restStart) / 1000); label.textContent = 'Stop rest · ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+    upd(); restTimer = setInterval(upd, 1000);
+  });
+  document.querySelectorAll('.pill').forEach(function (p) { p.addEventListener('click', function () { p.setAttribute('aria-pressed', String(p.getAttribute('aria-pressed') !== 'true')); }); });
+})();
+</script>
+</body>
+</html>

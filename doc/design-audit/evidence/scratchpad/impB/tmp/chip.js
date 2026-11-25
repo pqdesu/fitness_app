@@ -1,0 +1,1 @@
+(() => { const c = [...document.querySelectorAll('.chip')].find((e) => e.innerText.includes('Push/Pull/Legs +')); c.scrollIntoView({ block: 'center' }); return c.parentElement.outerHTML.slice(0, 500) + '\n' + getComputedStyle(c).whiteSpace + ' ' + c.closest('[class]').className; })()
