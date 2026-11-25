@@ -148,9 +148,14 @@ class CardioFlowTest < FlowTest
     log
   end
 
+  # Noon on a day the split has nothing on, so a rest day: Wednesday 2026-11-18, or the Thursday when
+  # the split's Push (set up on the weekday the test runs) falls on a Wednesday.
+  def rest_day_noon
+    Time.zone.local(2026, 11, @day.weekday == 3 ? 19 : 18, 12)
+  end
+
   test "cardio counts as an exercise, with its time where the sets are" do
-    # a Wednesday: the split's Push is on another day, so it is a rest day
-    travel_to Time.zone.local(2026, 11, 18, 12) do
+    travel_to rest_day_noon do
       sign_in @user
       log = log_workout("Pull", Date.current, cardio: { @treadmill => [1200, 600] })
 
@@ -170,8 +175,7 @@ class CardioFlowTest < FlowTest
 
   test "on a rest day the Today box has its own Cardio button" do
     cardio = new_workout_log_path(workout: "Cardio")
-    # a Wednesday: the split's Push is on another day
-    travel_to Time.zone.local(2026, 11, 18, 12) do
+    travel_to rest_day_noon do
       sign_in @user
       get root_path
       assert_select ".today .today-header a[href=?]", cardio, text: /Cardio/
@@ -207,7 +211,7 @@ class CardioFlowTest < FlowTest
   end
 
   test "the Cardio workout is started by its first cardio exercise, as a rest day workout" do
-    travel_to Time.zone.local(2026, 11, 18, 12) do
+    travel_to rest_day_noon do
       sign_in @user
       # a weight exercise sent along is left out
       post workout_logs_path(workout: "Cardio"), params: { exercise_ids: [@treadmill.id, @bench.id] }
