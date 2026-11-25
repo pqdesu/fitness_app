@@ -1,0 +1,253 @@
+{
+ "url": "http://127.0.0.1:3001/admin/equipment",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 32,
+ "small": [
+  {
+   "d": "input[radio]#equipment_item__kind_free_weights.btn-check \"free_weights\"",
+   "w": 13,
+   "h": 13,
+   "under24": true,
+   "spacingOk": false,
+   "inline": false,
+   "checkbox": true
+  },
+  {
+   "d": "input[radio]#equipment_item__kind_machine.btn-check \"machine\"",
+   "w": 13,
+   "h": 13,
+   "under24": true,
+   "spacingOk": false,
+   "inline": false,
+   "checkbox": true
+  },
+  {
+   "d": "input[radio]#equipment_item__kind_machine_type.btn-check \"machine_type\"",
+   "w": 13,
+   "h": 13,
+   "under24": true,
+   "spacingOk": false,
+   "inline": false,
+   "checkbox": true
+  }
+ ],
+ "headings": [
+  "H1 Equipment (28px)",
+  "H2 Add equipment (16.8px)",
+  "H2 Free weights (16.8px)",
+  "H2 Machines (16.8px)",
+  "H2 Machine types (16.8px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN",
+  "NAV[aria-label=Sections]"
+ ],
+ "inputs": [
+  {
+   "d": "input[text]#equipment_item_name.form-control \"\"",
+   "name": "equipment_item[name]",
+   "type": "text",
+   "inputmode": null,
+   "autocomplete": "off",
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Name",
+   "ariaLabel": null,
+   "placeholder": "Dumbbell",
+   "visible": true,
+   "fontSize": "16px"
+  },
+  {
+   "d": "input[radio]#equipment_item__kind_free_weights.btn-check \"free_weights\"",
+   "name": "equipment_item[kind]",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Free weights",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#equipment_item__kind_machine.btn-check \"machine\"",
+   "name": "equipment_item[kind]",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Machines",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[radio]#equipment_item__kind_machine_type.btn-check \"machine_type\"",
+   "name": "equipment_item[kind]",
+   "type": "radio",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Machine types",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[submit].btn.btn-primary \"Add\"",
+   "name": "commit",
+   "type": "submit",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 0,
+   "labelText": null,
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  }
+ ],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Plus Jakarta Sans 800 normal",
+  "Font Awesome 6 Free 900 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 2349,
+ "ax": [
+  {
+   "role": "link",
+   "name": "FitnessApp"
+  },
+  {
+   "role": "link",
+   "name": "Home"
+  },
+  {
+   "role": "link",
+   "name": "Splits"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Account"
+  },
+  {
+   "role": "textbox",
+   "name": "Name"
+  },
+  {
+   "role": "button",
+   "name": "Add"
+  },
+  {
+   "role": "radio",
+   "name": "Free weights"
+  },
+  {
+   "role": "radio",
+   "name": "Machines"
+  },
+  {
+   "role": "radio",
+   "name": "Machine types"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Barbell"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Dumbbell"
+  },
+  {
+   "role": "button",
+   "name": "Actions for EZ bar"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Kettlebell"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Weight plate"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Cable crossover"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Chest press"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Hack squat"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Lat pulldown"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Leg curl"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Leg extension"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Leg press"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Pec deck"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Seated row"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Shoulder press"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Smith machine"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Cable"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Pin loaded"
+  },
+  {
+   "role": "button",
+   "name": "Actions for Plate loaded"
+  }
+ ]
+}

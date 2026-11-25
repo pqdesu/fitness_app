@@ -1,0 +1,162 @@
+{
+ "url": "http://127.0.0.1:3001/users/sign_in",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 9,
+ "small": [
+  {
+   "d": "a.nav-link \"Log in\"",
+   "w": 67.6,
+   "h": 34.5,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "input[checkbox]#user_remember_me.form-check-input.boolean.optional \"1\"",
+   "w": 15,
+   "h": 15,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": true
+  },
+  {
+   "d": "a \"Sign up\"",
+   "w": 51.4,
+   "h": 17,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a \"Forgot your password?\"",
+   "w": 156.1,
+   "h": 17,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  }
+ ],
+ "headings": [
+  "H1 Log in (24px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN"
+ ],
+ "inputs": [
+  {
+   "d": "input[email]#user_email.form-control.string.email \"\"",
+   "name": "user[email]",
+   "type": "email",
+   "inputmode": null,
+   "autocomplete": "email",
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Email",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "16px"
+  },
+  {
+   "d": "input[password]#user_password.form-control.password.optional \"\"",
+   "name": "user[password]",
+   "type": "password",
+   "inputmode": null,
+   "autocomplete": "current-password",
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Password",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "16px"
+  },
+  {
+   "d": "input[checkbox]#user_remember_me.form-check-input.boolean.optional \"1\"",
+   "name": "user[remember_me]",
+   "type": "checkbox",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Remember me",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[submit].btn \"Log in\"",
+   "name": "commit",
+   "type": "submit",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 0,
+   "labelText": null,
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  }
+ ],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Plus Jakarta Sans 800 normal",
+  "Font Awesome 6 Free 900 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 844,
+ "ax": [
+  {
+   "role": "link",
+   "name": "FitnessApp"
+  },
+  {
+   "role": "link",
+   "name": "Sign up"
+  },
+  {
+   "role": "link",
+   "name": "Forgot your password?"
+  },
+  {
+   "role": "link",
+   "name": "Log in"
+  },
+  {
+   "role": "link",
+   "name": "Sign up"
+  },
+  {
+   "role": "textbox",
+   "name": "Email"
+  },
+  {
+   "role": "textbox",
+   "name": "Password"
+  },
+  {
+   "role": "button",
+   "name": "Log in"
+  },
+  {
+   "role": "checkbox",
+   "name": "Remember me"
+  }
+ ]
+}

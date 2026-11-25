@@ -1,0 +1,130 @@
+{
+ "url": "http://127.0.0.1:3001/splits",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 13,
+ "small": [
+  {
+   "d": "a.navbar-brand \"FitnessApp\"",
+   "w": 34,
+   "h": 44.4,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.stretched-link \"PPL/UL\"",
+   "w": 60.5,
+   "h": 21,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.stretched-link \"Push/Pull/Legs + Upper/Lower hybrid (win\"",
+   "w": 308.1,
+   "h": 41.2,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.stretched-link \"U/R/L/U/L\"",
+   "w": 87.4,
+   "h": 21,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.stretched-link \"UL\"",
+   "w": 21.2,
+   "h": 21,
+   "under24": true,
+   "spacingOk": false,
+   "inline": false,
+   "checkbox": false
+  }
+ ],
+ "headings": [
+  "H1 Your splits (28px)",
+  "H2 PPL/UL (16.8px)",
+  "H2 Push/Pull/Legs + Upper/Lower hybrid (winter cut, 1 (16.8px)",
+  "H2 U/R/L/U/L (16.8px)",
+  "H2 UL (16.8px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN",
+  "NAV[aria-label=Sections]"
+ ],
+ "inputs": [],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Font Awesome 6 Free 900 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 1043,
+ "ax": [
+  {
+   "role": "link",
+   "name": "FitnessApp"
+  },
+  {
+   "role": "link",
+   "name": "+ New split"
+  },
+  {
+   "role": "link",
+   "name": "Home"
+  },
+  {
+   "role": "link",
+   "name": "Splits"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Account"
+  },
+  {
+   "role": "link",
+   "name": "PPL/UL"
+  },
+  {
+   "role": "button",
+   "name": "Set as active"
+  },
+  {
+   "role": "link",
+   "name": "Push/Pull/Legs + Upper/Lower hybrid (winter cut, 12 weeks)"
+  },
+  {
+   "role": "button",
+   "name": "Set as active"
+  },
+  {
+   "role": "link",
+   "name": "U/R/L/U/L"
+  },
+  {
+   "role": "link",
+   "name": "UL"
+  },
+  {
+   "role": "button",
+   "name": "Set as active"
+  }
+ ]
+}

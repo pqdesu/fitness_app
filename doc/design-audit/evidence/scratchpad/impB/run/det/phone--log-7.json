@@ -1,0 +1,35 @@
+[
+  {
+    "antipattern": "text-overflow",
+    "name": "Content overflowing its container",
+    "description": "Content renders wider than its container and the spill does harm: a clipping ancestor cuts it off, it runs into another box, or it reaches the viewport edge. Let text wrap, constrain widths, or give the region a deliberate scroll affordance.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "http://127.0.0.1:3001/workout_logs/7",
+    "line": 0,
+    "snippet": "p.text-muted.small.mb-0 overflows its box by 17px",
+    "selector": "#entry-20 > div.card-header > div:nth-of-type(1) > p.text-muted.small"
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "http://127.0.0.1:3001/workout_logs/7",
+    "line": 0,
+    "snippet": "Primary font: inter (96% of text)",
+    "selector": "body"
+  },
+  {
+    "antipattern": "pulsing-dot",
+    "name": "Pulsing status dot",
+    "description": "Small pulsing status dots simulate liveness decoratively. Reserve pulse animation for indicators tied to genuinely live, changing data; a static indicator with clear labeling is honest and calmer.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "http://127.0.0.1:3001/workout_logs/7",
+    "line": 0,
+    "snippet": ".is-running .timer-status::before — 6x6px dot with infinite \"timer-live\" animation",
+    "selector": "body"
+  }
+]

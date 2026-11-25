@@ -1,0 +1,98 @@
+{
+ "url": "http://127.0.0.1:3001/exercises",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 15,
+ "small": [
+  {
+   "d": "a.navbar-brand \"FitnessApp\"",
+   "w": 34,
+   "h": 44.4,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  }
+ ],
+ "headings": [
+  "H1 Exercises (28px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN",
+  "NAV[aria-label=Sections]"
+ ],
+ "inputs": [],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Font Awesome 6 Free 900 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 852,
+ "ax": [
+  {
+   "role": "link",
+   "name": "FitnessApp"
+  },
+  {
+   "role": "link",
+   "name": "+ New exercise"
+  },
+  {
+   "role": "link",
+   "name": "Home"
+  },
+  {
+   "role": "link",
+   "name": "Splits"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Account"
+  },
+  {
+   "role": "button",
+   "name": "Back 5"
+  },
+  {
+   "role": "button",
+   "name": "Biceps 2"
+  },
+  {
+   "role": "button",
+   "name": "Calves 1"
+  },
+  {
+   "role": "button",
+   "name": "Cardio 4"
+  },
+  {
+   "role": "button",
+   "name": "Chest 3"
+  },
+  {
+   "role": "button",
+   "name": "Core 3"
+  },
+  {
+   "role": "button",
+   "name": "Legs 6"
+  },
+  {
+   "role": "button",
+   "name": "Shoulders 5"
+  },
+  {
+   "role": "button",
+   "name": "Triceps 1"
+  }
+ ]
+}

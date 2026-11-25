@@ -1,0 +1,207 @@
+{
+ "url": "http://127.0.0.1:3001/workout_logs",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 24,
+ "small": [
+  {
+   "d": "a.navbar-brand \"FitnessApp\"",
+   "w": 34,
+   "h": 44.4,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 25, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 25, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 24, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 22, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 21, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 20, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": false,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 18, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  },
+  {
+   "d": "a.fw-semibold \"November 16, 2026\"",
+   "w": 145.7,
+   "h": 19,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  }
+ ],
+ "headings": [
+  "H1 Logged workouts (28px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN",
+  "NAV[aria-label=Sections]"
+ ],
+ "inputs": [],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Font Awesome 6 Free 900 normal",
+  "Font Awesome 6 Free 400 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 1165,
+ "ax": [
+  {
+   "role": "link",
+   "name": "FitnessApp"
+  },
+  {
+   "role": "link",
+   "name": "Home"
+  },
+  {
+   "role": "link",
+   "name": "Splits"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Account"
+  },
+  {
+   "role": "link",
+   "name": "November 25, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  },
+  {
+   "role": "link",
+   "name": "November 25, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Edit the timer of Lower on November 25, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  },
+  {
+   "role": "link",
+   "name": "November 24, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  },
+  {
+   "role": "link",
+   "name": "November 22, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Edit the timer of Push on November 22, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  },
+  {
+   "role": "link",
+   "name": "November 21, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Edit the timer of Lower on November 21, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  },
+  {
+   "role": "link",
+   "name": "November 20, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  },
+  {
+   "role": "link",
+   "name": "November 18, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  },
+  {
+   "role": "link",
+   "name": "November 16, 2026"
+  },
+  {
+   "role": "link",
+   "name": "Open"
+  }
+ ]
+}

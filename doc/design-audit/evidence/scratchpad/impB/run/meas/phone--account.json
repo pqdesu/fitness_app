@@ -1,0 +1,240 @@
+{
+ "url": "http://127.0.0.1:3001/users/edit",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 17,
+ "small": [
+  {
+   "d": "a.navbar-brand \"FitnessApp\"",
+   "w": 34,
+   "h": 44.4,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "input[checkbox]#user_timer_auto_start.form-check-input.boolean.optional \"1\"",
+   "w": 15,
+   "h": 15,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": true
+  },
+  {
+   "d": "input[checkbox]#user_auto_warm_up.form-check-input.boolean.optional \"1\"",
+   "w": 15,
+   "h": 15,
+   "under24": true,
+   "spacingOk": true,
+   "inline": false,
+   "checkbox": true
+  },
+  {
+   "d": "a \"Back\"",
+   "w": 33.6,
+   "h": 17,
+   "under24": true,
+   "spacingOk": true,
+   "inline": true,
+   "checkbox": false
+  }
+ ],
+ "headings": [
+  "H1 Account (24px)",
+  "H2 Cancel my account (16px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN",
+  "NAV[aria-label=Sections]"
+ ],
+ "inputs": [
+  {
+   "d": "input[email]#user_email.form-control.is-valid.string \"admin@example.com\"",
+   "name": "user[email]",
+   "type": "email",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Email *",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "16px"
+  },
+  {
+   "d": "input[password]#user_password.form-control.password.optional \"\"",
+   "name": "user[password]",
+   "type": "password",
+   "inputmode": null,
+   "autocomplete": "new-password",
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Password",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "16px"
+  },
+  {
+   "d": "input[password]#user_password_confirmation.form-control.password.optional \"\"",
+   "name": "user[password_confirmation]",
+   "type": "password",
+   "inputmode": null,
+   "autocomplete": "new-password",
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Password confirmation",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "16px"
+  },
+  {
+   "d": "input[checkbox]#user_timer_auto_start.form-check-input.boolean.optional \"1\"",
+   "name": "user[timer_auto_start]",
+   "type": "checkbox",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Start the workout timer automa",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[checkbox]#user_auto_warm_up.form-check-input.boolean.optional \"1\"",
+   "name": "user[auto_warm_up]",
+   "type": "checkbox",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Tag the first set of each exer",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  },
+  {
+   "d": "input[password]#user_current_password.form-control.password.required \"\"",
+   "name": "user[current_password]",
+   "type": "password",
+   "inputmode": null,
+   "autocomplete": "current-password",
+   "step": null,
+   "min": null,
+   "labels": 1,
+   "labelText": "Current password *",
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "16px"
+  },
+  {
+   "d": "input[submit].btn \"Update\"",
+   "name": "commit",
+   "type": "submit",
+   "inputmode": null,
+   "autocomplete": null,
+   "step": null,
+   "min": null,
+   "labels": 0,
+   "labelText": null,
+   "ariaLabel": null,
+   "placeholder": null,
+   "visible": true,
+   "fontSize": "15px"
+  }
+ ],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Font Awesome 6 Free 900 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 1374,
+ "ax": [
+  {
+   "role": "link",
+   "name": "FitnessApp"
+  },
+  {
+   "role": "link",
+   "name": "Home"
+  },
+  {
+   "role": "link",
+   "name": "Splits"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Account"
+  },
+  {
+   "role": "link",
+   "name": " Users"
+  },
+  {
+   "role": "link",
+   "name": " Equipment"
+  },
+  {
+   "role": "link",
+   "name": " Set tags"
+  },
+  {
+   "role": "link",
+   "name": " Log out"
+  },
+  {
+   "role": "link",
+   "name": "Back"
+  },
+  {
+   "role": "textbox",
+   "name": "Email *"
+  },
+  {
+   "role": "textbox",
+   "name": "Password"
+  },
+  {
+   "role": "textbox",
+   "name": "Password confirmation"
+  },
+  {
+   "role": "textbox",
+   "name": "Current password *"
+  },
+  {
+   "role": "button",
+   "name": "Update"
+  },
+  {
+   "role": "checkbox",
+   "name": "Start the workout timer automatically"
+  },
+  {
+   "role": "checkbox",
+   "name": "Tag the first set of each exercise as a warm-up"
+  }
+ ]
+}

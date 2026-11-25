@@ -1,0 +1,176 @@
+{
+ "url": "http://127.0.0.1:3001/dashboard/month",
+ "title": "FitnessApp",
+ "lang": "en",
+ "total": 15,
+ "small": [
+  {
+   "d": "a.calendar-day.has-workout.is-planned \"Monday, November 16: Upper workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-planned \"Wednesday, November 18: Lower workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.is-missed \"Friday, November 20: Upper missed. Add i\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-planned \"Saturday, November 21: Lower workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-extra \"Sunday, November 22: Push workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.is-missed \"Monday, November 23: Upper missed. Add i\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.has-workout.is-extra \"Tuesday, November 24: Cardio workout\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.calendar-day.is-today.has-workout \"Wednesday, November 25: Lower and Full B\"",
+   "w": 36,
+   "h": 36,
+   "under24": false,
+   "spacingOk": null,
+   "inline": false,
+   "checkbox": false
+  },
+  {
+   "d": "a.row-title \"U/R/L/U/L\"",
+   "w": 69.9,
+   "h": 19,
+   "under24": true,
+   "spacingOk": false,
+   "inline": false,
+   "checkbox": false
+  }
+ ],
+ "headings": [
+  "H1 November 2026 (28px)",
+  "H2 November 2026 (16.8px)",
+  "H2 Totals (16.8px)",
+  "H2 Splits (16.8px)",
+  "H2 Exercises (16.8px)"
+ ],
+ "landmarks": [
+  "NAV[aria-label=Main]",
+  "MAIN",
+  "NAV[aria-label=Sections]"
+ ],
+ "inputs": [],
+ "fonts": [
+  "Inter 400 normal",
+  "Inter 500 normal",
+  "Inter 600 normal",
+  "Plus Jakarta Sans 600 normal",
+  "Plus Jakarta Sans 700 normal",
+  "Plus Jakarta Sans 800 normal",
+  "Font Awesome 6 Free 900 normal"
+ ],
+ "imgs": [],
+ "overflow": false,
+ "docHeight": 1915,
+ "ax": [
+  {
+   "role": "link",
+   "name": "Back"
+  },
+  {
+   "role": "link",
+   "name": "Home"
+  },
+  {
+   "role": "link",
+   "name": "Splits"
+  },
+  {
+   "role": "link",
+   "name": "History"
+  },
+  {
+   "role": "link",
+   "name": "Account"
+  },
+  {
+   "role": "link",
+   "name": "U/R/L/U/L"
+  },
+  {
+   "role": "link",
+   "name": "Push/Pull/Legs + Upper/Lower hybrid (winter cut, 12 weeks)"
+  },
+  {
+   "role": "link",
+   "name": "Monday, November 16: Upper workout"
+  },
+  {
+   "role": "link",
+   "name": "Wednesday, November 18: Lower workout"
+  },
+  {
+   "role": "link",
+   "name": "Friday, November 20: Upper missed. Add it."
+  },
+  {
+   "role": "link",
+   "name": "Saturday, November 21: Lower workout"
+  },
+  {
+   "role": "link",
+   "name": "Sunday, November 22: Push workout"
+  },
+  {
+   "role": "link",
+   "name": "Monday, November 23: Upper missed. Add it."
+  },
+  {
+   "role": "link",
+   "name": "Tuesday, November 24: Cardio workout"
+  },
+  {
+   "role": "link",
+   "name": "Wednesday, November 25: Lower and Full Body workouts"
+  }
+ ]
+}
