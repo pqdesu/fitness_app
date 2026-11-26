@@ -48,19 +48,21 @@ class WorkoutSetsController < ApplicationController
     else
       { alert: "Set not updated: #{errors_of(workout_set)}." }
     end
-    redirect_to page_of(workout_set), status: :see_other, **message
+    redirect_back_or_to page_of(workout_set), status: :see_other, **message
   end
 
   def destroy
     workout_set = current_user.workout_sets.find(params[:id])
     workout_set.destroy
-    redirect_to page_of(workout_set), notice: "Set deleted.", status: :see_other
+    redirect_back_or_to page_of(workout_set), notice: "Set deleted.", status: :see_other
   end
 
   private
 
-  # Where the set was edited or deleted from. The exercise page says so itself by sending its
-  # workout_exercise_id (see workout_sets/_set); otherwise it was the logged workout page.
+  # Saving or deleting a set returns to the very page it was done on (the exercise page, the logged
+  # workout, or its exercise's Edit page), so Turbo morphs it in place. Without a referer: the
+  # exercise page says so itself by sending its workout_exercise_id (see workout_sets/_set);
+  # otherwise it was the logged workout page.
   def page_of(workout_set)
     planned = current_user.workout_exercises.find_by(id: params[:workout_exercise_id]) if params[:workout_exercise_id].present?
     return workout_exercise_path(planned, date: text_param(:date).presence) if planned

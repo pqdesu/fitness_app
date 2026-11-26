@@ -15,7 +15,7 @@
     and while the rest timer runs, whether to save the rest until now (workout_sets/_rest_alert). %>
 <% rest_url = workout_log_exercise_rest_path(rest_entry) if local_assigns[:rest_entry]&.rest_running? %>
 <%= form_with model: [parent, WorkoutSet.new], url:, class: "row g-2 align-items-end inline-form set-form",
-      data: { alert_when_paused: "add", rest_url: } do |f| %>
+      data: { alert_when_paused: "add", rest_url:, rest_started: (local_assigns[:rest_entry].rest_started_at.iso8601 if rest_url) } do |f| %>
   <div class="<%= weight_col %>">
     <% if parent.bodyweight? %>
       <%# On a bodyweight exercise the weight is added (+) or taken off (−); empty is bodyweight alone. %>

@@ -226,4 +226,54 @@ class ReorderFlowTest < FlowTest
     assert_equal planned, day.workout_exercises.reload.to_a
     assert_equal entries, log.workout_log_exercises.reload.to_a
   end
+
+  test "rows of a workout day have a plain chevron and the removal in a menu, not a boxed Open link" do
+    _bench, squat, = @planned
+    extra = Exercise.create!(name: "Stationary bike", muscle_group: "Legs")
+    travel_to Time.zone.local(2026, 11, 23, 12) do
+      date = Date.current
+      post workout_exercise_workout_sets_path(squat, date:), params: { workout_set: { weight_used: 100, reps_completed: 5 } }
+      post workout_day_workout_log_exercises_path(@day, date:), params: { exercise_ids: [extra.id] }
+      added = @user.workout_logs.sole.workout_log_exercises.find_by!(name: "Stationary bike")
+
+      get workout_day_path(@day)
+      assert_select ".day-in-workout a.btn-light[aria-label^=Open], .day-to-do a.btn-light[aria-label^=Open]", 0
+      assert_select ".day-in-workout a.row-link .row-chevron", 2
+      assert_select ".day-to-do a.row-link .row-chevron", 2
+      assert_select ".day-in-workout a.row-link .chip-done", 1
+      assert_select ".day-in-workout .actions-menu", 0
+      assert_select ".day-in-workout form.button_to[action=?] button[aria-label=?]",
+                    workout_log_exercise_path(added, workout_day_id: @day.id, date:), "Remove Stationary bike from this workout"
+    end
+  end
+
+  test "moving or removing an exercise returns to the very page it was done on, so it stays in place" do
+    log = @user.workout_logs.create!(workout: "Push", workout_day: @day, date: Date.current)
+    bench, squat, = @planned.map { |planned| log.workout_log_exercises.create!(workout_exercise: planned) }
+
+    # opened from Home: the address keeps ?from=dashboard, so Turbo refreshes the same page (it
+    # morphs and keeps the scroll) and the back button has no extra copy of it to step through
+    page = workout_log_path(log, from: "dashboard")
+    get page
+    assert_select "meta[name='turbo-refresh-method'][content='morph']"
+    assert_select "meta[name='turbo-refresh-scroll'][content='preserve']"
+    patch move_workout_log_exercise_path(squat, to: 1), headers: { "Referer" => "http://www.example.com#{page}" }
+    assert_redirected_to page
+    assert_response :see_other
+    delete workout_log_exercise_path(bench), headers: { "Referer" => "http://www.example.com#{page}" }
+    assert_redirected_to page
+
+    # the workout day's page too, with its date
+    day_page = workout_day_path(@day, date: Date.current)
+    get day_page
+    assert_select "meta[name='turbo-refresh-method'][content='morph']"
+    assert_select "meta[name='turbo-refresh-scroll'][content='preserve']"
+    patch move_workout_log_exercise_path(squat, to: 1, workout_day_id: @day.id, date: Date.current),
+          headers: { "Referer" => "http://www.example.com#{day_page}" }
+    assert_redirected_to day_page
+
+    # a referer from another site is never followed: back to the page the change was sent from
+    patch move_workout_log_exercise_path(squat, to: 1), headers: { "Referer" => "https://elsewhere.example/x" }
+    assert_redirected_to workout_log_path(log, anchor: "entry-#{squat.id}")
+  end
 end

@@ -1,4 +1,6 @@
 <%# The workout of a day: what is in it so far, then what the split plans for it and is not started yet. The plan is changed on the split page. %>
+<%# Dragging, adding or removing an exercise comes back to this same page: Turbo morphs it in place and keeps the scroll. %>
+<% turbo_refreshes_with method: :morph, scroll: :preserve %>
 <% back_to root_path %>
 <% upcoming = @date > Date.current %>
 <div class="page-header">
@@ -54,14 +56,16 @@
               <%= tag.li(**li) do %>
                 <span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span>
                 <%= link_to entry_path, class: "row-link" do %>
-                  <span class="row-title"><%= entry.name %></span>
-                  <span class="text-muted small"><%= entry.equipment_label %> · Added to this workout</span>
+                  <span class="row-text">
+                    <span class="row-title"><%= entry.name %></span>
+                    <span class="text-muted small"><%= entry.equipment_label %> · Added to this workout</span>
+                    <% if entry.workout_sets.any? || entry.cardio_entries.any? %><span class="chip chip-done"><%= entry_done(entry) %></span><% else %><span class="text-muted small text-nowrap"><%= entry.cardio? ? "No time yet" : "No sets" %></span><% end %>
+                  </span>
+                  <i class="fa-solid fa-chevron-right row-chevron" aria-hidden="true"></i>
                 <% end %>
-                <% if entry.workout_sets.any? || entry.cardio_entries.any? %><span class="chip chip-done"><%= entry_done(entry) %></span><% else %><span class="text-muted small text-nowrap"><%= entry.cardio? ? "No time yet" : "No sets" %></span><% end %>
                 <%= button_to workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), method: :delete,
-                      class: "btn btn-link btn-sm text-danger", "aria-label": "Remove #{entry.name} from this workout", title: "Remove #{entry.name} from this workout",
+                      class: "btn btn-link btn-sm text-danger row-action", "aria-label": "Remove #{entry.name} from this workout", title: "Remove #{entry.name} from this workout",
                       form: { data: ({ turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } if entry.workout_sets.any?) } do %><i class="fa-solid fa-xmark"></i><% end %>
-                <%= link_to entry_path, class: "btn btn-light btn-sm", "aria-label": "Open #{entry.name}" do %><i class="fa-solid fa-chevron-right"></i><% end %>
               <% end %>
             <% end %>
           <% end %>

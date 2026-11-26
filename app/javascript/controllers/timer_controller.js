@@ -4,8 +4,9 @@ import { Controller } from "@hotwired/stimulus"
 // counts. The workout timer (workout_logs/_timer) uses it twice: running, from the start less the
 // time paused (offset -paused_seconds); paused, from the pause plus the earlier pauses (offset
 // paused_seconds), so the paused time goes up while the recorded time stands still.
+// format "short" (the rest clocks) prints 2:15 under an hour, 1:02:15 from one.
 export default class extends Controller {
-  static values = { start: String, offset: Number }
+  static values = { start: String, offset: Number, format: String }
 
   connect() {
     this.tick()
@@ -19,6 +20,10 @@ export default class extends Controller {
   tick() {
     const seconds = Math.max(0, Math.floor((Date.now() - Date.parse(this.startValue)) / 1000) + this.offsetValue)
     const pad = (n) => String(n).padStart(2, "0")
+    if (this.formatValue === "short" && seconds < 3600) {
+      this.element.textContent = `${Math.floor(seconds / 60)}:${pad(seconds % 60)}`
+      return
+    }
     this.element.textContent = `${Math.floor(seconds / 3600)}:${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}`
   }
 }

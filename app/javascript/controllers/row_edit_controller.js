@@ -6,10 +6,13 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["view", "field", "form"]
 
-  edit() {
+  // From the ⋯ menu's Edit, or by tapping a value (a set's weight or reps), which then gets the cursor
+  // (data-row-edit-focus-param: the id of its input).
+  edit({ params } = {}) {
     this.toggle(true)
     // The first field, which may sit in a group (the weight of a bodyweight exercise, with its ±)
-    const input = this.fieldTargets.map((field) => field.matches("input") ? field : field.querySelector("input")).find(Boolean)
+    const input = (params?.focus && document.getElementById(params.focus)) ||
+      this.fieldTargets.map((field) => field.matches("input") ? field : field.querySelector("input")).find(Boolean)
     input.focus()
     input.select()
   }

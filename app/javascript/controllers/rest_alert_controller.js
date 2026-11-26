@@ -1,8 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 
 // While a rest timer runs (workout_sets/_rest_alert), asks before (owner, 2026-11-22):
-// - adding a set to that exercise (its form carries data-rest-url): save the rest until now
-//   (Stop), or no rest (throw it away)? Then the set is added.
+// - adding a set to that exercise (its form carries data-rest-url and data-rest-started): save the rest
+//   until now (Stop), or no rest (throw it away)? Then the set is added. A rest of 10 minutes or less
+//   is just saved, without asking; only a longer one (probably forgotten) asks.
 // - leaving the page by a link of the app: stop the rest (then leave), or go back to the page?
 // Closing the box cancels. It sits beside the paused-timer alert (timer_alert_controller.js):
 // whichever asks first repeats the action, and the other then asks in turn, each only once.
@@ -27,6 +28,13 @@ export default class extends Controller {
     if (!form.dataset.restUrl) return
 
     const submitter = event.submitter
+    const started = Date.parse(form.dataset.restStarted)
+    if (started && Date.now() - started <= 600_000) {
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      this.send(form.dataset.restUrl, "PATCH").then(() => form.requestSubmit(submitter))
+      return
+    }
     this.hold(event, {
       title: "Your rest timer is running",
       detail: "Save the rest until now, or no rest for this set?",

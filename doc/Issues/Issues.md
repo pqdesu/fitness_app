@@ -16,6 +16,10 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 - From `today-dashboard-consolidation`: the merged Home page was checked at 390 px and 1280 px in headless Chrome, on a rest day only (the development data's Tuesday). Not seen: a day with a planned workout (Start workout or Continue beside the title, today's sets), a user with no split, and a real phone. On a phone the Exercises button sits on its own line under the long date heading. From desktop width, Recent workouts sits under the right column, so a calendar taller than the Today box and the split card together would leave a gap above it; not seen with real data.
 
+### Folded boxes close after a move
+
+- From `audit-major-fixes`: Move a workout and Back to the plan reload the Home page in place and keep the scroll, but the page is replaced, not morphed, so an opened "This week", Recent workout row or folded calendar closes again. Chosen so the Move pop-up keeps working; not seen as a problem yet.
+
 ### Missed days follow today's plan, even in old weeks
 
 - From `calendar-month-and-missed-days`: a day is "planned" or "missed" by the active split's plan with that week's moves. A week trained under an earlier split, or before a weekday was changed, is judged by today's plan, so it can show a missed (dotted) day that was never planned then, or an off-plan ring on a day that was. Not verified on real old data beyond the November sample.
@@ -66,9 +70,17 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
   - "Save rest" (Add set while the rest runs) counts the time of the set itself as rest.
   - The minute and second lists in a set's Edit were never tried on an iPhone (where they open as the wheel). Not verified.
 
-### Long exercise names on a workout day
+### A set's note and tags are one menu away
 
-- From `exercise-page-features`: next to the "3 sets" chip and the buttons, a long name ("Seated Lateral Raise") wraps to three lines on a 390 px phone.
+- From `audit-major-fixes`: a set is one row, and its Tag and Add note live in its ⋯ menu (owner's choice). A note or tags show under the set only once they exist, so writing the first note takes two taps more than the old always-open field. Not tried by the owner at the gym yet.
+
+### The rest is saved without asking up to 10 minutes
+
+- From `audit-major-fixes`: Add set while a rest runs saves the rest until that moment without the "Save rest / No rest" box when the rest started 10 minutes ago or less. The time spent setting up the next set counts as rest, and a rest someone meant to throw away is kept (it can be corrected in the set's Edit). The decision is made in the browser (`rest_alert_controller.js`, `data-rest-started`): no test runs that JavaScript; it was tried in headless Chrome only.
+
+### Moving or saving comes back by the browser's referer
+
+- From `audit-major-fixes`: moving or removing a logged exercise, and saving or deleting a set, return to the page they were done on through the request's referer (`redirect_back_or_to`). A browser or extension that sends no referer falls back to the old addresses, so that page jumps to the top and the back button needs one extra tap, as before. Adding a set still returns to the exercise page with `?date=` (three tests pin it), so the "jump on a page opened without the date" above still holds for Add set.
 
 ### A Cardio exercise edited from master is refused
 
@@ -116,6 +128,10 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 ## General
 
+### Touch and phone fixes not tried on a phone
+
+- From `audit-major-fixes`: no tap flash, hover only with a mouse (`@media (hover: hover) and (pointer: fine)`, Bootstrap's `.btn:hover` reset under `hover: none`), the press scale, the full-screen picker's safe areas and the exercise picker's search were checked in headless Chrome with emulated touch at 390 px and 320 px, and in no real browser of the owner's (the check in WSL Chrome failed: the tab could not take screenshots). Not verified on an iPhone or Android phone: sticky hover, the home indicator over "Add selected", and the keyboard over the sticky search box.
+
 ### Muscle group and equipment pills not tried on a real phone
 
 - From `dropdowns-off-screen`: the muscle group and equipment fields are now pills to tap instead of dropdowns. They were checked only in headless Chrome at 390 px, not on a phone. Not verified: how a tap feels, whether a pill keeps a focus ring after it is tapped on iOS, and that the 44 px pills are easy to hit with a thumb. If more muscle groups are added later, the "Add exercises" pop-up grows one row of pills for every three.
@@ -153,6 +169,13 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 - From `exercise-page-features`: everything on this branch (equipment pills, tags, notes, folds, ⋯ menus, drag and drop, the rest timer, cardio rows and the Cardio button) was checked in headless Chrome at 390 px only, never on a real phone.
 
 # Issues resolved (DONE)
+
+## Workout day
+
+### Long exercise names on a workout day
+
+- From `exercise-page-features`: next to the "3 sets" chip and the buttons, a long name ("Seated Lateral Raise") wraps to three lines on a 390 px phone.
+- Fixed on `audit-major-fixes`: the row's boxed chevron button is gone (the whole row is the link, with a plain chevron), and the sets chip sits under the name, so the name takes the row's width; a 74-character name wraps on whole words at 390 px.
 
 ## Dropdowns
 

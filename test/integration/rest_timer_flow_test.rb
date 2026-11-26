@@ -63,10 +63,13 @@ class RestTimerFlowTest < FlowTest
       assert_select ".rest-timer form[action=?] input[name=_method][value=patch]", rest_path
       assert_select ".rest-timer", text: /Start rest/, count: 0
       # Add set asks first while it runs (rest_alert_controller.js), and so does leaving the page
-      assert_select ".set-form[data-rest-url=?]", workout_log_exercise_rest_path(entry)
+      assert_select ".set-form[data-rest-url=?][data-rest-started=?]", workout_log_exercise_rest_path(entry), Time.current.iso8601
+      assert_select ".rest-clock[data-timer-format-value=short]", text: "0:00"
       assert_select "[data-controller=rest-alert]", 1
 
       travel 135.seconds
+      get workout_exercise_path(@planned, date: today)
+      assert_select ".rest-clock[data-timer-format-value=short]", text: "2:15"
       patch rest_path
       get workout_exercise_path(@planned, date: today)
       assert_select ".rest-timer", text: /Rest 2 min 15 s/
@@ -163,5 +166,10 @@ class RestTimerFlowTest < FlowTest
       sign_in @user # a 404 drops the test session
     end
     assert_nil theirs.reload.rest_started_at
+  end
+
+  test "the rest clock is m:ss under an hour and h:mm:ss from one" do
+    helper = Object.new.extend(ApplicationHelper)
+    assert_equal ["0:05", "2:15", "59:59", "1:00:00"], [5, 135, 3599, 3600].map { |s| helper.short_clock(s) }
   end
 end

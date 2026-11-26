@@ -161,4 +161,18 @@ class ExercisesFlowTest < FlowTest
     assert_nil @bench.reload.muscle_group
     assert_equal "Other", @bench.group
   end
+
+  test "an admin renames from a pencil on a planned row and a normal user has none" do
+    day = @admin.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    day.workout_exercises.create!(exercise: @bench)
+    sign_in @admin
+    get workout_day_path(day)
+    assert_select "#day-exercises a[href=?][aria-label=?]", edit_exercise_path(@bench, workout_day_id: day.id), "Edit Bench press"
+
+    users_day = @user.splits.create!(name: "Mine").workout_days.create!(day: "Push", weekday: 1)
+    users_day.workout_exercises.create!(exercise: @bench)
+    sign_in @user
+    get workout_day_path(users_day)
+    assert_select "#day-exercises a[aria-label^=Edit]", 0
+  end
 end

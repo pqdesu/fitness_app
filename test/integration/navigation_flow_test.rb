@@ -211,4 +211,10 @@ class NavigationFlowTest < FlowTest
     assert_select ".app-navbar a[href=?]", new_user_session_path
     assert_select ".app-navbar a[href=?]", new_user_registration_path
   end
+
+  test "the confirm box has an icon that the page script swaps by the question" do
+    sign_in @user
+    get root_path
+    assert_select "#confirm-modal [data-confirm-icon].confirm-icon i.fa-trash-can"
+  end
 end

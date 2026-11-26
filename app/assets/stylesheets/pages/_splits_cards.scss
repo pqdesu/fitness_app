@@ -14,7 +14,7 @@
 }
 div.card-link {
   transition: border-color .15s, box-shadow .15s;
-  &:hover { border-color: $blue; }
+  @media (hover: hover) and (pointer: fine) { &:hover { border-color: $blue; } }
 }
 .split-active-badge { float: right; }
 .header-actions .split-active-badge { float: none; padding: .5rem .75rem; }

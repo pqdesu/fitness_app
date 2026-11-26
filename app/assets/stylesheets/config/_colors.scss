@@ -16,6 +16,8 @@ $primary-soft: #EEF0FF;
 
 // Neutrals
 $surface-subtle: #FAFBFC; // table heads and card footers, a step off white
+$surface: #FFFFFF;        // cards, fields, modals and menus: white on the grey page
+$control-border: #8A919E; // checkbox and radio borders: 3.1:1 on white (WCAG asks 3:1 for a control)
 $line-strong: #D5D9E0;    // field borders, and a light button's border on hover
 $icon-faint: #B4BAC4;     // the icon of an empty state
 $shadow: #101828;         // every shadow, at a low opacity

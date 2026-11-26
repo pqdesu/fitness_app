@@ -16,7 +16,7 @@
     <% if log.rest_day? || log.workout_day %>
       <span class="recent-chips">
         <% if log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
-        <% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% end %>
+        <% if log.workout_day %><span class="chip" title="<%= log.workout_day.split.name %>"><%= log.workout_day.split.name %></span><% end %>
       </span>
     <% end %>
     <i class="fa-solid fa-chevron-down recent-chevron" aria-hidden="true"></i>

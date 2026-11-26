@@ -14,6 +14,21 @@
   <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-right-from-bracket"></i> Log out<% end %>
 </div>
 
+<%# Saved as soon as a box is ticked, without the password: only email and password need it. %>
+<section class="mb-4 pb-2 border-bottom">
+  <h2 class="h5 mt-0">Preferences</h2>
+  <%= simple_form_for(resource, as: :user, url: preferences_path, method: :patch,
+                      html: { data: { controller: "row-edit", row_edit_target: "form" } }) do |f| %>
+    <%= f.input :timer_auto_start, as: :boolean, label: "Start the workout timer automatically",
+                input_html: { data: { action: "change->row-edit#save" } },
+                hint: "Opening today's workout starts it and its timer. Off, you press Start timer yourself." %>
+    <%= f.input :auto_warm_up, as: :boolean, label: "Tag the first set of each exercise as a warm-up",
+                input_html: { data: { action: "change->row-edit#save" } },
+                hint: "The first set of an exercise each day starts with Warm-up ticked; untick it when it is not one." %>
+    <button type="submit" class="visually-hidden">Save preferences</button>
+  <% end %>
+</section>
+
 <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
   <%= f.error_notification %>
 
@@ -31,10 +46,6 @@
     <%= f.input :password_confirmation,
                 required: false,
                 input_html: { autocomplete: "new-password" } %>
-    <%= f.input :timer_auto_start, as: :boolean, label: "Start the workout timer automatically",
-                hint: "Opening today's workout starts it and its timer. Off, you press Start timer yourself." %>
-    <%= f.input :auto_warm_up, as: :boolean, label: "Tag the first set of each exercise as a warm-up",
-                hint: "The first set of an exercise each day starts with Warm-up ticked; untick it when it is not one." %>
     <%= f.input :current_password,
                 hint: "we need your current password to confirm your changes",
                 required: true,
@@ -51,7 +62,7 @@
 <% if resource.last_admin? %>
   <p class="text-muted">You are the only admin, so this account cannot be cancelled. Make someone else an admin first, on the Users page.</p>
 <% else %>
-  <div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
+  <div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Delete your account? Your splits and workouts go with it. This cannot be undone.", turbo_confirm: "Delete your account? Your splits and workouts go with it. This cannot be undone." }, method: :delete %></div>
 <% end %>
 
 <%= link_to "Back", :back %>

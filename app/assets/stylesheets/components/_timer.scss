@@ -113,18 +113,8 @@
   .btn { width: auto; }
 }
 
-// A press answers at once: the button gives a little under the thumb, and lets go with an
-// ease-out, never waiting on the page that follows.
-.timer-card .btn {
-  transition: color .15s, background-color .15s, border-color .15s, box-shadow .15s,
-              transform .16s cubic-bezier(.23, 1, .32, 1);
-
-  &:active { transform: scale(.97); }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .is-running .timer-status::before { animation: none; }
-  .timer-card .btn:active { transform: none; }
 }
 
 // A time line ("6:02 PM ~ 7:15 PM · 1 h 3 min · paused 10 min", ApplicationHelper#time_parts): each

@@ -11,10 +11,30 @@
   text-transform: uppercase;
   color: $muted;
 }
+// The group buttons: plain, readable headings a thumb can hit
+button.picker-group {
+  width: 100%;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: $gray;
+}
+// Stays in view while the exercises scroll under it
+.picker-search { position: sticky; top: 0; z-index: 1; margin-bottom: .5rem; background: var(--bs-modal-bg); }
 // "Create your own" is a heading, not a group to open
 h3.picker-group { margin: 1.25rem 0 .375rem; border-bottom: 0; }
 
 .picker-row {
+  &[hidden] { display: none; }
   display: flex;
   align-items: center;
   gap: .75rem;
@@ -27,4 +47,15 @@ h3.picker-group { margin: 1.25rem 0 .375rem; border-bottom: 0; }
   &.is-taken { cursor: default; color: $muted; }
   // An admin's ×: a thumb-sized target at the end of the row
   .picker-delete { flex-shrink: 0; min-width: 2.75rem; min-height: 2.75rem; margin: -.625rem 0; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+}
+
+// An admin's × is quiet until pointed at
+.picker-row .picker-delete { color: $muted; }
+@media (hover: hover) { .picker-row .picker-delete:hover { color: $red; } }
+.picker-row .picker-delete:focus-visible { color: $red; }
+
+// Full-screen on a phone: clear of the notch and the home bar
+@include media-breakpoint-down(sm) {
+  .modal-fullscreen-sm-down .modal-footer { padding-bottom: calc(.75rem + env(safe-area-inset-bottom)); }
+  .modal-fullscreen-sm-down .modal-header { padding-top: calc(1rem + env(safe-area-inset-top)); }
 }

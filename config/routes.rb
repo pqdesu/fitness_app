@@ -9,6 +9,8 @@ Rails.application.routes.draw do
   get "dashboard/month", to: "pages#month", as: :dashboard_month
 
   # Exercises: the shared catalogue (admins manage it) and each user's own exercises
+  resource :preferences, only: :update
+
   resources :exercises, except: [:show]
 
   # Program: split -> workout days (one per weekday) -> exercises

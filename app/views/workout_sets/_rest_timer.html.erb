@@ -11,7 +11,7 @@
       <%# rest_alert_controller.js asks before leaving the page while it runs. %>
       <span class="rest-label" data-rest-running="<%= workout_log_exercise_rest_path(entry) %>">
         <i class="fa-solid fa-stopwatch" aria-hidden="true"></i> Rest
-        <strong class="rest-clock" role="timer" data-controller="timer" data-timer-start-value="<%= entry.rest_started_at.iso8601 %>"><%= clock_duration((Time.current - entry.rest_started_at).to_i) %></strong>
+        <strong class="rest-clock" role="timer" data-controller="timer" data-timer-start-value="<%= entry.rest_started_at.iso8601 %>" data-timer-format-value="short"><%= short_clock((Time.current - entry.rest_started_at).to_i) %></strong>
       </span>
       <%= button_to rest_path, method: :patch, class: "btn btn-light", "aria-label": "Stop rest" do %><i class="fa-solid fa-stop" aria-hidden="true"></i> Stop<% end %>
     <% elsif entry.rest_ended_at %>

@@ -16,10 +16,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <div class="modal-body">
+      <div class="modal-body" data-controller="picker-filter">
         <% if exercises.empty? %>
           <p class="text-muted">There are no exercises yet. Create your first one below.</p>
         <% else %>
+          <input type="search" class="form-control picker-search" placeholder="Search exercises" aria-label="Search exercises" autocomplete="off"
+                 data-picker-filter-target="query" data-action="input->picker-filter#filter">
           <%= form_with url: url, id: "#{id}-form", data: { turbo_action: "advance" } do %>
             <%# Each muscle group starts closed: its heading opens its exercises. A single group (a Cardio
                 workout's) starts open, as closing it would hide everything there is to pick. %>
@@ -55,7 +57,7 @@
         <%= form_with url: url, scope: :exercise, class: "row g-2 align-items-end inline-form", data: { turbo_action: "advance" } do |f| %>
           <div class="col-12">
             <%= f.label :name, "Exercise name", class: "form-label" %>
-            <%= f.text_field :name, placeholder: local_assigns[:cardio] ? "Rowing machine" : "Bench press", autocomplete: "off", required: true, class: "form-control" %>
+            <%= f.text_field :name, placeholder: local_assigns[:cardio] ? "Rowing machine" : "Bench press", autocomplete: "off", required: true, class: "form-control", data: { picker_filter_target: "name" } %>
           </div>
           <% if local_assigns[:cardio] %>
             <%= f.hidden_field :muscle_group, value: "Cardio" %>

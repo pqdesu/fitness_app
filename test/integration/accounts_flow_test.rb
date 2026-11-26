@@ -181,4 +181,10 @@ class AccountsFlowTest < FlowTest
     assert_match(/script-src 'self' 'nonce-/, policy)
     assert_match "frame-ancestors 'self'", policy
   end
+
+  test "cancelling the account asks about the account, not a generic question" do
+    sign_in @user
+    get edit_user_registration_path
+    assert_select "form[action=?] button[data-turbo-confirm^='Delete your account?']", user_registration_path
+  end
 end
