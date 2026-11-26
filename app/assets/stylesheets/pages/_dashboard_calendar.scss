@@ -64,25 +64,27 @@
   &.is-extra { color: $blue; font-weight: 700; box-shadow: inset 0 0 0 2px $extra-ring; }
   // Today: a ring around the day, and on a filled one a white ring inside it
   &.is-today { color: $blue; font-weight: 700; box-shadow: inset 0 0 0 2px $blue; }
-  &.is-planned.is-today { color: white; box-shadow: inset 0 0 0 2px $blue, inset 0 0 0 4px white; }
+  &.is-planned.is-today { color: white; box-shadow: inset 0 0 0 2px $blue, inset 0 0 0 4px $surface; }
 
   // A logged day is a link to what was recorded
   &.has-workout {
     text-decoration: none;
     transition: background-color .15s ease, color .15s ease;
 
-    &:hover, &:focus-visible { background: $blue; color: white; }
+    &:focus-visible { background: $blue; color: white; }
+    @media (hover: hover) and (pointer: fine) { &:hover { background: $blue; color: white; } }
     &:focus-visible { outline: 2px solid $blue; outline-offset: 2px; }
   }
   // The days of the months before and after show only that a workout was logged, in grey
   &.is-outside.has-workout {
-    background: white;
+    background: $surface;
     color: $outside-day;
     font-weight: 600;
     box-shadow: inset 0 0 0 2px $outside-day;
 
     // pointed at or focused, it fills blue like the month's own days, with white text
-    &:hover, &:focus-visible { background: $blue; color: white; box-shadow: inset 0 0 0 2px $blue; }
+    &:focus-visible { background: $blue; color: white; box-shadow: inset 0 0 0 2px $blue; }
+    @media (hover: hover) and (pointer: fine) { &:hover { background: $blue; color: white; box-shadow: inset 0 0 0 2px $blue; } }
   }
 }
 

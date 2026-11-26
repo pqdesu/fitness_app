@@ -19,7 +19,7 @@
   text-align: left;
   transition: background .15s;
 
-  &:hover { background: $primary-soft; }
+  @media (hover: hover) and (pointer: fine) { &:hover { background: $primary-soft; } }
   .recent-chevron { grid-area: 1 / 2; color: $muted; transition: transform .2s; }
   &[aria-expanded="true"] .recent-chevron { transform: rotate(180deg); }
 
@@ -30,7 +30,7 @@
   }
 }
 
-.recent-chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .375rem; }
+.recent-chips { grid-column: 1 / -1; min-width: 0; display: flex; flex-wrap: wrap; gap: .375rem; }
 
 .recent-summary { display: flex; flex-direction: column; min-width: 0; }
 
@@ -51,7 +51,7 @@
   padding: .5rem .875rem;
   border: 1px solid $line;
   border-radius: 999px;
-  background: white;
+  background: $surface;
   text-align: left;
   font-size: .9rem;
 
@@ -60,7 +60,7 @@
   &[aria-expanded="true"] { border-color: $blue; .lift-pill-chevron { transform: rotate(180deg); } }
   &.is-empty { background: transparent; }
 }
-button.lift-pill:hover { border-color: $blue; }
+@media (hover: hover) and (pointer: fine) { button.lift-pill:hover { border-color: $blue; } }
 
 .lift-sets {
   list-style: none;

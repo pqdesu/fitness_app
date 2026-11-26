@@ -3,16 +3,18 @@
     row of the workout with no set yet says so and does not look like one still to do. %>
 <%= tag.li(**li) do %>
   <% if draggable %><span class="drag-handle" title="<%= local_assigns[:in_workout] ? "Drag to reorder" : "Drag into this workout" %>" aria-hidden="true"><%= icon_tag "grip-vertical" %></span><% end %>
-  <%= link_to workout_exercise_path(we, date: @date), class: "row-link" do %>
-    <span class="row-title"><%= we.name %></span>
-    <span class="text-muted small"><%= we.equipment_label %><% if we.exercise&.unilateral? %> · Unilateral<% end %><% if we.exercise&.muscle_group.present? && !we.cardio? %> · <%= we.exercise.muscle_group %><% end %></span>
-  <% end %>
   <% entry = local_assigns[:entry] %>
-  <% if entry && (entry.workout_sets.any? || entry.cardio_entries.any?) %><span class="chip chip-done"><%= entry_done(entry) %></span><% elsif local_assigns[:in_workout] %><span class="text-muted small text-nowrap"><%= we.cardio? ? "No time yet" : "No sets" %></span><% end %>
+  <%= link_to workout_exercise_path(we, date: @date), class: "row-link" do %>
+    <span class="row-text">
+      <span class="row-title"><%= we.name %></span>
+      <span class="text-muted small"><%= we.equipment_label %><% if we.exercise&.unilateral? %> · Unilateral<% end %><% if we.exercise&.muscle_group.present? && !we.cardio? %> · <%= we.exercise.muscle_group %><% end %></span>
+      <% if entry && (entry.workout_sets.any? || entry.cardio_entries.any?) %><span class="chip chip-done"><%= entry_done(entry) %></span><% elsif local_assigns[:in_workout] %><span class="text-muted small text-nowrap"><%= we.cardio? ? "No time yet" : "No sets" %></span><% end %>
+    </span>
+    <i class="fa-solid fa-chevron-right row-chevron" aria-hidden="true"></i>
+  <% end %>
   <%# An admin renames the exercise from here. The name is the exercise's own, so it changes everywhere. %>
   <% if current_user.admin? && we.exercise %>
-    <%= link_to edit_exercise_path(we.exercise, workout_day_id: @workout_day.id), class: "btn btn-link btn-sm",
+    <%= link_to edit_exercise_path(we.exercise, workout_day_id: @workout_day.id), class: "btn btn-link btn-sm row-action",
           "aria-label": "Edit #{we.name}", title: "Edit #{we.name}" do %><i class="fa-solid fa-pen"></i><% end %>
   <% end %>
-  <%= link_to workout_exercise_path(we, date: @date), class: "btn btn-light btn-sm", "aria-label": "Open #{we.name}" do %><i class="fa-solid fa-chevron-right"></i><% end %>
 <% end %>

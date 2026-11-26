@@ -589,4 +589,78 @@ class LoggingFlowTest < FlowTest
     assert_select "input#weight_workout_exercise_#{bench.id}[min='0']", 1
     assert_select ".input-group[data-controller=sign]", 0
   end
+
+  test "the fold toggle of a logged exercise is a plain button, and the picker has a search box" do
+    sign_in @user
+    log = @user.workout_logs.create!(workout: "Push", date: Date.current)
+    entry = log.workout_log_exercises.create!(name: "Bench press")
+    get workout_log_path(log)
+    assert_select "button.entry-toggle.btn-link[data-bs-target='#entry-#{entry.id}-sets']"
+    assert_select "button.entry-toggle.btn-light", 0
+
+    split = @user.splits.create!(name: "PPL")
+    day = split.workout_days.create!(day: "Push", weekday: 1)
+    get split_path(split)
+    assert_select "#exercise-picker-#{day.id} [data-controller=picker-filter] input[type=search][data-picker-filter-target=query]", 1
+    assert_select "#exercise-picker-#{day.id} input[name='exercise[name]'][data-picker-filter-target=name]", 1
+  end
+
+  test "tapping a set's weight or reps opens its edit there" do
+    sign_in @user
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: Date.current.wday)
+    planned = day.workout_exercises.create!(exercise: @bench)
+    post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
+    set = @user.workout_sets.sole
+
+    # on the exercise page and on the logged workout, the weight and the reps are buttons of the set's row edit,
+    # each giving the cursor to its own field (row_edit_controller.js); the ⋯ menu keeps its Edit too
+    [workout_exercise_path(planned, date: Date.current), workout_log_path(set.workout_log_exercise.workout_log)].each do |page|
+      get page
+      weight = "tbody[data-controller=row-edit] td > span.set-value[role=button][tabindex='0'][data-row-edit-target=view]"
+      assert_select "#{weight}[data-row-edit-focus-param='weight_set_#{set.id}'][data-action~='click->row-edit#edit']", "80 kg"
+      assert_select "#{weight}[data-row-edit-focus-param='reps_set_#{set.id}'][aria-label='Edit the reps of set 1: 8']", "8"
+      assert_select "input#weight_set_#{set.id}[name='workout_set[weight_used]'][form='edit_set_#{set.id}'][hidden]", 1
+      assert_select "input#reps_set_#{set.id}[name='workout_set[reps_completed]'][form='edit_set_#{set.id}'][hidden]", 1
+      assert_select ".set-table .actions-menu button[data-action='row-edit#edit']", 1
+    end
+
+    # the new weight saves as before
+    patch workout_set_path(set), params: { workout_set: { weight_used: "82.5", reps_completed: 8 } }
+    assert_equal 82.5, set.reload.weight_used
+  end
+
+  test "an exercise's Edit page lists its sets, and their weight and reps are corrected there" do
+    sign_in @user
+    day = @user.splits.create!(name: "PPL").workout_days.create!(day: "Push", weekday: Date.current.wday)
+    planned = day.workout_exercises.create!(exercise: @bench)
+    post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 8, weight_used: 80 } }
+    post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: 6, weight_used: 90 } }
+    first, second = @user.workout_sets.order(:set_number).to_a
+    edit_page = edit_workout_log_exercise_path(first.workout_log_exercise)
+
+    # the ⋯ menu's Edit opens it: equipment and note as before, and now the sets, editable in place
+    get edit_page
+    assert_select "meta[name='turbo-refresh-method'][content='morph']"
+    assert_select "#entry-sets h2", "Sets"
+    assert_select "#entry-sets tbody[data-controller=row-edit]", 2
+    assert_select "#entry-sets span.set-value[data-row-edit-focus-param='weight_set_#{second.id}']", "90 kg"
+    assert_select "#entry-sets input#weight_set_#{second.id}[form='edit_set_#{second.id}']", 1
+    assert_select "form[action=?] textarea[name='workout_log_exercise[notes]']", workout_log_exercise_path(first.workout_log_exercise)
+
+    # saving or deleting a set from there comes back to it
+    referer = { "Referer" => "http://www.example.com#{edit_page}" }
+    patch workout_set_path(second), params: { workout_set: { weight_used: "92.5", reps_completed: 6 } }, headers: referer
+    assert_redirected_to edit_page
+    assert_equal 92.5, second.reload.weight_used
+    delete workout_set_path(first), headers: referer
+    assert_redirected_to edit_page
+    get edit_page
+    assert_select "#entry-sets tbody[data-controller=row-edit]", 1
+
+    # a cardio exercise has no sets to list
+    treadmill = Exercise.create!(name: "Treadmill", muscle_group: "Cardio")
+    cardio = second.workout_log_exercise.workout_log.workout_log_exercises.create!(exercise: treadmill)
+    get edit_workout_log_exercise_path(cardio)
+    assert_select "#entry-sets", 0
+  end
 end

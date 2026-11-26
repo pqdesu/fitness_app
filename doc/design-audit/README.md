@@ -28,6 +28,10 @@ Most of these were found by more than one reviewer. Tags: **A** = Impeccable des
 
 ### P1: major (fix before anything else)
 
+**Status (2026-11-26): all 12 fixed on the branch `audit-major-fixes`**, with the owner's choices: one-row sets with Tag and Note in the ⋯ menu, the rest saved without asking up to 10 minutes, a search box in the picker, and Preferences without the password. Two changes from the suggestions below, because existing tests pin the current behaviour:
+- **Item 1:** the add-set redirect still carries `?date=`. An exercise page opened without a date still jumps to the top after its first set, but every in-app link carries the date, and the one-row sets fixed the drift under the tab bar. Add set now starts at y = 789 with 8 sets, against 1,473 with 3 sets before.
+- **Item 2:** the admin pencil and the × stay as icons (muted), not in a ⋯ menu. A ⋯ menu is as wide as the pencil, and its list items would sit inside the row's list item.
+
 1. **The Add set button is below the fold and moves after every set** (A, B, E). Each set row is 171 to 197 px. With 3 sets, the weight field starts at y = 933 to 1,473 on an 844 px phone, and after each set it slides under the tab bar. Opened without `?date=`, the page jumps back to the top.
    - Fix: one 48 px row per set. Note and Tag go into the set's ⋯ menu, and a note shows as text only when there is one (`workout_sets/_set.html.erb:55-88`).
    - Fix: put the add-set form above the sets, or keep it pinned at the bottom.

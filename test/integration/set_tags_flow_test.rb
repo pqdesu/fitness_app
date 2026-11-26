@@ -47,8 +47,8 @@ class SetTagsFlowTest < FlowTest
 
     get @page
     assert_select "tbody:first-of-type .set-tags .chip-tag", "Warm-up"
-    # a Tag button of its own, outside the ⋯ menu, opens the tags; ticking one saves the set at once
-    assert_select "tbody:first-of-type .set-tags button.set-tag-toggle[data-bs-target='#set-#{first.id}-tags']", text: /Tag/
+    # Tag, in the set's ⋯ menu, opens the tags; ticking one saves the set at once
+    assert_select "tbody:first-of-type .actions-menu button.set-tag-toggle[data-bs-target='#set-#{first.id}-tags']", text: /Tag/
     assert_select ".actions-menu .set-tag-choices", 0
     assert_select "tr[data-row-edit-target=field] .set-tag-choices", 0
     assert_select "#set-#{first.id}-tags.collapse:not(.show) input[data-action='change->row-edit#save']", 2
@@ -123,5 +123,21 @@ class SetTagsFlowTest < FlowTest
     assert_redirected_to @page
     assert_match "Note not saved", flash[:alert]
     assert_equal "Seat on 4", entry.reload.notes
+  end
+
+  test "a set is one row: its note shows as text only when it has one, and the field opens from the menu" do
+    sign_in @user
+    post workout_exercise_workout_sets_path(@planned, date: Date.current), params: { workout_set: { reps_completed: 10, weight_used: 40 } }
+    post workout_exercise_workout_sets_path(@planned, date: Date.current), params: { workout_set: { reps_completed: 8, weight_used: 40, notes: "Felt heavy" } }
+    plain, noted = @user.workout_sets.order(:set_number).to_a
+
+    get @page
+    assert_select "tbody:first-of-type .set-note-text", 0
+    assert_select "tbody:first-of-type .actions-menu button[data-bs-target='#set-#{plain.id}-note']", text: /Add note/
+    assert_select "tbody:last-of-type .set-note-text", "Felt heavy"
+    assert_select "tbody:last-of-type .actions-menu button[data-bs-target='#set-#{noted.id}-note']", text: /Edit note/
+    assert_select "#set-#{noted.id}-note.collapse:not(.show) input[name='workout_set[notes]'][form='edit_set_#{noted.id}']", 1
+    assert_select "#set-#{noted.id}-note.collapse button.note-save[form='edit_set_#{noted.id}']", 1
+    assert_select ".actions-menu button.set-tag-toggle", 2
   end
 end

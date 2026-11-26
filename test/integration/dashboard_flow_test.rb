@@ -466,4 +466,24 @@ class DashboardFlowTest < FlowTest
       assert_select ".week .week-day.is-set", 3
     end
   end
+
+  test "a long split name is cut by its chip and carries the full name in a title" do
+    sign_in @user
+    name = "A very long split name that goes on and on and on and on ok"
+    day = @user.splits.create!(name: name).workout_days.create!(day: "Push", weekday: 1)
+    log = day.workout_logs.create!(date: Date.current)
+    log.workout_log_exercises.create!(name: "Bench press")
+    get root_path
+    assert_select ".recent-chips .chip[title=?]", name
+    get workout_logs_path
+    assert_select ".history-line .chip[title=?]", name
+  end
+
+  test "the Home page keeps its scroll when a move brings it back" do
+    sign_in @user
+    get root_path
+    # Move a workout and Back to the plan return to "/" (redirect_back): replaced in place, scroll kept
+    assert_select "meta[name='turbo-refresh-method'][content='replace']"
+    assert_select "meta[name='turbo-refresh-scroll'][content='preserve']"
+  end
 end

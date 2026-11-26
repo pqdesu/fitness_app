@@ -1,10 +1,19 @@
 // Rows that open something (an exercise of a workout day)
+// The pencil at the end of a row is quiet until pointed at; the red × keeps its colour.
+.row-action:not(.text-danger) { color: $muted; }
+@media (hover: hover) { .row-action:not(.text-danger):hover { color: $blue; } }
+.row-action:not(.text-danger):focus-visible { color: $blue; }
+
 .row-link {
   display: flex;
   flex: 1;
-  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
   min-width: 0;
   text-decoration: none;
 
-  &:hover .row-title { color: $blue; }
+  .row-text { display: flex; flex: 1; flex-direction: column; align-items: flex-start; min-width: 0; overflow-wrap: break-word; }
+  .row-chevron { flex-shrink: 0; font-size: .75rem; color: $muted; }
+
+  @media (hover: hover) and (pointer: fine) { &:hover .row-title { color: $blue; } }
 }

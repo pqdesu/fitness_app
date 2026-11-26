@@ -7,7 +7,7 @@ $bottom-nav-height: 3.75rem;
   display: flex;
   height: calc(#{$bottom-nav-height} + env(safe-area-inset-bottom));
   padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  background: white;
+  background: $surface;
   border-top: 1px solid $line;
 }
 

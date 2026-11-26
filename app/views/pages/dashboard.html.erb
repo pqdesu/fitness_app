@@ -1,7 +1,10 @@
 <%# The Home page ("/", pages#home), what was the Today page and the dashboard in one: today's
     workout (or on a rest day the choices, folded), the active split's week with its moves,
     the month's calendar and recent workouts. On a phone they stack in that order; from desktop
-    width the calendar takes the left column. %>
+    width the calendar takes the left column.
+    Moving a workout (or Back to the plan) comes back here and keeps the scroll. The page is replaced,
+    not morphed, so the Move pop-up's Bootstrap state never outlives it. %>
+<% turbo_refreshes_with method: :replace, scroll: :preserve %>
 <% dashboard = @dashboard %>
 <% split = dashboard.split %>
 <% today = dashboard.today %>

@@ -25,7 +25,7 @@
   aspect-ratio: 1;
   border: 2px solid $line;
   border-radius: 50%;
-  background: white;
+  background: $surface;
   font-family: $headers-font;
   font-weight: 700;
   // Pointing at the day draws a soft halo around its circle, whatever its look
@@ -45,8 +45,9 @@
   white-space: nowrap;
 }
 
-.week-day:hover .week-circle { border-color: $blue; }
-@media (hover: hover) { .week-day:hover .week-circle { outline-color: $hover-halo; } }
+@media (hover: hover) and (pointer: fine) {
+  .week-day:hover .week-circle { border-color: $blue; outline-color: $hover-halo; }
+}
 .week-day.is-set { color: $gray; }
 .week-day.is-set .week-circle { border-color: $blue; background: $blue; color: white; }
 
@@ -56,12 +57,12 @@
 // On the dashboard: a workout off the plan is a light ring, and a planned day that passed with
 // nothing logged is dotted (below the moved dashes, so a missed moved day is dotted too)
 .week-day.is-extra .week-circle { border-color: $extra-ring; color: $blue; }
-.week-day.is-missed .week-circle { border-style: dotted; border-color: $blue; background: white; color: $blue; }
+.week-day.is-missed .week-circle { border-style: dotted; border-color: $blue; background: $surface; color: $blue; }
 
 // Today: a ring around the circle, whether or not the day has a workout
 .week-day.is-today {
   color: $gray;
-  .week-circle { box-shadow: 0 0 0 2px white, 0 0 0 4px $blue; outline-offset: 6px; }
+  .week-circle { box-shadow: 0 0 0 2px $surface, 0 0 0 4px $blue; outline-offset: 6px; }
   .week-label { font-weight: 700; }
 }
 

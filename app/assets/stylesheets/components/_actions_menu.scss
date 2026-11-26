@@ -1,7 +1,8 @@
 // The ⋯ menu (actions_menu): edit and delete behind one button
 .actions-menu {
   .actions-toggle { color: $gray; font-size: 1rem; }
-  .actions-toggle:hover, .actions-toggle[aria-expanded="true"] { color: $blue; }
+  .actions-toggle[aria-expanded="true"] { color: $blue; }
+  @media (hover: hover) and (pointer: fine) { .actions-toggle:hover { color: $blue; } }
 
   .dropdown-menu { min-width: 11rem; }
   // A menu in a list of rows (.list-rows li) is not one of its rows

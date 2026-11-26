@@ -66,21 +66,24 @@ class WorkoutLogExercisesController < ApplicationController
   def move
     @entry.move!(params[:to])
     flash[:moved] = @entry.id # lights it up on the page (.just-moved)
-    redirect_to back_after_change, status: :see_other
+    redirect_back_or_to back_after_change, status: :see_other
   end
 
   # Takes an exercise out of a workout. One planned for the day stays on the plan (and is offered
   # again); one added while training is simply gone. From a workout day's page it returns there.
   def destroy
     @entry.destroy
-    redirect_to back_after_change, notice: "#{@entry.name} removed from this workout.", status: :see_other
+    redirect_back_or_to back_after_change, notice: "#{@entry.name} removed from this workout.", status: :see_other
   end
 
   private
 
   def cardio_workout? = @workout_log&.workout == WorkoutLog::CARDIO
 
-  # From a workout day's page (workout_day_id and date) back there, otherwise to the logged workout.
+  # Moving or removing returns to the very page it was done on (its address, ?from=dashboard
+  # included), so Turbo refreshes that page in place: no jump to the top, and no extra step for the
+  # back button. Without a referer: from a workout day's page (workout_day_id and date) back there,
+  # otherwise to the logged workout.
   def back_after_change
     workout_day = current_user.workout_days.find_by(id: params[:workout_day_id]) if params[:workout_day_id].present?
     return workout_day_path(workout_day, date: text_param(:date).presence) if workout_day

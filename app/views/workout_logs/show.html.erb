@@ -57,18 +57,17 @@
           <span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span>
           <div>
             <h2><%= entry.name %></h2>
-            <p class="text-muted small mb-0"><%= entry.equipment_label %><% if entry.exercise&.unilateral? %> · Unilateral<% end %><% if top %>&nbsp;· <span class="text-nowrap">Top <span class="top-set"><%= weight_and_reps(top) %></span></span><% end %></p>
+            <p class="text-muted small mb-0"><%= entry.equipment_label %><% if entry.exercise&.unilateral? %> · Unilateral<% end %><% if top %>&nbsp;· <span class="text-nowrap">Top <span class="top-set"><%= weight_and_reps(top) %></span></span><% end %> <span class="chip"><%= entry_done(entry) %></span></p>
             <% if entry.notes.present? %><p class="entry-note small mb-0"><i class="fa-regular fa-note-sticky"></i> <%= entry.notes %></p><% end %>
           </div>
           <div class="entry-meta">
-            <span class="chip"><%= entry_done(entry) %></span>
             <%= actions_menu entry.name do %>
               <%= menu_link "Edit", edit_workout_log_exercise_path(entry) %>
               <% if i.positive? %><%= menu_button "Move up", move_workout_log_exercise_path(entry, to: "up"), icon: "arrow-up" %><% end %>
               <% if i < @log_exercises.size - 1 %><%= menu_button "Move down", move_workout_log_exercise_path(entry, to: "down"), icon: "arrow-down" %><% end %>
               <%= menu_delete "Remove from workout", workout_log_exercise_path(entry), confirm: "Remove #{entry.name} and its sets from this workout?" %>
             <% end %>
-            <button type="button" class="btn btn-light btn-sm entry-toggle fold-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
+            <button type="button" class="btn btn-link btn-sm entry-toggle fold-toggle" data-bs-toggle="collapse" data-bs-target="#<%= panel_id %>"
                     aria-expanded="<%= open %>" aria-controls="<%= panel_id %>" aria-label="Sets of <%= entry.name %>" data-fold-target="toggle">
               <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
             </button>

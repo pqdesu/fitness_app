@@ -1,11 +1,14 @@
 <%#
   One recorded set, as a group of rows (a tbody) of a set table. Edit (in its ⋯ menu) turns its weight and reps
-  into fields, so a mistake is corrected in place instead of deleting the set. The note field is
-  always there and saves when it is left, Enter is pressed or its arrow tapped; the Tag button beside
-  the set's tag chips opens the tags, and ticking one saves. Locals: set, and optionally workout_exercise and date when the table is on an exercise's
+  into fields, so a mistake is corrected in place instead of deleting the set. Tag and Add note in
+  the ⋯ menu open the tags and the note field; ticking a tag saves, and the note saves when it is left, Enter
+  is pressed or its arrow tapped. The note and the tag chips show under the numbers only when
+  there are any. Locals: set, and optionally workout_exercise and date when the table is on an exercise's
   page, so saving or deleting returns there, on the same date.
 %>
 <% form_id = "edit_set_#{set.id}" %>
+<% tags_id = "set-#{set.id}-tags" %>
+<% note_id = "set-#{set.id}-note" %>
 <% set_path = workout_set_path(set, workout_exercise_id: local_assigns[:workout_exercise]&.id, date: local_assigns[:date]) %>
 <tbody data-controller="row-edit" data-action="keydown.esc->row-edit#cancel">
   <%# The rest before this set: measured by the rest timer, or typed in minutes ("~3 min"). %>
@@ -15,7 +18,11 @@
   <tr>
     <td><span class="order-badge"><%= set.set_number %></span></td>
     <td>
-      <span data-row-edit-target="view"><%= format_weight(set.weight_used, bodyweight: set.bodyweight?) %></span>
+      <%# Tapping the weight (or the reps) opens the edit there, as Edit in the ⋯ menu does. %>
+      <span data-row-edit-target="view" class="set-value" role="button" tabindex="0"
+            aria-label="Edit the weight of set <%= set.set_number %>: <%= format_weight(set.weight_used, bodyweight: set.bodyweight?, plain: true) %>"
+            data-row-edit-focus-param="weight_set_<%= set.id %>"
+            data-action="click->row-edit#edit keydown.enter->row-edit#edit:prevent keydown.space->row-edit#edit:prevent"><%= format_weight(set.weight_used, bodyweight: set.bodyweight?) %></span>
       <% if set.bodyweight? %>
         <%# Added (+) or taken off (−) the body; the ± changes the sign, which a phone's keypad cannot type. %>
         <div class="input-group input-group-sm set-field" hidden data-row-edit-target="field" data-controller="sign">
@@ -33,7 +40,10 @@
       <% end %>
     </td>
     <td>
-      <span data-row-edit-target="view"><%= set.reps_completed %></span>
+      <span data-row-edit-target="view" class="set-value" role="button" tabindex="0"
+            aria-label="Edit the reps of set <%= set.set_number %>: <%= set.reps_completed %>"
+            data-row-edit-focus-param="reps_set_<%= set.id %>"
+            data-action="click->row-edit#edit keydown.enter->row-edit#edit:prevent keydown.space->row-edit#edit:prevent"><%= set.reps_completed %></span>
       <%= number_field_tag "workout_set[reps_completed]", set.reps_completed,
             id: "reps_set_#{set.id}", form: form_id, min: 0, required: true, inputmode: "numeric",
             class: "form-control form-control-sm set-field", "aria-label": "Reps of set #{set.set_number}",
@@ -44,6 +54,12 @@
       <div class="set-actions" data-row-edit-target="view">
         <%= actions_menu "set #{set.set_number}" do %>
           <li><button type="button" class="dropdown-item" data-action="row-edit#edit"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edit</button></li>
+          <% if set_tags.any? %>
+            <li><button type="button" class="dropdown-item set-tag-toggle" data-bs-toggle="collapse" data-bs-target="#<%= tags_id %>"
+                        aria-expanded="false" aria-controls="<%= tags_id %>"><i class="fa-solid fa-tag" aria-hidden="true"></i> Tag</button></li>
+          <% end %>
+          <li><button type="button" class="dropdown-item" data-bs-toggle="collapse" data-bs-target="#<%= note_id %>"
+                      aria-expanded="false" aria-controls="<%= note_id %>"><i class="fa-solid fa-note-sticky" aria-hidden="true"></i> <%= set.notes.present? ? "Edit note" : "Add note" %></button></li>
           <%= menu_delete "Delete", set_path, aria: { label: "Delete set #{set.set_number}" },
                 confirm: "Delete set #{set.set_number}? #{weight_and_reps(set, plain: true)}." %>
         <% end %>
@@ -54,15 +70,12 @@
   </tr>
   <tr class="set-note">
     <td colspan="4">
-      <%# Its tags as chips, and the Tag button that opens the admin's tags: ticking one saves at once. %>
+      <%# Its tags and note show only when there are any; the fields open from the ⋯ menu. %>
+      <% if set.set_tags.any? %>
+        <div class="set-tags"><% set.set_tags.each do |tag| %><span class="chip chip-tag"><%= tag.name %></span><% end %></div>
+      <% end %>
+      <% if set.notes.present? %><p class="set-note-text"><%= set.notes %></p><% end %>
       <% if set_tags.any? %>
-        <% tags_id = "set-#{set.id}-tags" %>
-        <div class="set-tags">
-          <% set.set_tags.each do |tag| %><span class="chip chip-tag"><%= tag.name %></span><% end %>
-          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill set-tag-toggle" data-bs-toggle="collapse"
-                  data-bs-target="#<%= tags_id %>" aria-expanded="false" aria-controls="<%= tags_id %>"
-                  aria-label="Tags of set <%= set.set_number %>"><i class="fa-solid fa-tag" aria-hidden="true"></i> Tag</button>
-        </div>
         <div class="collapse" id="<%= tags_id %>">
           <div class="set-tag-choices mb-2" role="group" aria-label="Tags of set <%= set.set_number %>">
             <%# The empty value lets the last tag be taken off. %>
@@ -76,13 +89,15 @@
         </div>
       <% end %>
       <%# The note saves when it is left, or with its blue arrow. %>
-      <div class="input-group input-group-sm">
-        <%= text_field_tag "workout_set[notes]", set.notes, id: "notes_set_#{set.id}", form: form_id, maxlength: 200,
-              placeholder: "Add a note", autocomplete: "off", class: "form-control",
-              "aria-label": "Note on set #{set.set_number}", data: { action: "change->row-edit#save" } %>
-        <button type="submit" form="<%= form_id %>" class="btn btn-primary note-save" aria-label="Save the note of set <%= set.set_number %>">
-          <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-        </button>
+      <div class="collapse" id="<%= note_id %>">
+        <div class="input-group input-group-sm mb-2">
+          <%= text_field_tag "workout_set[notes]", set.notes, id: "notes_set_#{set.id}", form: form_id, maxlength: 200,
+                placeholder: "Add a note", autocomplete: "off", class: "form-control",
+                "aria-label": "Note on set #{set.set_number}", data: { action: "change->row-edit#save" } %>
+          <button type="submit" form="<%= form_id %>" class="btn btn-primary note-save" aria-label="Save the note of set <%= set.set_number %>">
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
     </td>
   </tr>

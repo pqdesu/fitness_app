@@ -6,19 +6,41 @@
 .set-table td:first-child, .set-table th:first-child { width: 80px; }
 .set-table td { vertical-align: middle; }
 .set-table td > span { white-space: nowrap; }
+// A set's weight and reps open its edit when tapped: a 44px target that lights up a little.
+.set-table .set-value {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-left: -.5rem;
+  padding: 0 .5rem;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: background-color .15s ease;
+  &:active { background-color: $primary-soft; }
+  &:focus-visible { outline: 0; box-shadow: 0 0 0 2px $surface, 0 0 0 4px $blue; }
+  @media (hover: hover) and (pointer: fine) { &:hover { background-color: $primary-soft; } }
+}
 // A set being edited in place (see workout_sets/_set)
 .set-field { width: 100%; min-width: 4.75rem; max-width: 7rem; }
-.set-edit-bar { display: flex; justify-content: flex-end; gap: .375rem; }
+.set-edit-bar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .375rem; }
 .set-actions { display: inline-flex; align-items: center; justify-content: flex-end; gap: .25rem; }
 // Each set is its own tbody: the row of numbers, its note field, then Save and Cancel while editing
 .set-table tbody { border-top: 1px solid $line; }
-.set-table tr:not(.set-note):has(+ .set-note:not([hidden])) td { border-bottom: 0; padding-bottom: .25rem; }
-.set-note td { padding-top: 0; border-bottom: 0; }
+// That line is the only one: none between a set's numbers, its note and its edit bar, and no second one below it.
+.set-table > tbody > tr > td { border-bottom: 0; }
+// One row per set: the numbers row is 56px, with room around the 44px targets (the ⋯, the tappable
+// weight and reps); the note row has no space of its own until it shows something.
+.set-table tr:not(.set-note):not(.set-rest-row) td { height: 3.5rem; padding-top: .375rem; padding-bottom: .375rem; }
+.set-table tr:not(.set-note):has(+ .set-note:not([hidden]):has(.set-tags, .set-note-text, .show, .collapsing, .set-edit-bar)) td { border-bottom: 0; padding-bottom: 0; }
+.set-note td { padding: 0; border-bottom: 0; }
+// Its tags and note start under the weight, not under the set number, with room below before the next set.
+.set-note:has(.set-tags, .set-note-text, .show, .collapsing, .set-edit-bar) td { padding: .25rem 1.25rem 1rem calc(80px + 1.25rem); }
+.set-note-text { margin: 0; font-size: .875rem; line-height: 1.5; color: $muted; overflow-wrap: anywhere; }
 .set-table .set-note td:first-child { width: auto; }
 .entry-note { color: $muted; margin-top: .125rem; }
 // History list on a phone: date, workout, split and counts in one cell (workout_logs/index)
 .history-table .history-summary { padding-right: .5rem; }
-.history-line { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .375rem; margin-top: .125rem; }
+.history-line { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .375rem; margin-top: .125rem; }
 .history-counts { margin-top: .125rem; font-size: .8rem; color: $muted; }
 // The pen beside a workout's timer line. A thumb-sized target (44px) around a small icon, pulled
 // in by its margins so the line does not grow; the line keeps room below for the target's bottom
@@ -60,6 +82,8 @@
     th, td { padding-left: .5rem; padding-right: .5rem; }
     th:first-child, td:first-child { width: 3.5rem; padding-left: 1.25rem; }
     th:last-child, td:last-child { padding-right: .75rem; }
+    // under the weight: the 3.5rem number column, then the weight cell's own padding
+    .set-note:has(.set-tags, .set-note-text, .show, .collapsing, .set-edit-bar) td { padding-left: 4rem; padding-right: .75rem; }
   }
 
   .set-field { min-width: 3.5rem; }
@@ -79,7 +103,8 @@
 .input-group.set-field { max-width: 9rem; flex-wrap: nowrap; }
 
 // A set's tags (warm-up, assisted…): chips above its note, and pills to tick when adding or editing it
-.set-tags { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-bottom: .375rem; }
+.set-tags { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-bottom: .5rem; }
+.set-tags:last-child { margin-bottom: 0; }
 .chip-tag { background: $primary-soft; color: $blue; }
 .set-tag-choices { display: flex; flex-wrap: wrap; gap: .375rem; }
 // The blue arrow that saves a note (a set's, an exercise's), 44px wide on a touch screen
@@ -97,9 +122,9 @@
 // Its height stays the same in every state, so Add set below never moves under the thumb.
 .rest-timer { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; min-height: 2.75rem; margin-bottom: .75rem; }
 // Read at arm's length from the bench: the number leads, as the workout timer's clock does.
-.rest-clock { font-size: 1.375rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rest-clock { font-size: 2.25rem; font-family: $headers-font; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
 // Only vertical padding: the table's own cell padding keeps it in line with the set numbers.
-.set-table .set-rest-row td { padding-top: .375rem; padding-bottom: 0; border-bottom: 0; font-size: .8rem; color: $muted; }
+.set-table .set-rest-row td { padding-top: .75rem; padding-bottom: 0; border-bottom: 0; font-size: .8rem; color: $muted; }
 // The rest picker in a set's Edit, left of Save and Cancel; its lists open as the phone's wheel
 .rest-picker { display: flex; align-items: center; gap: .25rem; margin-right: auto; font-size: .875rem; }
 .rest-picker .form-select { width: auto; }

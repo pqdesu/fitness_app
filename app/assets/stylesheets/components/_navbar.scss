@@ -1,5 +1,5 @@
 .app-navbar {
-  background: rgba(white, .92);
+  background: rgba($surface, .92);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid $line;
   padding-top: calc(.625rem + env(safe-area-inset-top));
@@ -20,7 +20,7 @@
     border-radius: .5rem;
     padding: .375rem .75rem;
 
-    &:hover { color: $gray; }
+    @media (hover: hover) and (pointer: fine) { &:hover { color: $gray; } }
     &.active { color: $blue; background: $primary-soft; }
   }
 

@@ -45,7 +45,7 @@
             <%# The timer's line, with a pen to correct when it finished (a timer left running too long). %>
             <% timer_pen = capture do %><% if log.started_at %><%= link_to edit_workout_log_timer_path(log), class: "timer-edit",
                   "aria-label": "Edit the timer of #{log.workout} on #{l log.date, format: :long}", title: "Edit timer" do %><i class="fa-solid fa-pen"></i><% end %><% end %><% end %>
-            <% split_chip = capture do %><% if log.workout_day %><span class="chip"><%= log.workout_day.split.name %></span><% else %><span class="text-muted small">Deleted</span><% end %><% end %>
+            <% split_chip = capture do %><% if log.workout_day %><span class="chip" title="<%= log.workout_day.split.name %>"><%= log.workout_day.split.name %></span><% else %><span class="text-muted small">Deleted</span><% end %><% end %>
             <tr>
               <td class="history-summary d-md-none">
                 <%= link_to l(log.date, format: :long), path, class: "fw-semibold" %>

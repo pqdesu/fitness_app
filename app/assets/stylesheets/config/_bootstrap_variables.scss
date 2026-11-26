@@ -35,8 +35,17 @@ $card-border-radius:  1rem;
 $card-cap-bg:         transparent;
 $card-spacer-x:       1.25rem;
 $btn-font-weight:     600;
-$input-border-color:  $line-strong;
+$input-border-color:  #B9BFC9;
+$card-bg:             $surface;
+$input-bg:            $surface;
+$modal-content-bg:    $surface;
+$dropdown-bg:         $surface;
+$list-group-bg:       $surface;
+$form-check-input-border: 1.5px solid $control-border;
+$focus-ring-opacity:  1;
+$focus-ring-width:    .2rem;
 $table-border-color:  $line;
+$table-bg:            transparent; // tables show the white card they sit in, not the page grey
 $dropdown-border-color: $line;
 // Badges (Active, Admin): 12px, the smallest text in the app (Bootstrap's .75em would be 11.25px)
 $badge-font-size:     .8em;
