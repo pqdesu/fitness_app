@@ -17,6 +17,7 @@ class WorkoutLogsController < ApplicationController
     logs = current_user.workout_logs.order(date: :desc, id: :desc)
     logs = logs.where(date: @date) if @date
     @workout_logs = paginate(logs, per: 20).with_sets.includes(workout_day: :split)
+    @active_split = current_user.current_split # its chips stay plain; another split's stand out
   rescue Date::Error
     redirect_to workout_logs_path
   end
@@ -61,9 +62,9 @@ class WorkoutLogsController < ApplicationController
 
   def update
     if @workout_log.update(workout_log_params)
-      redirect_to workout_log_path(@workout_log), notice: "Workout details saved."
+      redirect_to workout_log_page(@workout_log), notice: "Workout details saved."
     else
-      redirect_to workout_log_path(@workout_log),
+      redirect_to workout_log_page(@workout_log),
                   alert: "Details not saved: #{errors_of(@workout_log)}."
     end
   end

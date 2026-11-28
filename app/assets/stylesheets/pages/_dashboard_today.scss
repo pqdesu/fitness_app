@@ -8,7 +8,7 @@
   padding: 1.125rem 1.25rem .5rem;
 }
 
-.today-title { margin: 0; font-size: 1.25rem; }
+.today-title { margin: 0; font-size: $fs-num; }
 // A rest day's buttons, Start workout and Cardio, stay side by side; without room for them beside
 // the title (the dashboard's date line), the pair moves under it together.
 .today-header:has(.today-actions) { flex-wrap: wrap; }
@@ -18,7 +18,7 @@
 .today > .today-last {
   margin: 0;
   padding-bottom: .25rem;
-  font-size: .8rem;
+  font-size: $fs-label;
   font-weight: 600;
   color: $muted;
 }
@@ -29,4 +29,4 @@
 // The "Show exercises" toggle sits inside the card's padding
 .today > .toggle-days { width: auto; margin: .5rem 1.25rem 0; }
 
-.top-set { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.top-set { font-weight: 600; font-variant-numeric: tabular-nums; }

@@ -1,8 +1,6 @@
 // Cards
 .card {
-  box-shadow: 0 1px 2px rgba($shadow, .04);
-
-  h2 { font-size: 1.05rem; margin: 0; }
+  h2 { font-size: $fs-title; margin: 0; letter-spacing: -.01em; }
 
   + .card { margin-top: 1rem; }
 }
@@ -11,7 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  flex-wrap: wrap; // with large text (200%) the title and its link go on two lines instead of widening the page
+  gap: .5rem 1rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
   border-bottom-color: $line;
@@ -30,7 +29,7 @@ a.card-link {
   height: 100%;
   color: inherit;
   text-decoration: none;
-  transition: border-color .15s, box-shadow .15s;
+  transition: border-color .15s ease-out, box-shadow .15s ease-out;
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
@@ -51,7 +50,14 @@ a.card-link {
 }
 
 .link-quiet {
-  font-size: .85rem;
+  font-size: $fs-small;
   font-weight: 600;
   text-decoration: none;
+  // a 44px target around the small text
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
 }
+
+// A card holding a table clips its square corners (the table head's grey) to the card's round ones
+.card:has(> .app-table, > .table-responsive) { overflow: hidden; }

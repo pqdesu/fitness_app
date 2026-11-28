@@ -28,7 +28,7 @@ puts "Admin user: #{admin.email}"
   ["Squat", "Legs"],
   ["Romanian deadlift", "Legs"],
   ["Leg press", "Legs"],
-  ["Calf raise", "Calves"],
+  ["Calf raise", "Legs"],
   ["Plank", "Core"],
   # Cardio is logged as incline, speed and time instead of weight and reps
   ["Treadmill", "Cardio"],

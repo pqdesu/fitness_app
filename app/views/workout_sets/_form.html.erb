@@ -21,19 +21,19 @@
       <%# On a bodyweight exercise the weight is added (+) or taken off (−); empty is bodyweight alone. %>
       <%= f.label :weight_used, class: "form-label", for: "weight_#{suffix}" do %><%= bodyweight_word %> ± kg<% end %>
       <div class="input-group" data-controller="sign">
-        <button type="button" class="btn btn-outline-secondary sign-toggle" data-action="sign#flip" aria-label="Add or take off: change the sign">±</button>
+        <button type="button" class="btn btn-light sign-toggle" data-action="sign#flip" aria-label="Add or take off: change the sign">±</button>
         <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", placeholder: "0",
               inputmode: "decimal", class: "form-control", id: "weight_#{suffix}", data: { sign_target: "input" } %>
       </div>
     <% else %>
       <%= f.label :weight_used, "Weight kg", class: "form-label", for: "weight_#{suffix}" %>
-      <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", min: 0, placeholder: "–",
+      <%= f.number_field :weight_used, value: weight_number(last_set&.weight_used), step: "any", min: 0, placeholder: "kg",
             inputmode: "decimal", class: "form-control", id: "weight_#{suffix}" %>
     <% end %>
   </div>
   <div class="<%= reps_col %>">
     <%= f.label :reps_completed, "Reps", class: "form-label", for: "reps_#{suffix}" %>
-    <%= f.number_field :reps_completed, value: last_set&.reps_completed, min: 0, required: true,
+    <%= f.number_field :reps_completed, value: last_set&.reps_completed, min: 0, required: true, placeholder: "reps",
           inputmode: "numeric", class: "form-control", id: "reps_#{suffix}" %>
   </div>
   <% if typed_rest %>
@@ -43,7 +43,7 @@
     </div>
   <% end %>
   <div class="<%= typed_rest ? "col-12" : "col-4" %> d-grid">
-    <%= f.button class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> Add set<% end %>
+    <%= f.button class: "btn btn-primary", data: { turbo_submits_with: "Adding…" } do %><i class="fa-solid fa-plus" aria-hidden="true"></i> Add set<% end %>
   </div>
   <%# Tags the admin keeps (warm-up, assisted…), one tap each, none by default but a first set's
       Warm-up when the account asks for it. %>
@@ -52,7 +52,7 @@
     <div class="col-12 set-tag-choices" role="group" aria-label="Tags for the new set">
       <% set_tags.each do |tag| %>
         <%= check_box_tag "workout_set[set_tag_ids][]", tag.id, warm_up_first && tag.warm_up?, id: "tag_#{suffix}_#{tag.id}", class: "btn-check" %>
-        <%= label_tag "tag_#{suffix}_#{tag.id}", tag.name, class: "btn btn-outline-secondary btn-sm rounded-pill" %>
+        <%= label_tag "tag_#{suffix}_#{tag.id}", tag.name, class: "btn btn-outline-primary btn-sm tag-pill" %>
       <% end %>
     </div>
   <% end %>

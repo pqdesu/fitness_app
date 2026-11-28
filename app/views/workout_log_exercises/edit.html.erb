@@ -1,6 +1,6 @@
 <%# Saving or deleting a set comes back here (redirect_back): Turbo morphs the page in place and keeps the scroll. %>
 <% turbo_refreshes_with method: :morph, scroll: :preserve %>
-<% back_to workout_log_path(@entry.workout_log_id) %>
+<% back_to workout_log_path(@entry.workout_log_id, from: ("dashboard" if from_dashboard?)) %>
 <div class="page-header">
   <div>
     <h1><%= @entry.name %></h1>
@@ -16,7 +16,7 @@
 <% end %>
 <div class="card form-card">
   <div class="card-body">
-    <%= form_with model: @entry, class: "inline-form" do |f| %>
+    <%= form_with model: @entry, url: workout_log_exercise_path(@entry, from: ("dashboard" if from_dashboard?)), class: "inline-form" do |f| %>
       <% if @entry.errors.any? %>
         <div class="alert alert-danger"><%= errors_of(@entry) %>.</div>
       <% end %>
@@ -27,8 +27,8 @@
         <%= f.text_area :notes, rows: 2, placeholder: "Anything to remember about this exercise today (optional)", class: "form-control" %>
       </div>
       <div class="form-actions">
-        <%= f.submit "Save", class: "btn btn-primary" %>
-        <%= link_to "Cancel", workout_log_path(@entry.workout_log_id), class: "btn btn-light" %>
+        <%= f.submit "Save", class: "btn btn-primary", data: { turbo_submits_with: "Saving…" } %>
+        <%= link_to "Cancel", workout_log_path(@entry.workout_log_id, from: ("dashboard" if from_dashboard?)), class: "btn btn-light" %>
       </div>
     <% end %>
   </div>

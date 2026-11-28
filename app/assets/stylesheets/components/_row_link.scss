@@ -13,7 +13,7 @@
   text-decoration: none;
 
   .row-text { display: flex; flex: 1; flex-direction: column; align-items: flex-start; min-width: 0; overflow-wrap: break-word; }
-  .row-chevron { flex-shrink: 0; font-size: .75rem; color: $muted; }
+  .row-chevron { flex-shrink: 0; font-size: $fs-label; color: $muted; }
 
   @media (hover: hover) and (pointer: fine) { &:hover .row-title { color: $blue; } }
 }

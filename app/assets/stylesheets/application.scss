@@ -1,5 +1,6 @@
 // Graphical variables
 @import "config/fonts";
+@import "config/type";
 @import "config/colors";
 @import "config/bootstrap_variables";
 
@@ -8,11 +9,25 @@
 
 // Font Awesome: the core, every icon's class, and the solid and regular styles the views use.
 // Left out: brands and the extras no view uses (spin, stack, lists, borders, rotation, sizes).
+$fa-font-display: swap;
 @import "font-awesome/functions";
 @import "font-awesome/variables";
 @import "font-awesome/mixins";
 @import "font-awesome/core";
-@import "font-awesome/icons";
+// Only the icons the views use: test/lib/icons_test.rb fails when a view names one missing from this list.
+$fa-used-icons: (
+  "arrow-left", "arrow-right", "arrow-up", "arrow-down", "arrows-left-right", "check", "chevron-down",
+  "chevron-left", "chevron-right", "circle-check", "circle-exclamation", "circle-question", "clipboard-list",
+  "clock", "clock-rotate-left", "dumbbell", "ellipsis", "grip-vertical", "house", "layer-group",
+  "note-sticky", "pause", "pen", "person-running", "play", "plus", "right-from-bracket", "stop",
+  "stopwatch", "tag", "trash-can", "users", "xmark"
+);
+
+@each $name in $fa-used-icons {
+  .#{$fa-css-prefix}-#{$name} {
+    #{$fa-icon-property}: unquote("\"#{ map-get($fa-icons, $name) }\"");
+  }
+}
 @import "font-awesome/screen-reader";
 @import "font-awesome/solid";
 @import "font-awesome/regular";

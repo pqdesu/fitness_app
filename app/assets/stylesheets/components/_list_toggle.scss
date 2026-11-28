@@ -12,14 +12,14 @@
   border-top: 1px solid $line;
   background: none;
   color: $blue;
-  font-size: .85rem;
+  font-size: $fs-small;
   font-weight: 600;
 
   // The app's own focus ring, not the browser's (which takes the system's accent colour)
   &:focus { outline: 0; }
   &:focus-visible { outline: 2px solid $blue; outline-offset: 2px; border-radius: .25rem; }
 
-  .fa-chevron-down { transition: transform .2s; }
+  .fa-chevron-down { transition: transform .22s $ease-out; }
   &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
   .when-open, &[aria-expanded="true"] .when-closed { display: none; }
   &[aria-expanded="true"] .when-open { display: inline; }
@@ -40,21 +40,23 @@
   text-align: left;
 
   .group-name { flex: 1; }
-  .fa-chevron-down { color: $muted; font-size: .75rem; transition: transform .2s; }
+  .fa-chevron-down { color: $muted; font-size: $fs-label; transition: transform .22s $ease-out; }
   &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
 }
 
 // The Exercises page: a muscle group per row of the card, its exercises under it
 .exercise-group {
-  padding: .75rem 1.25rem;
+  padding: .875rem 1.25rem;
   border-bottom: 1px solid $line;
   font-weight: 700;
   color: $gray;
 }
 .exercise-group-list { border-bottom: 1px solid $line; }
+// The card's own edge closes the last group
+.exercise-group:last-child, .exercise-group-list:last-child { border-bottom: 0; }
 
 // A card that folds under its header (fold_controller.js): a logged exercise, a day of a split.
 // The arrow turns when open, and a folded card has no line under its header, as nothing follows it.
-.fold-toggle .fa-chevron-down { transition: transform .2s; }
+.fold-toggle .fa-chevron-down { transition: transform .22s $ease-out; }
 .fold-toggle[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
 [data-controller~="fold"] > .card-header:has(+ .collapse:not(.show)) { border-bottom: 0; }

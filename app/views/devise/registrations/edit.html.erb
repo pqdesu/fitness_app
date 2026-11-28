@@ -7,11 +7,11 @@
 </p>
 <div class="d-flex flex-wrap gap-2 mb-4">
   <% if current_user.admin? %>
-    <%= link_to admin_users_path, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-users"></i> Users<% end %>
-    <%= link_to admin_equipment_items_path, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-dumbbell"></i> Equipment<% end %>
-    <%= link_to admin_set_tags_path, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-tag"></i> Set tags<% end %>
+    <%= link_to admin_users_path, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-users" aria-hidden="true"></i> Users<% end %>
+    <%= link_to admin_equipment_items_path, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-dumbbell" aria-hidden="true"></i> Equipment<% end %>
+    <%= link_to admin_set_tags_path, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-tag" aria-hidden="true"></i> Set tags<% end %>
   <% end %>
-  <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-right-from-bracket"></i> Log out<% end %>
+  <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-light btn-sm" do %><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Log out<% end %>
 </div>
 
 <%# Saved as soon as a box is ticked, without the password: only email and password need it. %>
@@ -33,7 +33,7 @@
   <%= f.error_notification %>
 
   <div class="form-inputs">
-    <%= f.input :email, required: true, autofocus: true %>
+    <%= f.input :email, required: true %>
 
     <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
       <p>Currently waiting confirmation for: <%= resource.unconfirmed_email %></p>

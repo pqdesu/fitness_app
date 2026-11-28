@@ -112,7 +112,7 @@ class LoggingFlowTest < FlowTest
     # an invalid set leaves no empty workout behind
     post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: "", weight_used: 80 } }
     assert_redirected_to exercise_page.(planned)
-    assert_match "Reps completed can't be blank", flash[:alert]
+    assert_match "Reps can't be blank", flash[:alert]
     assert_equal 0, @user.workout_logs.count
 
     # sets are numbered automatically and go into today's workout
@@ -159,7 +159,7 @@ class LoggingFlowTest < FlowTest
     assert_select "td span", text: "85.125 kg"
     assert_select "input[name='workout_set[weight_used]'][value='85.125']"
     patch on_exercise_page, params: { workout_set: { reps_completed: "", weight_used: 85 } }
-    assert_match "Set not updated: Reps completed can't be blank", flash[:alert]
+    assert_match "Set not updated: Reps can't be blank", flash[:alert]
     assert_equal 5, second.reload.reps_completed
     # without it (the logged workout page), the set's workout is where the user goes back to
     patch workout_set_path(second), params: { workout_set: { reps_completed: 5, weight_used: 85, notes: "" } }
@@ -329,7 +329,7 @@ class LoggingFlowTest < FlowTest
 
     get workout_log_path(log)
     assert_select "h2", "Bench press"
-    assert_select "h2", "From this day, not in this workout"
+    assert_select "h2", "Still to do"
     # each exercise is folded: its name, sets and heaviest set, and an arrow that opens the rest
     card = "#entry-#{entry.id}[data-controller=fold]"
     assert_select "#{card} .card-header .top-set", "80 kg × 8 reps"
@@ -368,7 +368,7 @@ class LoggingFlowTest < FlowTest
     assert_equal "Dips", @user.exercises.sole.name
     # every exercise of the day is in the workout, so none is offered again
     get workout_log_path(log)
-    assert_select "h2", text: "From this day, not in this workout", count: 0
+    assert_select "h2", text: "Still to do", count: 0
 
     # the equipment of a logged exercise can be changed without touching the day, and a note added
     get edit_workout_log_exercise_path(entry)
@@ -392,7 +392,7 @@ class LoggingFlowTest < FlowTest
     assert_equal ["Squat"], log.workout_log_exercises.pluck(:name)
     assert_equal [planned, unused], day.workout_exercises.order(:id).to_a
     get workout_log_path(log)
-    assert_select "h2", "From this day, not in this workout"
+    assert_select "h2", "Still to do"
     assert_select "ul.list-rows .row-title", text: "Bench press"
     assert_select "ul.list-rows .row-title", text: "Dips", count: 0
     delete workout_log_path(log)
@@ -514,7 +514,7 @@ class LoggingFlowTest < FlowTest
         post workout_exercise_workout_sets_path(planned), params: { workout_set: { reps_completed: reps, weight_used: 60 } }
       end
       assert_redirected_to workout_exercise_path(planned, date: Date.current)
-      assert_match "Reps completed must be less than or equal to #{WorkoutSet::MAX_REPS}", flash[:alert]
+      assert_match "Reps must be less than or equal to #{WorkoutSet::MAX_REPS}", flash[:alert]
     end
     # the refused set did not leave an empty workout behind
     assert_equal 0, @user.workout_logs.count
@@ -584,7 +584,7 @@ class LoggingFlowTest < FlowTest
     # a weight below zero is only for bodyweight
     bench = day.workout_exercises.create!(exercise: @bench)
     post workout_exercise_workout_sets_path(bench, date: Date.current), params: { workout_set: { reps_completed: 5, weight_used: -5 } }
-    assert_match "Weight used must be greater than or equal to 0", flash[:alert]
+    assert_match "Weight must be greater than or equal to 0", flash[:alert]
     get workout_exercise_path(bench, date: Date.current)
     assert_select "input#weight_workout_exercise_#{bench.id}[min='0']", 1
     assert_select ".input-group[data-controller=sign]", 0

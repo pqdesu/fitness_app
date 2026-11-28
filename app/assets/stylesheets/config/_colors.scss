@@ -4,8 +4,6 @@
 // the page background, and white on it reads at 5.2:1 too (WCAG AA asks 4.5:1).
 $red: #CE2C31;
 $blue: #4F46E5;      // primary (indigo)
-$notice: #3E63DD;    // notices (Bootstrap's "info")
-$orange: #F76B15;
 $green: #12A594;
 $gray: #1C2024;      // body text
 $light-gray: #F6F7F9; // page background
@@ -35,6 +33,6 @@ $rest-text: #8A5A00;
 // lighter weight than the month's own days keeps them secondary.
 $outside-day: $muted;
 // A day trained that the plan did not have (calendar and week): a light ring, lighter than the blue of a planned day.
-$extra-ring: #8C93F0;
+$extra-ring: #6E76EA;
 // The halo drawn around a day of the calendar or the week when it is pointed at.
 $hover-halo: color-mix(in srgb, #{$blue} 35%, transparent);

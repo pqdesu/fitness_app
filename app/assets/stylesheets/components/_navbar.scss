@@ -1,6 +1,5 @@
 .app-navbar {
-  background: rgba($surface, .92);
-  backdrop-filter: blur(8px);
+  background: rgba($surface, .97);
   border-bottom: 1px solid $line;
   padding-top: calc(.625rem + env(safe-area-inset-top));
   padding-bottom: .625rem;
@@ -17,7 +16,7 @@
   .nav-link {
     font-weight: 500;
     color: $muted;
-    border-radius: .5rem;
+    border-radius: $border-radius;
     padding: .375rem .75rem;
 
     @media (hover: hover) and (pointer: fine) { &:hover { color: $gray; } }
@@ -29,7 +28,7 @@
   .navbar-page-title {
     font-family: $headers-font;
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: $fs-title;
     line-height: 2.75rem;
     color: $gray;
   }
@@ -56,10 +55,10 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border-radius: .625rem;
+  border-radius: $border-radius;
   background: $blue;
   color: white;
-  font-size: .9rem;
+  font-size: $fs-small;
 }
 
 .user-initial {
@@ -71,5 +70,5 @@
   background: $primary-soft;
   color: $blue;
   font-weight: 600;
-  font-size: .8rem;
+  font-size: $fs-label;
 }

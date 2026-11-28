@@ -15,7 +15,8 @@ export default class extends Controller {
     this.sortable = Sortable.create(this.element, {
       handle: ".drag-handle",
       draggable: "[data-sortable-url], [data-sortable-into-url]",
-      animation: 150,
+      animation: 200,
+      easing: "cubic-bezier(0.23, 1, 0.32, 1)",
       sort: this.sortValue,
       // Only an item that has an address into the other list can be dropped there.
       group: this.hasGroupValue ? { name: this.groupValue, put: (_to, _from, item) => "sortableIntoUrl" in item.dataset } : undefined,

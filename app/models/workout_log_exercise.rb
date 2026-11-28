@@ -24,6 +24,20 @@ class WorkoutLogExercise < ApplicationRecord
     workout_sets.max_by { |set| [set.weight_used || 0, set.reps_completed] }
   end
 
+  # Entries with a set or a cardio row.
+  scope :with_entries, lambda {
+    where(id: WorkoutSet.select(:workout_log_exercise_id)).or(where(id: CardioEntry.select(:workout_log_exercise_id)))
+  }
+
+  # The user's latest logged entry of an exercise with sets, on a workout dated before a day.
+  def self.previous_for(user, exercise_id, before:)
+    return if exercise_id.nil?
+
+    joins(:workout_log).where(exercise_id:, workout_logs: { user_id: user.id, date: ...before })
+                       .where(id: WorkoutSet.select(:workout_log_exercise_id))
+                       .order("workout_logs.date DESC, workout_log_exercises.id DESC").first
+  end
+
   # Its rows keep it cardio once its exercise is deleted or moved out of the Cardio group.
   def cardio? = exercise&.cardio? || cardio_entries.any?
 

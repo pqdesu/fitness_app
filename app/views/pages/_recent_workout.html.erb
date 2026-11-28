@@ -1,7 +1,7 @@
 <%#
   One recent workout as a dropdown. The summary row opens a panel with the exercises, each as a
   pill showing its heaviest set; a pill opens that exercise's sets. "Open workout" is the only
-  link out. Locals: log (loaded with its exercises and sets).
+  link out. Locals: log (loaded with its exercises and sets), active_split (its chip is left out: it says nothing there).
 %>
 <% panel_id = "recent-log-#{log.id}" %>
 <% lifts = log.workout_log_exercises.to_a %>
@@ -11,19 +11,19 @@
           aria-expanded="false" aria-controls="<%= panel_id %>">
     <span class="recent-summary">
       <span class="row-title"><%= log.workout %></span>
-      <span class="text-muted small"><%= l log.date, format: :long %> · <%= sets_and_time(summary.sets, summary.cardio_seconds) %></span>
+      <span class="text-muted small"><%= short_date log.date %> · <%= lifts.empty? ? empty_log_label(log) : sets_and_time(summary.sets, summary.cardio_seconds) %></span>
     </span>
-    <% if log.rest_day? || log.workout_day %>
+    <% if log.rest_day? || (log.workout_day && log.workout_day.split != active_split) %>
       <span class="recent-chips">
         <% if log.rest_day? %><span class="chip chip-rest">Rest day</span><% end %>
-        <% if log.workout_day %><span class="chip" title="<%= log.workout_day.split.name %>"><%= log.workout_day.split.name %></span><% end %>
+        <% if log.workout_day && log.workout_day.split != active_split %><%= split_chip log.workout_day.split, active_split %><% end %>
       </span>
     <% end %>
     <i class="fa-solid fa-chevron-down recent-chevron" aria-hidden="true"></i>
   </button>
 
   <div class="collapse recent-panel" id="<%= panel_id %>">
-    <p class="recent-counts"><%= summary_counts(summary) %></p>
+    <p class="recent-counts"><%= lifts.empty? ? empty_log_label(log) : summary_counts(summary) %></p>
     <% if (time = workout_time(log)) %><p class="recent-counts"><i class="fa-regular fa-clock" aria-hidden="true"></i> <%= time %></p><% end %>
 
     <% if lifts.empty? %>

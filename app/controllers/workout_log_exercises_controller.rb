@@ -18,7 +18,7 @@ class WorkoutLogExercisesController < ApplicationController
     else
       workout_log = current_user.workout_logs.find(params[:workout_log_id])
     end
-    back ||= workout_log_path(workout_log)
+    back ||= workout_log_page(workout_log)
     @workout_log = workout_log # for cardio_workout?, which narrows what can be picked
 
     if params[:workout_exercise_id].present?
@@ -37,7 +37,7 @@ class WorkoutLogExercisesController < ApplicationController
       entries.first.move!(params[:to])
       flash[:moved] = entries.first.id
     end
-    redirect_to(workout_day ? back : workout_log_path(workout_log, anchor: "entry-#{entries.first.id}"),
+    redirect_to(workout_day ? back : workout_log_page(workout_log, anchor: "entry-#{entries.first.id}"),
                 notice: "#{entries.map(&:name).to_sentence} added to this workout.")
   rescue ActiveRecord::RecordInvalid => e
     redirect_to back, alert: "Nothing added: #{errors_of(e.record)}."
@@ -55,7 +55,7 @@ class WorkoutLogExercisesController < ApplicationController
       redirect_to workout_exercise_path(planned, date: text_param(:date).presence),
                   **(saved ? { notice: "Note saved." } : { alert: "Note not saved: #{errors_of(@entry)}." })
     elsif @entry.update(entry_params)
-      redirect_to workout_log_path(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), notice: "#{@entry.name} updated."
+      redirect_to workout_log_page(@entry.workout_log_id, anchor: "entry-#{@entry.id}"), notice: "#{@entry.name} updated."
     else
       render :edit, status: :unprocessable_content
     end
@@ -88,7 +88,7 @@ class WorkoutLogExercisesController < ApplicationController
     workout_day = current_user.workout_days.find_by(id: params[:workout_day_id]) if params[:workout_day_id].present?
     return workout_day_path(workout_day, date: text_param(:date).presence) if workout_day
 
-    workout_log_path(@entry.workout_log_id, anchor: ("entry-#{@entry.id}" if @entry.persisted?))
+    workout_log_page(@entry.workout_log_id, anchor: ("entry-#{@entry.id}" if @entry.persisted?))
   end
 
   def set_entry

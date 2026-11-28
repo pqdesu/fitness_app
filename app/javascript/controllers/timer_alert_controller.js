@@ -10,7 +10,7 @@ import { Turbo } from "@hotwired/turbo-rails"
 const REOPEN = "timer-alert-reopen"
 
 export default class extends Controller {
-  static targets = ["detail", "primary", "secondary"]
+  static targets = ["detail", "icon", "primary", "secondary"]
   static values = { paused: Boolean, leave: Boolean, url: String }
 
   connect() {
@@ -77,6 +77,8 @@ export default class extends Controller {
     this.primaryTarget.textContent = leaving ? "Stop timer" : "Resume"
     this.primaryTarget.className = `btn ${leaving ? "btn-danger" : "btn-primary"}`
     this.secondaryTarget.textContent = "Keep paused"
+    // Stopping it is a stop; the box opens with the pause that explains why it asks.
+    this.iconTarget.className = `fa-solid ${leaving ? "fa-stop" : "fa-pause"}`
     this.choice = null
 
     // Answered once the box has closed, so Turbo never caches the page with it open.

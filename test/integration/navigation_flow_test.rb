@@ -63,7 +63,7 @@ class NavigationFlowTest < FlowTest
 
     get workout_logs_path
     assert_select "td.history-summary.d-md-none" do
-      assert_select "a", text: "November 16, 2026"
+      assert_select "a", text: ApplicationController.helpers.short_date(Date.new(2026, 11, 16))
       assert_select ".history-line", text: /Push/
       assert_select ".history-line .chip", text: "PPL"
       assert_select ".history-counts", text: "1 exercise · 2 sets"
@@ -80,14 +80,14 @@ class NavigationFlowTest < FlowTest
 
     get workout_logs_path
     assert_select "table.app-table tbody tr", 20
-    assert_select "td a", text: "January 25, 2026"
+    assert_select "td a", text: ApplicationController.helpers.short_date(Date.new(2026, 1, 25))
     assert_select ".pagination-bar", text: /Page 1 of 2/
     assert_select ".pagination-bar a[rel=next][href=?]", workout_logs_path(page: 2)
     assert_select ".pagination-bar a[rel=prev]", 0
 
     get workout_logs_path(page: 2)
     assert_select "table.app-table tbody tr", 5
-    assert_select "td a", text: "January 01, 2026"
+    assert_select "td a", text: ApplicationController.helpers.short_date(Date.new(2026, 1, 1))
     assert_select ".pagination-bar a[rel=prev][href=?]", workout_logs_path(page: 1)
     # a page that does not exist shows the nearest one
     get workout_logs_path(page: 99)
@@ -216,5 +216,33 @@ class NavigationFlowTest < FlowTest
     sign_in @user
     get root_path
     assert_select "#confirm-modal [data-confirm-icon].confirm-icon i.fa-trash-can"
+  end
+
+  test "a workout opened from Home stays opened from Home through its saves, so Back and Delete return there" do
+    sign_in @user
+    log = @user.workout_logs.create!(workout: "Push", date: Date.current - 1)
+    entry = log.workout_log_exercises.create!(exercise: @bench)
+    page = workout_log_path(log, from: "dashboard")
+    from_home = { "Referer" => "http://www.example.com#{page}" }
+
+    # its own forms post without from=; the page they came from carries it back
+    patch workout_log_path(log), params: { workout_log: { notes: "Felt strong" } }, headers: from_home
+    assert_redirected_to page
+    post workout_log_exercise_workout_sets_path(entry), params: { workout_set: { reps_completed: 8, weight_used: 80 } }, headers: from_home
+    assert_redirected_to workout_log_path(log, from: "dashboard", anchor: "entry-#{entry.id}")
+
+    # the exercise's Edit page keeps it in its link, form, Cancel and back arrow
+    get page
+    edit = edit_workout_log_exercise_path(entry, from: "dashboard")
+    assert_select ".actions-menu a[href=?]", edit
+    get edit
+    assert_select "form[action=?]", workout_log_exercise_path(entry, from: "dashboard")
+    assert_select "a.btn[href=?]", page, text: "Cancel"
+    patch workout_log_exercise_path(entry, from: "dashboard"), params: { workout_log_exercise: { notes: "Seat 4" } }
+    assert_redirected_to workout_log_path(log, from: "dashboard", anchor: "entry-#{entry.id}")
+
+    # opened from History, nothing is added
+    patch workout_log_path(log), params: { workout_log: { notes: "Again" } }, headers: { "Referer" => "http://www.example.com#{workout_log_path(log)}" }
+    assert_redirected_to workout_log_path(log)
   end
 end

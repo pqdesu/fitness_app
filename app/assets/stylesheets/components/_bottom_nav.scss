@@ -23,14 +23,16 @@ $bottom-nav-height: 3.75rem;
   color: $muted;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-  transition: color .15s, transform .1s;
+  transition: color .15s, transform .16s $ease-out;
+  -webkit-touch-callout: none;
+  user-select: none;
 
-  &:active { transform: scale(.94); }
+  &:active { transform: scale(.96); }
 
   &:focus-visible {
     outline: 2px solid $blue;
     outline-offset: -4px;
-    border-radius: .75rem;
+    border-radius: $border-radius;
   }
 
   // The active tab: blue, a bolder label, and its icon on a soft pill (the top navbar's active look),
@@ -50,9 +52,9 @@ $bottom-nav-height: 3.75rem;
   height: 1.875rem;
   border-radius: 999px;
   font-size: 1.15rem;
-  transition: background-color .15s;
+  transition: background-color .15s ease-out;
 
-  .user-initial { width: 1.5rem; height: 1.5rem; font-size: .7rem; }
+  .user-initial { width: 1.5rem; height: 1.5rem; font-size: $fs-label; }
 }
 
 // Room under each page for the bar, so its last button is not hidden behind it.

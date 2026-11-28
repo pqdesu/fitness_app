@@ -1,11 +1,10 @@
 <% back_to root_path if from_dashboard? %>
 <div class="page-header">
   <div>
-    <p class="eyebrow">Programs</p>
     <h1>Your splits</h1>
     <% if @splits.size > 1 %><p class="text-muted small mb-0">The active split is the one your dashboard follows.</p><% end %>
   </div>
-  <%= link_to new_split_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> New split<% end %>
+  <%= link_to new_split_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus" aria-hidden="true"></i> New split<% end %>
 </div>
 
 <% if @splits.empty? %>
@@ -17,7 +16,7 @@
         <% active = split == @active_split %>
         <div class="<%= class_names("card card-link split-card", "is-active": active) %>">
           <div class="card-body">
-            <% if active %><span class="badge badge-soft split-active-badge"><i class="fa-solid fa-circle-check"></i> Active</span><% end %>
+            <% if active %><span class="badge badge-soft split-active-badge"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Active</span><% end %>
             <h2><%= link_to split.name, split, class: "stretched-link" %></h2>
             <p class="text-muted small"><%= pluralize(split.workout_days.size, "workout day") %></p>
             <div class="chip-row">

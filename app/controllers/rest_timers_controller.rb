@@ -45,7 +45,7 @@ class RestTimersController < ApplicationController
     path = if planned
       workout_exercise_path(planned, date: text_param(:date).presence)
     else
-      workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
+      workout_log_page(entry.workout_log_id, anchor: "entry-#{entry.id}")
     end
     redirect_to path, status: :see_other
   end

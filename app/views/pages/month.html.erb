@@ -3,12 +3,11 @@
 <% back_to root_path %>
 <div class="page-header">
   <div>
-    <p class="eyebrow">Month</p>
     <h1><%= l dashboard.today, format: "%B %Y" %></h1>
   </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-3">
   <div class="col-lg-5">
     <%= render "calendar", today: dashboard.today, weeks: dashboard.calendar_weeks, logs_by_date: dashboard.calendar_logs, states: dashboard.calendar_states, day_states: dashboard.day_states, foldable: false %>
   </div>
@@ -17,7 +16,7 @@
     <% if summary.workouts.zero? %>
       <div class="card">
         <div class="empty-state">
-          <i class="fa-solid fa-clipboard-list"></i>
+          <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
           <p>No workouts logged this month.</p>
         </div>
       </div>
@@ -45,7 +44,7 @@
           <% summary.by_exercise.each do |name, sets, top_weight, cardio_seconds| %>
             <li>
               <span><%= name %></span>
-              <span class="text-muted small"><%= [sets_and_time(sets, cardio_seconds), (("#{weight_number(top_weight)} kg") if top_weight)].compact.join(" · ") %></span>
+              <span class="text-muted small"><%= time_parts([*sets_and_time_parts(sets, cardio_seconds), (("#{weight_text(top_weight)} kg") if top_weight)]) %></span>
             </li>
           <% end %>
         </ul>

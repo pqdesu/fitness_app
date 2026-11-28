@@ -12,6 +12,10 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 
 ## Home page
 
+### A very heavy top weight is shown smaller and broken after its comma
+
+- From `design-audit-polish`: the "This week" and Month "Top weight" tiles are a quarter of the card wide. A top weight of 10,000 kg or more (more than seven characters, such as "99,999.125") is shown a size smaller and may break onto a second line after its thousands comma ("99," / "999.125") so the page does not scroll sideways. Real weights never get there; seen only with the audit's test value.
+
 ### The Home page seen only on a rest day, in headless Chrome
 
 - From `today-dashboard-consolidation`: the merged Home page was checked at 390 px and 1280 px in headless Chrome, on a rest day only (the development data's Tuesday). Not seen: a day with a planned workout (Start workout or Continue beside the title, today's sets), a user with no split, and a real phone. On a phone the Exercises button sits on its own line under the long date heading. From desktop width, Recent workouts sits under the right column, so a calendar taller than the Today box and the split card together would leave a gap above it; not seen with real data.
@@ -33,6 +37,10 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 - From `calendar-month-and-missed-days`: headless Chrome reports no hover, so the halo was only checked by forcing its rule on (the rule's `(hover: hover)` wrapper itself was not exercised). Tapping a missed day on a real phone, and the dotted look at 390 px on a real screen, were not tried.
 
 ## Exercise page
+
+### "Last time" needs the exercise to still exist
+
+- From `design-audit-polish`: the exercise page's "Last time · Wed 18 Nov: …" line finds the previous session by the exercise (`exercise_id`). A plan row whose exercise was deleted from the catalogue has no exercise, so it shows no "Last time", even though older workouts with that name exist. Not seen with real data.
 
 ### Saving a set or a note can still jump to the top
 
@@ -127,6 +135,30 @@ Risks a branch knowingly left behind: not seen as a bug yet, but they could beco
 - From `exercise-picker-delete`: the × and the confirm box over "Add exercises" were checked in Chrome at 390 px inside a frame, not with device emulation or on a phone. Not verified: how easy the × is to hit with a thumb next to the row's checkbox, and the pop-up on the split page, a logged workout and a new workout (same partial, only the workout day's was opened).
 
 ## General
+
+### The back button counts addresses that differ only by from= or date= as one page
+
+- From `design-audit-polish`: so that a save which comes back to its own page never adds a Back step, `back_trail.js` treats two addresses that differ only by `from=` or `date=` as the same page. History's day list (`/workout_logs?date=…`) and the full History list are therefore one page for Back, and so are one workout day opened for two dates in a row: Back goes past both to the page before. Only reached from Home's calendar today, so Back still goes Home; not tried with other paths.
+
+### "Back to Home" after an edit relies on the browser's referer
+
+- From `design-audit-polish`: a change made on a logged workout opened from Home (Save details, Add set, a cardio row, the rest timer) returns with `?from=dashboard` kept by reading the request's referer (`ApplicationController#workout_log_page`). A browser or extension that sends no referer falls back to the address without it, so that workout's Delete then returns to History, not Home (the back button still works, see above).
+
+### Calves moved to Legs for good; master still offers Calves until merged
+
+- From `design-audit-polish`: the migration `MoveCalvesToLegs` changed every Calves exercise in the shared development database to Legs (only "Calf raise"), and cannot be undone (which Legs exercises were Calves is not kept). Until this branch is merged, the `master` folder still lists Calves: an exercise created there as Calves fails its muscle-group check on this branch until it is edited.
+
+### The installable app not tried on a phone
+
+- From `design-audit-polish`: the manifest (`/manifest`), the icons (`public/icon*.png`, maskable 512) and the `apple-mobile-web-app-*` tags were checked only by loading them in headless Chrome. Adding the app to an iPhone or Android home screen, the icon's look there and the full-screen launch were not tried. There is no service worker, so the app does not open offline.
+
+### An icon missing from the Font Awesome list shows blank
+
+- From `design-audit-polish`: Font Awesome is built only with the icons in `$fa-used-icons` (`application.scss`). An icon added in a view or helper but not to that list renders as an empty square. `test/lib/icons_test.rb` catches the names it can read (`fa-…` literals, `icon_tag`, `icon:` and the nav icons); an icon name built another way would slip past it.
+
+### Larger text everywhere checked only on the main pages
+
+- From `design-audit-polish`: the base text went from 15px to 16px with one type scale. Home, the workout day, the exercise page, logged workouts, History, Month, Splits and Account were checked at 390px, 320px and 200% text with no sideways scroll; the admin pages, the forms (new/edit split, workout day, exercise), Edit timer and the sign-up pages were only seen at 390px or not at all.
 
 ### Touch and phone fixes not tried on a phone
 

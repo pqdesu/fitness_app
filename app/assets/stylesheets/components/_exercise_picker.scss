@@ -1,11 +1,11 @@
 // "Add exercises" modal
-.modal-title { font-size: 1.15rem; margin: 0; }
+.modal-title { font-size: $fs-title; margin: 0; }
 
 .picker-group {
   margin: 0;
   padding: 0;
   border-bottom: 1px solid $line;
-  font-size: .75rem;
+  font-size: $fs-label;
   font-weight: 700;
   letter-spacing: .04em;
   text-transform: uppercase;

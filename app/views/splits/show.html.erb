@@ -8,7 +8,7 @@
   </div>
   <div class="header-actions">
     <% if @split.active? %>
-      <span class="badge badge-soft split-active-badge align-self-center"><i class="fa-solid fa-circle-check"></i> Active split</span>
+      <span class="badge badge-soft split-active-badge align-self-center"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Active split</span>
     <% else %>
       <%= button_to "Set as active", activate_split_path(@split), method: :patch, class: "btn btn-primary" %>
     <% end %>
@@ -65,7 +65,7 @@
                 <% if we.exercise&.muscle_group.present? %><span class="text-muted small"><%= we.exercise.muscle_group %></span><% end %>
               </div>
               <%= button_to workout_exercise_path(we), method: :delete, class: "btn btn-link btn-sm text-danger",
-                    "aria-label": "Remove #{we.name} from #{day.day}", title: "Remove #{we.name} from #{day.day}" do %><i class="fa-solid fa-xmark"></i><% end %>
+                    "aria-label": "Remove #{we.name} from #{day.day}", title: "Remove #{we.name} from #{day.day}" do %><i class="fa-solid fa-xmark" aria-hidden="true"></i><% end %>
             </li>
           <% end %>
         </ul>

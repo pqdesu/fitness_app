@@ -3,7 +3,8 @@
 // when the tab closes.
 //
 // Every page load (a link, a form's redirect, the browser's own Back) updates the trail:
-// - the same page again (a reload, or a form that redirects to its own page) changes nothing;
+// - the same page again (a reload, or a form that redirects to its own page, even with another
+//   from= or date=) changes nothing;
 // - the page before the current one (the browser's Back, or a link to it) steps back to it;
 // - any other page is added at the end.
 // A page is "skipped" when it is a form (new, edit: body data-back-skip): after saving, back goes
@@ -13,6 +14,18 @@ const LIMIT = 50
 
 function here() {
   return window.location.pathname + window.location.search
+}
+
+// One page, whatever its from= (where it was opened from) and date= (the day it logs on): a save that
+// comes back with either changed is the same page again, not a new one to step back through.
+function samePage(a, b) {
+  const page = (url) => {
+    const { pathname, searchParams } = new URL(url, window.location.origin)
+    searchParams.delete("from")
+    searchParams.delete("date")
+    return pathname + searchParams.toString()
+  }
+  return a !== undefined && b !== undefined && page(a) === page(b)
 }
 
 function read() {
@@ -37,9 +50,10 @@ function record() {
   const skip = document.body.dataset.backSkip === "true"
   const last = trail.length - 1
 
-  if (trail[last]?.url === url) {
+  if (samePage(trail[last]?.url, url)) {
+    // the page keeps the first address it was opened with (?from=dashboard stays)
     trail[last].skip = skip
-  } else if (trail[last - 1]?.url === url) {
+  } else if (samePage(trail[last - 1]?.url, url)) {
     trail.pop()
   } else {
     trail.push({ url, skip })
@@ -70,7 +84,7 @@ export function takePreviousPage() {
   const current = here()
   for (let index = trail.length - 1; index >= 0; index--) {
     const { url, skip } = trail[index]
-    if (url !== current && !skip) {
+    if (!samePage(url, current) && !skip) {
       write(trail.slice(0, index + 1))
       return url
     }

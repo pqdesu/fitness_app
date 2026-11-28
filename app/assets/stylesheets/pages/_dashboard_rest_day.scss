@@ -2,5 +2,5 @@
 .today-start { padding: 0 1.25rem 1.25rem; margin-top: 0; }
 // By its own class, not .collapse: Bootstrap swaps .collapse for .collapsing while it opens, and the
 // text would lose its size and padding for the length of the animation.
-.rest-day-choices > .today-last { margin: .25rem 0 .5rem; padding: 0 1.25rem; font-size: .8rem; font-weight: 600; color: $muted; }
+.rest-day-choices > .today-last { margin: .25rem 0 .5rem; padding: 0 1.25rem; font-size: $fs-label; font-weight: 600; color: $muted; }
 .today > .today-last + .today-start { margin-top: .5rem; }

@@ -5,7 +5,7 @@ $font-family-sans-serif: $body-font;
 $headings-font-family:   $headers-font;
 $headings-font-weight:   700;
 $body-bg:                $light-gray;
-$font-size-base:         .9375rem;
+$font-size-base:         $fs-body;
 
 // Form fields stay at 16px, small ones too: Safari on an iPhone zooms the page into any field
 // whose text is smaller, so every weight or reps typed at the gym would zoom it.
@@ -16,21 +16,26 @@ $input-font-size-sm:     1rem;
 $body-color: $gray;
 $primary:    $blue;
 $success:    $green;
-$info:       $notice;
+$info:       $blue;
 $danger:     $red;
-$warning:    $orange;
+$warning:    $red;
 $text-muted: $muted;
+// One muted grey for .text-muted, placeholders and the secondary colour (4.7:1 on white)
+$body-secondary-color:   $muted;
+$input-placeholder-color: $muted;
+$secondary:  $muted;
 $border-color: $line;
 
 // Radius
-$border-radius-sm:            .5rem;
+// Three radii: 10px for controls, 16px for cards, sheets and the flash, a pill for chips and badges
+$border-radius-sm:            .625rem;
 $border-radius:               .625rem;
-$border-radius-lg:            .875rem;
+$border-radius-lg:            1rem;
 $border-radius-xl:            1rem;
-$border-radius-xxl:           1.5rem;
+$border-radius-xxl:           1rem;
 
 // Components
-$card-border-color:   $line;
+$card-border-color:   rgba($shadow, .08); // cards have a border and no shadow
 $card-border-radius:  1rem;
 $card-cap-bg:         transparent;
 $card-spacer-x:       1.25rem;
@@ -47,8 +52,23 @@ $focus-ring-width:    .2rem;
 $table-border-color:  $line;
 $table-bg:            transparent; // tables show the white card they sit in, not the page grey
 $dropdown-border-color: $line;
-// Badges (Active, Admin): 12px, the smallest text in the app (Bootstrap's .75em would be 11.25px)
+// Badges (Active, Admin): 12px (Bootstrap's .75em would be 11.25px)
 $badge-font-size:     .8em;
+
+// Form labels: one style everywhere, inline forms included
+$form-label-font-size:     $fs-meta;
+$form-label-font-weight:   600;
+$form-label-color:         $muted;
+$form-label-margin-bottom: .375rem;
+
+// Close button: 16px icon with 14px around it is a 44px target
+$btn-close-padding-x:      .875rem;
+$btn-close-padding-y:      .875rem;
+
+// Motion: the app's ease-out (config/type)
+$transition-collapse:      height .22s $ease-out;
+$modal-fade-transform:     scale(.96);
+$modal-transition:         transform .2s $ease-out;
 
 // Modals: the page behind is tinted with the body text colour rather than pure black
 $modal-backdrop-bg:      $gray;

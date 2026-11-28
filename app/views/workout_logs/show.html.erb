@@ -7,14 +7,11 @@
 <% else %>
   <% back_to workout_logs_path %>
 <% end %>
+<% content_for :title, "#{@workout_log.workout} workout · #{short_date(@workout_log.date)}" %>
 <div class="page-header">
   <div>
     <h1><%= @workout_log.workout %> workout</h1>
-    <p class="text-muted mb-0"><%= l @workout_log.date, format: :long %><% if @workout_log.rest_day? %> <span class="chip chip-rest">Rest day, trained anyway</span><% end %></p>
-  </div>
-  <div class="header-actions">
-    <%= button_to "Delete workout", workout_log_path(@workout_log, from: ("dashboard" if from_dashboard?)), method: :delete, class: "btn btn-outline-danger",
-          form: { data: { turbo_confirm: "Delete this workout and all its sets?" } } %>
+    <p class="text-muted mb-0"><%= short_date @workout_log.date %><% if @workout_log.rest_day? %> <span class="chip chip-rest">Rest day, trained anyway</span><% end %></p>
   </div>
 </div>
 
@@ -28,13 +25,13 @@
 <%= render "workout_sets/rest_alert" %>
 <%= render "workout_logs/timer_alert", log: @workout_log, leave: true unless cardio_workout %>
 
-<div class="row g-4">
+<div class="row g-3">
   <%# Its exercises and sets are this workout: their links are not leaving it (workout_logs/_timer_alert). %>
   <div class="col-lg-8" data-stays-in-workout>
     <% if @log_exercises.empty? %>
       <div class="card">
         <div class="empty-state">
-          <i class="fa-solid fa-dumbbell"></i>
+          <i class="fa-solid fa-dumbbell" aria-hidden="true"></i>
           <p>This workout has no exercises yet. Add the first one below.</p>
         </div>
       </div>
@@ -57,12 +54,13 @@
           <span class="drag-handle" title="Drag to reorder" aria-hidden="true"><%= icon_tag "grip-vertical" %></span>
           <div>
             <h2><%= entry.name %></h2>
-            <p class="text-muted small mb-0"><%= entry.equipment_label %><% if entry.exercise&.unilateral? %> · Unilateral<% end %><% if top %>&nbsp;· <span class="text-nowrap">Top <span class="top-set"><%= weight_and_reps(top) %></span></span><% end %> <span class="chip"><%= entry_done(entry) %></span></p>
-            <% if entry.notes.present? %><p class="entry-note small mb-0"><i class="fa-regular fa-note-sticky"></i> <%= entry.notes %></p><% end %>
+            <p class="text-muted small mb-0"><%= time_parts([entry.equipment_label, ("Unilateral" if entry.exercise&.unilateral?),
+                (safe_join(["Top ", tag.span(weight_and_reps(top), class: "top-set")]) if top)]) %> <span class="chip"><%= entry_done(entry) %></span></p>
+            <% if entry.notes.present? %><p class="entry-note small mb-0"><i class="fa-regular fa-note-sticky" aria-hidden="true"></i> <%= entry.notes %></p><% end %>
           </div>
           <div class="entry-meta">
             <%= actions_menu entry.name do %>
-              <%= menu_link "Edit", edit_workout_log_exercise_path(entry) %>
+              <%= menu_link "Edit", edit_workout_log_exercise_path(entry, from: ("dashboard" if from_dashboard?)) %>
               <% if i.positive? %><%= menu_button "Move up", move_workout_log_exercise_path(entry, to: "up"), icon: "arrow-up" %><% end %>
               <% if i < @log_exercises.size - 1 %><%= menu_button "Move down", move_workout_log_exercise_path(entry, to: "down"), icon: "arrow-down" %><% end %>
               <%= menu_delete "Remove from workout", workout_log_exercise_path(entry), confirm: "Remove #{entry.name} and its sets from this workout?" %>
@@ -98,7 +96,7 @@
 
     <% if @unlogged_exercises.any? %>
       <div class="card">
-        <div class="card-header"><h2>From this day, not in this workout</h2></div>
+        <div class="card-header"><h2>Still to do</h2></div>
         <ul class="list-rows">
           <% @unlogged_exercises.each do |we| %>
             <li>
@@ -129,11 +127,17 @@
             <%= f.label :notes, class: "form-label" %>
             <%= f.text_area :notes, rows: 4, placeholder: "How did it go?", class: "form-control" %>
           </div>
-          <%= f.submit "Save details", class: "btn btn-light w-100" %>
+          <%= f.submit "Save details", class: "btn btn-light w-100", data: { turbo_submits_with: "Saving…" } %>
         <% end %>
       </div>
     </div>
   </div>
+</div>
+
+<%# Last on the page, away from the actions used while training. %>
+<div class="text-center mt-4">
+  <%= button_to "Delete workout", workout_log_path(@workout_log, from: ("dashboard" if from_dashboard?)), method: :delete, class: "btn btn-link text-danger",
+        form: { class: "delete-workout", data: { turbo_confirm: "Delete this workout and all its sets?" } } %>
 </div>
 
 <%= render "shared/exercise_picker", url: workout_log_workout_log_exercises_path(@workout_log),

@@ -5,21 +5,20 @@
 <% end %>
 <div class="page-header">
   <div>
-    <p class="eyebrow">History</p>
-    <h1><%= @date ? "Workouts on #{l @date, format: :long}" : "Logged workouts" %></h1>
+    <h1><%= @date ? "Workouts on #{short_date @date}" : "Logged workouts" %></h1>
   </div>
 </div>
 
 <div class="card">
   <% if @workout_logs.empty? && @date %>
     <div class="empty-state">
-      <i class="fa-solid fa-clipboard-list"></i>
+      <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
       <p>No workouts were logged on this day.</p>
       <%= link_to "All logged workouts", workout_logs_path, class: "btn btn-primary" %>
     </div>
   <% elsif @workout_logs.empty? %>
     <div class="empty-state">
-      <i class="fa-solid fa-clipboard-list"></i>
+      <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
       <p>No workouts logged yet. Open a workout day in one of your splits, open an exercise and add your first set.</p>
       <%= link_to "Go to splits", splits_path, class: "btn btn-primary" %>
     </div>
@@ -44,18 +43,18 @@
             <% rest_chip = capture do %><% if log.rest_day? %> <span class="chip chip-rest">Rest day</span><% end %><% end %>
             <%# The timer's line, with a pen to correct when it finished (a timer left running too long). %>
             <% timer_pen = capture do %><% if log.started_at %><%= link_to edit_workout_log_timer_path(log), class: "timer-edit",
-                  "aria-label": "Edit the timer of #{log.workout} on #{l log.date, format: :long}", title: "Edit timer" do %><i class="fa-solid fa-pen"></i><% end %><% end %><% end %>
-            <% split_chip = capture do %><% if log.workout_day %><span class="chip" title="<%= log.workout_day.split.name %>"><%= log.workout_day.split.name %></span><% else %><span class="text-muted small">Deleted</span><% end %><% end %>
+                  "aria-label": "Edit the timer of #{log.workout} on #{short_date(log.date)}", title: "Edit timer" do %><i class="fa-solid fa-pen" aria-hidden="true"></i><% end %><% end %><% end %>
+            <% split_cell = log.workout_day ? split_chip(log.workout_day.split, @active_split) : tag.span("Deleted", class: "text-muted small") %>
             <tr>
               <td class="history-summary d-md-none">
-                <%= link_to l(log.date, format: :long), path, class: "fw-semibold" %>
-                <div class="history-line"><%= log.workout %><%= rest_chip %> <%= split_chip %></div>
-                <div class="history-counts"><%= pluralize(exercises, "exercise") %> · <%= sets_and_time(sets, cardio) %></div>
+                <%= link_to short_date(log.date), path, class: "fw-semibold" %>
+                <div class="history-line"><%= log.workout %><%= rest_chip %> <%= split_cell %></div>
+                <div class="history-counts"><%= exercises.zero? ? empty_log_label(log) : time_parts([pluralize(exercises, "exercise"), *sets_and_time_parts(sets, cardio)]) %></div>
                 <% if (time = workout_time(log)) %><div class="history-counts history-time"><i class="fa-regular fa-clock" aria-hidden="true"></i><span class="history-time-text"><%= time %></span><%= timer_pen %></div><% end %>
               </td>
-              <td class="fw-semibold <%= wide %>"><%= link_to l(log.date, format: :long), path %><% if (time = workout_time(log)) %><div class="history-counts history-time fw-normal"><span class="history-time-text"><%= time %></span><%= timer_pen %></div><% end %></td>
+              <td class="fw-semibold <%= wide %>"><%= link_to short_date(log.date), path %><% if (time = workout_time(log)) %><div class="history-counts history-time fw-normal"><span class="history-time-text"><%= time %></span><%= timer_pen %></div><% end %></td>
               <td class="<%= wide %>"><%= log.workout %><%= rest_chip %></td>
-              <td class="<%= wide %>"><%= split_chip %></td>
+              <td class="<%= wide %>"><%= split_cell %></td>
               <td class="<%= wide %>"><%= exercises %></td>
               <td class="<%= wide %>"><%= sets %><% if cardio.positive? %> · <%= duration_text(cardio) %><% end %></td>
               <td class="text-end"><%= link_to "Open", path, class: "btn btn-light btn-sm" %></td>

@@ -51,7 +51,7 @@ class Dashboard
     return @last_log if defined?(@last_log)
 
     @last_log = today_workout && sessions_of_today_workout.of_workout(today_workout.day).where(date: ...today)
-                                                          .order(date: :desc, id: :desc).first
+                                                          .with_entries.order(date: :desc, id: :desc).first
   end
 
   def today_summary

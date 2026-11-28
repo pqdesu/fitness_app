@@ -8,7 +8,7 @@ class Exercise < ApplicationRecord
 
   # Cardio is not a muscle, but it is chosen like one: a cardio exercise is logged as incline,
   # speed and time instead of weight and reps (CardioEntry).
-  MUSCLE_GROUPS = %w[Chest Back Shoulders Biceps Triceps Legs Calves Core Cardio].freeze
+  MUSCLE_GROUPS = %w[Chest Back Shoulders Biceps Triceps Legs Core Cardio].freeze
 
   belongs_to :user, optional: true
   # An exercise that is part of someone's program cannot be deleted:
@@ -26,7 +26,8 @@ class Exercise < ApplicationRecord
   normalizes :muscle_group, with: lambda(&:presence)
 
   # No twins in the same list: one of each name in the catalogue, and one among a user's own.
-  validates :name, presence: true, length: { maximum: 80 }, uniqueness: { scope: :user_id, case_sensitive: false }
+  validates :name, presence: true, length: { maximum: 80 },
+                   uniqueness: { scope: :user_id, case_sensitive: false, message: "is already in your exercises" }
   # Chosen from the list, or left empty ("Other").
   validates :muscle_group, inclusion: { in: MUSCLE_GROUPS, message: "must be one of the listed muscle groups" }, allow_nil: true
 

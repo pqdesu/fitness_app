@@ -18,8 +18,6 @@
 .flash {
   --flash-color: #{$green};
 
-  position: relative;
-  overflow: hidden;
   display: flex;
   align-items: center;
   gap: .75rem;
@@ -31,9 +29,9 @@
   border-radius: $border-radius-xl;
   box-shadow: 0 10px 30px rgba($shadow, .14), 0 2px 6px rgba($shadow, .06);
   pointer-events: auto;
-  animation: flash-in .5s ease-out;
+  animation: flash-in .32s $ease-out;
 
-  &.is-leaving { animation: flash-out .5s ease-in-out forwards; }
+  &.is-leaving { animation: flash-out .2s ease-out forwards; }
 }
 
 .flash-alert { --flash-color: #{$red}; }
@@ -53,7 +51,7 @@
   flex: 1;
   min-width: 0;
   margin: 0;
-  font-size: .9rem;
+  font-size: $fs-small;
   font-weight: 500;
   line-height: 1.35;
   overflow-wrap: anywhere;
@@ -76,36 +74,24 @@
   @media (hover: hover) and (pointer: fine) { &:hover { color: $gray; background: $light-gray; } }
 }
 
-// Shows the 5 seconds running out. Keep the duration equal to the controller's delay.
-.flash-timer {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 3px;
-  width: 100%;
-  background: var(--flash-color);
-  opacity: .5;
-  transform-origin: left;
-  animation: flash-timer 5s linear forwards;
-}
-
-// While the notice waits (pointed at or focused), its timer bar waits with it.
-.flash.is-paused .flash-timer { animation-play-state: paused; }
-
-// A half-second fade, in and out, with only a hint of movement.
+// Quick in (.32s), quicker out (.2s), with only a hint of movement.
 @keyframes flash-in {
-  from { opacity: 0; transform: translateY(-.375rem); }
+  from { opacity: 0; transform: translateY(var(--flash-shift, -.375rem)); }
 }
 
 @keyframes flash-out {
-  to { opacity: 0; transform: translateY(-.375rem); }
+  to { opacity: 0; transform: translateY(var(--flash-shift, -.375rem)); }
 }
 
-@keyframes flash-timer {
-  to { transform: scaleX(0); }
+// On a phone the thumb is at the bottom: the messages sit above the tab bar and rise into place.
+@media (max-width: 767.98px) {
+  .flash-stack {
+    --flash-shift: .75rem;
+    top: auto;
+    bottom: calc(3.75rem + .75rem + env(safe-area-inset-bottom));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .flash, .flash.is-leaving { animation: none; }
-  .flash-timer { display: none; }
 }

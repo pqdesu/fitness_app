@@ -83,7 +83,7 @@ module ApplicationHelper
   # On a workout's pages it asks first while the timer is paused (workout_logs/_timer_alert).
   def exercise_picker_button(css, key: nil, label: "Add exercise")
     target = ["#exercise-picker", key].compact.join("-")
-    tag.button safe_join([tag.i(class: "fa-solid fa-plus"), " #{label}"]),
+    tag.button safe_join([tag.i(class: "fa-solid fa-plus", aria: { hidden: true }), " #{label}"]),
                type: "button", class: "btn #{css}", data: { bs_toggle: "modal", bs_target: target, alert_when_paused: "add" }
   end
 
@@ -125,10 +125,22 @@ module ApplicationHelper
     "workout_days#show" => "Workout", "workout_days" => "Workout day", "workout_exercises" => "Exercise",
     "workout_logs#index" => "History", "workout_logs" => "Workout", "workout_log_exercises" => "Exercise",
     "workout_timers" => "Timer", "exercises#index" => "Exercises", "exercises" => "Exercise",
-    "admin/users" => "Users", "users/registrations" => "Account"
+    "admin/users" => "Users", "admin/equipment_items" => "Equipment", "admin/set_tags" => "Set tags",
+    "users/registrations" => "Account"
   }.freeze
 
   def page_title
     PAGE_TITLES["#{controller_path}##{action_name}"] || PAGE_TITLES[controller_path]
+  end
+
+  # The browser tab's title: a page that names itself (an exercise, a workout) sets content_for(:title),
+  # the rest use their PAGE_TITLES entry (the top bar keeps the short name).
+  def document_title
+    [content_for(:title).presence || (page_title if user_signed_in?), "FitnessApp"].compact.join(" · ")
+  end
+
+  # A date for lists and headings: "Wed 18 Nov", with the year ("Wed 18 Nov 2025") when it is not this year.
+  def short_date(date)
+    l(date, format: date.year == Date.current.year ? "%a %-d %b" : "%a %-d %b %Y")
   end
 end

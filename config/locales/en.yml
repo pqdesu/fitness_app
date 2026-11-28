@@ -31,6 +31,15 @@ en:
   hello: "Hello world"
   activerecord:
     attributes:
+      workout_set:
+        reps_completed: "Reps"
+        weight_used: "Weight"
+      workout_day:
+        day: "Workout"
+      workout_log:
+        date: "Date"
+      exercise:
+        name: "Name"
       cardio_entry:
         # A cardio row's time is typed in minutes and seconds, not as a number of seconds.
         duration_seconds: "Time"

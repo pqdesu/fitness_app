@@ -30,7 +30,7 @@
   border-radius: 999px;
   background: $chip-bg;
   color: $chip-text;
-  font-size: .78rem;
+  font-size: $fs-label;
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
@@ -42,6 +42,13 @@
 .chip-done { background: $done-bg; color: $done-text; }
 // A workout done on a rest day of its split
 .chip-rest { background: $rest-bg; color: $rest-text; }
+// A workout of a split that is not the active one (Recent workouts): solid indigo, white text, the Splits icon
+.chip-split {
+  background: $blue;
+  color: $surface;
+  font-weight: 600;
+  i { margin-right: .375rem; font-size: .9em; }
+}
 
 .badge-soft { background: $primary-soft; color: $blue; font-weight: 600; }
 
@@ -51,17 +58,15 @@
   min-width: 26px;
   height: 26px;
   padding: 0 .4rem;
-  border-radius: .5rem;
-  background: $primary-soft;
-  color: $blue;
-  font-size: .8rem;
+  color: $muted;
+  font-size: $fs-label;
   font-weight: 600;
 }
 .card-link .order-badge { float: right; }
 
 // A row or card just moved up or down lights up for a moment, so the eye follows it and the next
 // tap does not land on the row that took its place.
-.just-moved { animation: just-moved 1.6s ease-out; }
+.just-moved { animation: just-moved 1.2s ease-out; }
 @keyframes just-moved { from { background-color: $primary-soft; } }
 
 // Reordering by drag and drop (sortable_controller.js): a row or card is pressed and dragged by its
@@ -88,7 +93,7 @@
 .sortable-drag {
   opacity: 1 !important; // SortableJS sets the finger's copy to .8 inline, which greys its text
   background: $surface;
-  border-radius: .75rem;
+  border-radius: $border-radius;
   box-shadow: 0 .75rem 1.75rem rgba($shadow, .18);
   .drag-handle { color: $blue; cursor: grabbing; }
 }

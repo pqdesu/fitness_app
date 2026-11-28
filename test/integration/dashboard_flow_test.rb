@@ -39,7 +39,7 @@ class DashboardFlowTest < FlowTest
 
       # the workout's own page says so at the top
       get workout_day_path(push, date: Date.current)
-      assert_select ".page-header .day-counts", "2 exercises · 3 sets"
+      assert_select ".card-header .day-counts", "· 2 exercises · 3 sets"
       # its exercises are listed in "In this workout"
       assert_select "#day-exercises .day-in-workout li", 2
     end
@@ -80,8 +80,9 @@ class DashboardFlowTest < FlowTest
       row = ".recent-row"
       # collapsed summary: name, date and sets, split
       assert_select "#{row} .recent-toggle[aria-expanded=false][data-bs-target='#recent-log-#{log.id}']", 1
-      assert_select "#{row} .recent-toggle", /Push\s+November 16, 2026 · 2 sets/
-      assert_select "#{row} .recent-toggle .chip", "PPL"
+      assert_select "#{row} .recent-toggle", /Push\s+Mon 16 Nov · 2 sets/
+      # the active split's name says nothing there: no chip for it
+      assert_select "#{row} .recent-toggle .chip", 0
       assert_select "#recent-log-#{log.id}.collapse:not(.show)", 1
       # the whole row is not a link any more: the only link out is "Open workout"
       assert_select "#{row} a.stretched-link", 0
@@ -188,7 +189,7 @@ class DashboardFlowTest < FlowTest
       assert_select "a.calendar-day[href=?]", workout_logs_path(date: "2026-11-09", from: "dashboard"), text: "9"
       assert_select "a.calendar-day[aria-label=?]", "Monday, November 9: Push and Pull workouts"
       get workout_logs_path(date: "2026-11-09", from: "dashboard")
-      assert_select "h1", "Workouts on November 09, 2026"
+      assert_select "h1", "Workouts on Mon 9 Nov"
       assert_select ".back-link[href=?]", root_path, count: 1
       assert_select "table.app-table tbody tr", 2
       assert_select "a[href=?]", workout_log_path(pull_log, from: "dashboard")
@@ -467,9 +468,28 @@ class DashboardFlowTest < FlowTest
     end
   end
 
+  test "a recent workout of another split than the active one shows that split's chip" do
+    sign_in @user
+    @user.splits.create!(name: "PPL")
+    other = @user.splits.create!(name: "Upper Lower").workout_days.create!(day: "Upper", weekday: 2)
+    other.workout_logs.create!(date: Date.current).workout_log_exercises.create!(name: "Row")
+    get root_path
+    assert_select ".recent-row .recent-toggle .chip[title=?]", "Upper Lower", text: "Upper Lower"
+    # it stands out: the solid split chip, with the Splits icon, and says so to a screen reader
+    assert_select ".recent-toggle .chip.chip-split[aria-label=?] i.fa-layer-group[aria-hidden=true]", "From another split: Upper Lower"
+
+    # History marks it the same way, while a workout of the active split keeps the plain chip there
+    ppl = @user.splits.find_by!(name: "PPL").workout_days.create!(day: "Push", weekday: 1)
+    ppl.workout_logs.create!(date: Date.current - 1).workout_log_exercises.create!(name: "Bench")
+    get workout_logs_path
+    assert_select ".history-line .chip.chip-split[title=?] i.fa-layer-group", "Upper Lower"
+    assert_select ".history-line .chip:not(.chip-split)", text: "PPL"
+  end
+
   test "a long split name is cut by its chip and carries the full name in a title" do
     sign_in @user
     name = "A very long split name that goes on and on and on and on ok"
+    @user.splits.create!(name: "Main") # the active split, whose chip Recent workouts leave out
     day = @user.splits.create!(name: name).workout_days.create!(day: "Push", weekday: 1)
     log = day.workout_logs.create!(date: Date.current)
     log.workout_log_exercises.create!(name: "Bench press")

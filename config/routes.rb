@@ -3,6 +3,8 @@ Rails.application.routes.draw do
   # Signed out the landing page; signed in the Home page: today's workout (or on a rest day what to
   # train instead), this week, the month's calendar and recent workouts.
   root to: "pages#home"
+  # The web app manifest (Add to Home Screen); there is no service worker.
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest, defaults: { format: :json }
   # The dashboard was its own page until it joined the Today page as Home; old links land there.
   get "dashboard", to: redirect("/")
   # The month of the dashboard's calendar: its totals, splits and exercises

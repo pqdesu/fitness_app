@@ -17,7 +17,7 @@ class CardioEntriesController < ApplicationController
         entry = planned.entry_on!(date)
       else
         entry = current_user.workout_log_exercises.find(params[:workout_log_exercise_id])
-        back = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
+        back = workout_log_page(entry.workout_log_id, anchor: "entry-#{entry.id}")
       end
 
       # Adding while the cardio timer runs stops it: the row takes its time unless one was typed.
@@ -69,7 +69,7 @@ class CardioEntriesController < ApplicationController
     return workout_exercise_path(planned, date: text_param(:date).presence) if planned
 
     entry = cardio_entry.workout_log_exercise
-    workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
+    workout_log_page(entry.workout_log_id, anchor: "entry-#{entry.id}")
   end
 
   # The time comes as minutes and seconds; both empty is no time, which the row refuses.

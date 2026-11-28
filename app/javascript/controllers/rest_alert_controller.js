@@ -38,7 +38,7 @@ export default class extends Controller {
     this.hold(event, {
       title: "Your rest timer is running",
       detail: "Save the rest until now, or no rest for this set?",
-      primary: "Save rest", secondary: "No rest"
+      primary: "Save rest and add", secondary: "Add without rest"
     }, async (choice) => {
       await this.send(form.dataset.restUrl, choice === "primary" ? "PATCH" : "DELETE")
       form.requestSubmit(submitter)
@@ -57,7 +57,7 @@ export default class extends Controller {
     this.hold(event, {
       title: `Did you forget to stop your ${name} timer?`,
       detail: "Stop it before you go, or go back to the page.",
-      primary: `Stop ${name}`, secondary: "Back to page"
+      primary: "Stop timer", secondary: "Stay here"
     }, async (choice) => {
       if (choice !== "primary") return
 

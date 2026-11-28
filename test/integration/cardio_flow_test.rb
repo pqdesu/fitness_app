@@ -377,7 +377,7 @@ class CardioFlowTest < FlowTest
       assert_select ".today .top-set", text: /30 min/
 
       get workout_day_path(day, date: Date.current)
-      assert_select ".page-header .day-counts", "2 exercises · 1 set · 30 min"
+      assert_select ".card-header .day-counts", "· 2 exercises · 1 set · 30 min"
       # the treadmill was added while training: its chip shows its time
       assert_select ".day-in-workout .chip-done", text: "30 min"
       assert_select ".day-in-workout .text-muted", text: /Cardio · Added to this workout/

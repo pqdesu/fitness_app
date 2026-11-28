@@ -32,6 +32,8 @@ class WorkoutLog < ApplicationRecord
   # Sessions of this same workout, whichever split they were done in.
   scope :of_workout, ->(name) { where(workout: WorkoutDay.names_for(name)) }
   # With everything WorkoutSummary and the pages read, so they ask the database for nothing more.
+  # Logs with at least one set or cardio row: a timer-only or emptied workout has nothing to compare with.
+  scope :with_entries, -> { where(id: WorkoutLogExercise.with_entries.select(:workout_log_id)) }
   scope :with_sets, -> { includes(workout_log_exercises: [:workout_sets, :cardio_entries]) }
 
   # The session of that workout on that date among these logs (a user's), or nil.
