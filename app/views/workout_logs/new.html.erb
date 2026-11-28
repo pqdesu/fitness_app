@@ -3,7 +3,7 @@
 <div class="page-header">
   <div>
     <h1><%= @workout %> workout</h1>
-    <p class="text-muted mb-0"><%= l Date.current, format: :long %><% unless cardio %> <span class="chip">Not in your split</span><% end %></p>
+    <p class="text-muted mb-0"><%= short_date Date.current %><% unless cardio %> <span class="chip">Not in your split</span><% end %></p>
   </div>
 </div>
 

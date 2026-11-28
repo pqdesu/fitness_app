@@ -1,6 +1,7 @@
 // The workout timer (workout_logs/_timer), on a workout day's page and a logged workout's page:
 // a status pill and the time on the left, the buttons on the right. On a phone the buttons take a
-// row of their own, full width and side by side, for a thumb.
+// row of their own, full width and side by side, for a thumb. The row of cards after it cancels its
+// own top gutter, so the card's margin is the 1rem between them.
 .timer-card { margin-bottom: 1rem; }
 
 .timer-body {
@@ -22,7 +23,7 @@
   align-items: center;
   gap: .25rem .5rem;
   margin: 0;
-  font-size: .8125rem;
+  font-size: $fs-meta;
   color: $muted;
 }
 
@@ -36,7 +37,7 @@
   border-radius: 999px;
   background: $chip-bg;
   color: $chip-text;
-  font-size: .75rem;
+  font-size: $fs-label;
   font-weight: 600;
 }
 
@@ -120,13 +121,14 @@
 // A time line ("6:02 PM ~ 7:15 PM · 1 h 3 min · paused 10 min", ApplicationHelper#time_parts): each
 // part stays whole with the "·" after it, so a wrapped line never starts with a separator. The
 // length recorded is the line's one bold figure.
-.time-part { white-space: nowrap; }
+// An inline block wraps as one piece; only a part longer than the line (a long machine brand) wraps inside.
+.time-part { display: inline-block; max-width: 100%; }
 .time-length { font-weight: 600; color: $gray; }
 
 // The date beside a time when a workout went past midnight: 11:30 PM [20/11] ~ 1:00 AM [21/11].
 .chip-day {
   padding: 0 .4rem;
-  font-size: .7rem;
+  font-size: $fs-label;
   background: $primary-soft;
   color: $blue;
 }

@@ -43,6 +43,19 @@ class ApplicationController < ActionController::Base
     params[:from] == "dashboard"
   end
 
+  # A logged workout's page after a change made on it. Its forms post without from=, so the page they
+  # came from (the referer) tells whether it was opened from Home; keeping from=dashboard keeps its
+  # back button and Delete returning Home.
+  def workout_log_page(log, **)
+    workout_log_path(log, from: ("dashboard" if from_dashboard? || referer_from_dashboard?), **)
+  end
+
+  def referer_from_dashboard?
+    Rack::Utils.parse_query(URI(request.referer.to_s).query)["from"] == "dashboard"
+  rescue URI::InvalidURIError
+    false
+  end
+
   # A query parameter read as text. A client can send page[]=1 or page[a]=1, which Rails turns
   # into an Array or a Hash; those are treated as if the parameter was not sent.
   def text_param(key)
@@ -50,7 +63,8 @@ class ApplicationController < ActionController::Base
     value if value.is_a?(String)
   end
 
+  # One message per field, so a blank field is not also called too short: "Name can't be blank".
   def errors_of(record)
-    record.errors.full_messages.to_sentence
+    record.errors.group_by(&:attribute).values.map { |errors| errors.first.full_message }.to_sentence
   end
 end

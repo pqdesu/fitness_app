@@ -7,6 +7,7 @@
 <%# Before the paused-timer alert, so it asks first and each asks once (rest_alert_controller.js). %>
 <%= render "workout_sets/rest_alert" if !cardio || @entry&.rest_running? %>
 <%= render "workout_logs/timer_alert", log: @log, leave: false %>
+<% content_for :title, @workout_exercise.name %>
 <div class="page-header">
   <div>
     <h1><%= @workout_exercise.name %></h1>
@@ -14,12 +15,13 @@
   </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-3">
   <div class="col-lg-8">
     <div class="card">
       <div class="card-header">
         <h2><%= logging_date_label(@date) %></h2>
-        <span class="text-muted small"><%= l @date, format: :long %></span>
+        <%# "Today" says the date; any other day names its weekday, so the date goes beside it. %>
+        <% unless @date == Date.current %><span class="text-muted small"><%= short_date @date %></span><% end %>
       </div>
 
       <% if upcoming %>
@@ -43,6 +45,10 @@
             <%= render "cardio_entries/timer", entry: @entry, planned: @workout_exercise, date: @date, back: { workout_exercise_id: @workout_exercise.id, date: @date } %>
             <%= render "cardio_entries/form", parent: @workout_exercise, last: @last_cardio, date: @date, entry: @entry %>
           <% else %>
+            <% if @previous %>
+              <% previous_sets = @previous.workout_sets.sort_by(&:set_number) %>
+              <p class="last-time text-muted small">Last time · <%= short_date(@previous.workout_log.date) %>: <%= time_parts(previous_sets.first(6).map { |set| "#{weight_number(set.weight_used) || 'BW'}×#{set.reps_completed}" } + (previous_sets.size > 6 ? ["…"] : [])) %></p>
+            <% end %>
             <%= render "workout_sets/rest_timer", entry: @entry, back: { workout_exercise_id: @workout_exercise.id, date: @date } %>
             <%= render "workout_sets/form", parent: @workout_exercise, last_set: @last_set, date: @date, first: @sets.empty?, rest_entry: @entry %>
           <% end %>
@@ -56,7 +62,7 @@
         once the exercise is being logged (its first set), and shows on the logged workout too. %>
     <% if @entry %>
       <div class="card exercise-note">
-        <div class="card-header"><h2>Note</h2><span class="text-muted small"><%= logging_date_label(@date) %></span></div>
+        <div class="card-header"><h2>Note</h2></div>
         <div class="card-body">
           <%= form_with model: @entry, url: workout_log_exercise_path(@entry, workout_exercise_id: @workout_exercise.id, date: @date),
                 class: "inline-form" do |f| %>
@@ -72,13 +78,22 @@
     <% end %>
 
     <% unless cardio %>
+    <%# One row, "Equipment · Dumbbell", that opens the form: the choice is rarely changed. %>
+    <% equipment_open = @workout_exercise.errors.any? %>
     <div class="card">
-      <div class="card-header"><h2>Equipment</h2></div>
       <div class="card-body">
-        <%= form_with model: @workout_exercise, url: workout_exercise_path(@workout_exercise, date: @date), class: "inline-form" do |f| %>
-          <%= render "shared/equipment_fields", f: f %>
-          <%= f.submit "Save equipment", class: "btn btn-light w-100 mt-3" %>
-        <% end %>
+        <button type="button" class="choice-summary" data-bs-toggle="collapse" data-bs-target="#equipment-form"
+                aria-expanded="<%= equipment_open %>" aria-controls="equipment-form">
+          <span class="form-label mb-0">Equipment</span>
+          <span class="choice-current"><%= @workout_exercise.equipment_label %></span>
+          <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </button>
+        <div class="<%= class_names("collapse", show: equipment_open) %>" id="equipment-form">
+          <%= form_with model: @workout_exercise, url: workout_exercise_path(@workout_exercise, date: @date), class: "inline-form mt-3" do |f| %>
+            <%= render "shared/equipment_fields", f: f %>
+            <%= f.submit "Save equipment", class: "btn btn-light w-100 mt-3", data: { turbo_submits_with: "Saving…" } %>
+          <% end %>
+        </div>
       </div>
     </div>
     <% end %>

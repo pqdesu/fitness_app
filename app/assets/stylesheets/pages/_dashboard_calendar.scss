@@ -1,18 +1,17 @@
 // Dashboard: month calendar
-.calendar-card { margin-bottom: 1rem; }
-
 // The month's name folds the calendar; its chevron turns while it is open
 .calendar-toggle {
   display: inline-flex;
   align-items: center;
   gap: .5rem;
+  min-height: 2.75rem; // 44px target
   padding: 0;
   border: 0;
   background: none;
   font: inherit;
   color: inherit;
 
-  .fa-chevron-down { font-size: .75rem; color: $muted; transition: transform .2s; }
+  .fa-chevron-down { font-size: $fs-label; color: $muted; transition: transform .22s $ease-out; }
   &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
 }
 // Folded, the header is the whole card, so it has no line under it
@@ -30,7 +29,7 @@
 }
 
 .calendar-head {
-  font-size: .75rem;
+  font-size: $fs-label;
   font-weight: 700;
   color: $muted;
   text-align: center;
@@ -41,17 +40,17 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 2.25rem;
+  width: 2.75rem; // 44px where the seven columns fit, narrower when they do not
   max-width: 100%;
   aspect-ratio: 1;
   margin: 0 auto;
   border-radius: 50%;
-  font-size: .875rem;
+  font-size: $fs-small;
   font-weight: 500;
   // Pointing at any day, whatever its look, draws a soft halo around it
   outline: 2px solid transparent;
   outline-offset: 2px;
-  transition: outline-color .15s ease;
+  transition: outline-color .15s ease-out;
   @media (hover: hover) { &:hover { outline-color: $hover-halo; } }
 
   &.is-outside { color: $outside-day; font-weight: 400; }
@@ -69,7 +68,7 @@
   // A logged day is a link to what was recorded
   &.has-workout {
     text-decoration: none;
-    transition: background-color .15s ease, color .15s ease;
+    transition: background-color .15s ease-out, color .15s ease-out;
 
     &:focus-visible { background: $blue; color: white; }
     @media (hover: hover) and (pointer: fine) { &:hover { background: $blue; color: white; } }
@@ -92,4 +91,31 @@
 a.calendar-day.is-missed {
   text-decoration: none;
   &:focus-visible { outline: 2px solid $blue; outline-offset: 2px; }
+}
+
+// The key under the grid: one line of four small marks, drawn like the days they explain
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .25rem 1rem;
+  margin: .75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: $fs-label;
+  color: $muted;
+
+  li { display: inline-flex; align-items: center; gap: .375rem; }
+}
+
+.legend-swatch {
+  flex: none;
+  width: .625rem;
+  height: .625rem;
+  border-radius: 50%;
+
+  &.is-planned { background: $blue; }
+  &.is-missed { border: 2px dotted $blue; }
+  &.is-extra { box-shadow: inset 0 0 0 2px $extra-ring; }
+  &.is-today { box-shadow: inset 0 0 0 2px $blue; }
 }

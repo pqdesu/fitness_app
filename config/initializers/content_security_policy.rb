@@ -13,6 +13,7 @@ Rails.application.configure do
     policy.style_src   :self, "https://fonts.googleapis.com"
     policy.img_src     :self, :data
     policy.script_src  :self
+    policy.manifest_src :self
     policy.object_src  :none
     policy.base_uri    :self
     policy.form_action :self

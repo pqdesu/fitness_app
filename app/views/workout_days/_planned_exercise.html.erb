@@ -15,6 +15,6 @@
   <%# An admin renames the exercise from here. The name is the exercise's own, so it changes everywhere. %>
   <% if current_user.admin? && we.exercise %>
     <%= link_to edit_exercise_path(we.exercise, workout_day_id: @workout_day.id), class: "btn btn-link btn-sm row-action",
-          "aria-label": "Edit #{we.name}", title: "Edit #{we.name}" do %><i class="fa-solid fa-pen"></i><% end %>
+          "aria-label": "Edit #{we.name}", title: "Edit #{we.name}" do %><i class="fa-solid fa-pen" aria-hidden="true"></i><% end %>
   <% end %>
 <% end %>

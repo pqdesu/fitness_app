@@ -7,7 +7,7 @@
 <nav class="<%= class_names("navbar navbar-expand-md app-navbar sticky-top", "has-back": back) %>" aria-label="Main">
   <div class="container">
     <%= link_to root_path, class: class_names("navbar-brand", "d-none d-md-flex": back), aria: { label: "FitnessApp" } do %>
-      <span class="brand-mark"><i class="fa-solid fa-dumbbell"></i></span>
+      <span class="brand-mark"><i class="fa-solid fa-dumbbell" aria-hidden="true"></i></span>
       <span class="<%= "d-none d-md-inline" if title %>">FitnessApp</span>
     <% end %>
     <% if title %><span class="navbar-page-title d-md-none me-auto"><%= title %></span><% end %>

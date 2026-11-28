@@ -1,0 +1,13 @@
+// Type scale: eight steps, named by what they are for. Every font-size in the app's own styles
+// uses one of these, except the bottom tab label (11px), the landing page's clamp and icon sizes in em.
+$fs-label: .75rem;    // 12px: small labels, table heads, badges
+$fs-meta: .8125rem;   // 13px: units, counts, form labels
+$fs-small: .875rem;   // 14px: secondary text, notes, small buttons
+$fs-body: 1rem;       // 16px: body text and every field
+$fs-title: 1.125rem;  // 18px: card and modal titles
+$fs-num: 1.375rem;    // 22px: the figures to read at a glance
+$fs-h1: 1.75rem;      // 28px: the page title
+$fs-clock: 2.25rem;   // 36px: the rest clock
+
+// Motion: one ease-out for everything that appears, opens or presses (Bootstrap's collapse and modal use it too).
+$ease-out: cubic-bezier(.23, 1, .32, 1);

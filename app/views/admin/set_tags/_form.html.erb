@@ -3,7 +3,7 @@
   <% if tag.errors.any? %><div class="alert alert-danger"><%= errors_of(tag) %>.</div><% end %>
   <div class="mb-3">
     <%= f.label :name, class: "form-label" %>
-    <%= f.text_field :name, placeholder: "Warm-up", autocomplete: "off", required: true, maxlength: 30, class: "form-control" %>
+    <%= f.text_field :name, placeholder: "e.g. Warm-up", autocomplete: "off", required: true, maxlength: 30, class: "form-control" %>
   </div>
   <%= f.submit submit, class: "btn btn-primary" %>
 <% end %>

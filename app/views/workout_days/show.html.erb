@@ -3,15 +3,12 @@
 <% turbo_refreshes_with method: :morph, scroll: :preserve %>
 <% back_to root_path %>
 <% upcoming = @date > Date.current %>
+<% content_for :title, "#{@workout_day.day} · #{short_date(@date)}" %>
 <div class="page-header">
   <div>
     <h1><%= @workout_day.day %></h1>
     <%# The date its sets go to (see LoggingDate): today, a day earlier this week, or one to come. %>
     <p class="text-muted mb-0"><% if @date == Date.current %>Today · <% end %><%= l @date, format: "%A, %B %-d" %></p>
-    <%# What is done so far in this workout on that date: exercises with a set, and sets. %>
-    <% if @log && (done = WorkoutSummary.new(@log)).exercises.positive? %>
-      <p class="day-counts small fw-semibold mb-0"><%= summary_counts(done) %></p>
-    <% end %>
   </div>
   <div class="header-actions">
     <%= link_to "Plan", split_path(@workout_day.split, anchor: "day-#{@workout_day.id}"), class: "btn btn-light" %>
@@ -27,7 +24,7 @@
     <div class="card">
       <div class="card-header"><h2>Exercises</h2></div>
       <div class="empty-state">
-        <i class="fa-solid fa-dumbbell"></i>
+        <i class="fa-solid fa-dumbbell" aria-hidden="true"></i>
         <p>No exercises planned for <%= @workout_day.day %>.<% unless upcoming %> Add one to this workout, or plan them on the split page.<% end %></p>
         <% unless upcoming %><%= exercise_picker_button "btn-primary" %><% end %>
       </div>
@@ -38,7 +35,9 @@
     <% unless upcoming %>
       <div class="card">
         <div class="card-header">
-          <h2>In this workout <span class="text-muted fw-normal">· <%= @in_workout.size %></span></h2>
+          <%# What is done so far on that date: exercises with a set, and sets (the header says it once). %>
+          <% done = WorkoutSummary.new(@log) if @log %>
+          <h2>In this workout <% if done&.exercises&.positive? %><span class="day-counts text-muted fw-normal">· <%= summary_counts(done) %></span><% else %><span class="text-muted fw-normal">· <%= @in_workout.size %></span><% end %></h2>
           <%= exercise_picker_button "btn-primary btn-sm" %>
         </div>
         <%= tag.ul class: "list-rows day-in-workout", data: { controller: "sortable", sortable_group_value: "day" } do %>
@@ -65,7 +64,7 @@
                 <% end %>
                 <%= button_to workout_log_exercise_path(entry, workout_day_id: @workout_day.id, date: @date), method: :delete,
                       class: "btn btn-link btn-sm text-danger row-action", "aria-label": "Remove #{entry.name} from this workout", title: "Remove #{entry.name} from this workout",
-                      form: { data: ({ turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } if entry.workout_sets.any?) } do %><i class="fa-solid fa-xmark"></i><% end %>
+                      form: { data: ({ turbo_confirm: "Remove #{entry.name} and its sets from this workout?" } if entry.workout_sets.any?) } do %><i class="fa-solid fa-xmark" aria-hidden="true"></i><% end %>
               <% end %>
             <% end %>
           <% end %>

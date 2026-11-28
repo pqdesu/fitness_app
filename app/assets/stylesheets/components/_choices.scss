@@ -10,6 +10,7 @@
   gap: .5rem;
 
   .btn {
+    font-size: $fs-small;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -19,7 +20,7 @@
 }
 
 // Bootstrap's legend size wins over the inline form's small label without this
-.inline-form .choices-field legend { font-size: .78rem; }
+.inline-form .choices-field legend { font-size: $fs-label; }
 
 // The equipment's groups of pills (shared/_equipment_fields): room above each group's label
 .equipment-fields [data-reveal-target="panel"] .choices-field { margin-top: .875rem; }
@@ -34,12 +35,13 @@
   min-height: 2.75rem;
   padding: 0 .875rem;
   border: 1px solid $line;
-  border-radius: .75rem;
+  border-radius: $border-radius;
   background: $surface;
   text-align: left;
 
   .choice-current { flex: 1; min-width: 0; text-align: right; font-weight: 600; color: $blue; overflow-wrap: anywhere; }
-  .fa-chevron-down { color: $muted; font-size: .75rem; transition: transform .2s; }
+  .choice-current.is-unset { color: $muted; font-weight: 500; }
+  .fa-chevron-down { color: $muted; font-size: $fs-label; transition: transform .22s $ease-out; }
   &[aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
 }
 .is-folded .choices { margin-top: .5rem; }

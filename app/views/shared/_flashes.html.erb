@@ -1,5 +1,5 @@
 <%#
-  Flash messages: a card that drops in at the top of the screen (flash_controller.js). A notice
+  Flash messages: a card that drops in at the top of the screen (above the tab bar on a phone) (flash_controller.js). A notice
   is green and leaves by itself after 5 seconds, waiting while it is pointed at or focused; an
   alert is red and stays until its × is pressed, so an error is not missed.
   data-turbo-temporary keeps them out of Turbo's page cache, so going back does not show
@@ -14,13 +14,12 @@
            data-controller="flash" data-flash-delay-value="<%= stays ? 0 : 5000 %>"
            data-action="mouseenter->flash#pause mouseleave->flash#resume focusin->flash#pause focusout->flash#resume">
         <span class="flash-icon">
-          <i class="fa-solid <%= kind == :alert ? "fa-circle-exclamation" : "fa-circle-check" %>"></i>
+          <i class="fa-solid <%= kind == :alert ? "fa-circle-exclamation" : "fa-circle-check" %>" aria-hidden="true"></i>
         </span>
         <p class="flash-text"><%= message %></p>
         <button type="button" class="flash-close" data-action="flash#dismiss" aria-label="Close">
-          <i class="fa-solid fa-xmark"></i>
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
-        <% unless stays %><span class="flash-timer" aria-hidden="true"></span><% end %>
       </div>
     <% end %>
   </div>

@@ -18,7 +18,7 @@ class WorkoutSetsController < ApplicationController
         entry = planned.entry_on!(date)
       else
         entry = current_user.workout_log_exercises.find(params[:workout_log_exercise_id])
-        back = workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
+        back = workout_log_page(entry.workout_log_id, anchor: "entry-#{entry.id}")
       end
 
       workout_set = entry.workout_sets.new(workout_set_params)
@@ -68,7 +68,7 @@ class WorkoutSetsController < ApplicationController
     return workout_exercise_path(planned, date: text_param(:date).presence) if planned
 
     entry = workout_set.workout_log_exercise
-    workout_log_path(entry.workout_log_id, anchor: "entry-#{entry.id}")
+    workout_log_page(entry.workout_log_id, anchor: "entry-#{entry.id}")
   end
 
   def workout_set_params

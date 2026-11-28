@@ -38,7 +38,7 @@
   </div>
   <% end %>
   <div class="<%= running ? "col-12" : "col-6" %> d-grid">
-    <%= f.button class: "btn btn-primary" do %><% if running %><i class="fa-solid fa-stop"></i> Stop and add<% else %><i class="fa-solid fa-plus"></i> Add<% end %><% end %>
+    <%= f.button class: "btn btn-primary" do %><% if running %><i class="fa-solid fa-stop" aria-hidden="true"></i> Stop and add<% else %><i class="fa-solid fa-plus" aria-hidden="true"></i> Add<% end %><% end %>
   </div>
 <% end %>
 </div>

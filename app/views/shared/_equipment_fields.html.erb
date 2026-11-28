@@ -34,6 +34,6 @@
             id: "#{base}_machine", choices:, fold: true %>
     <% end %>
     <%= f.label :machine_brand, "Machine brand", class: "form-label mt-3", for: "#{base}_machine_brand" %>
-    <%= f.text_field :machine_brand, value: object.machine_brand, placeholder: "Brand name", class: "form-control", id: "#{base}_machine_brand" %>
+    <%= f.text_field :machine_brand, value: object.machine_brand, placeholder: "e.g. Brand name", class: "form-control", id: "#{base}_machine_brand" %>
   </div>
 </div>

@@ -27,7 +27,7 @@ exercises:
 - name: Leg press
   muscle_group: Legs
 - name: Calf raise
-  muscle_group: Calves
+  muscle_group: Legs
 - name: Plank
   muscle_group: Core
 - name: Pokemon
@@ -44,7 +44,7 @@ users:
 - email: admin@example.com
   admin: true
   time_zone: Asia/Tokyo
-  active_split: U/R/L/U/L
+  active_split: UL
   exercises:
   - name: Seated Lateral Raise
     muscle_group: Shoulders

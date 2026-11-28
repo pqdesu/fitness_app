@@ -2,9 +2,9 @@
     section, then Account, the account page (with Users and Log out). The active tab's icon sits on
     a pill. Hidden from tablet width up (d-md-none), where the top navbar has the links. The layout
     renders it after <main>, so a keyboard reaches the page before the tabs. %>
-<% tabs = nav_sections(phone: true).map { |label, path, icon, active| [label, path, tag.i(class: "fa-solid fa-#{icon}"), active] } %>
+<% tabs = nav_sections(phone: true).map { |label, path, icon, active| [label, path, tag.i(class: "fa-solid fa-#{icon}", aria: { hidden: true }), active] } %>
 <% tabs << ["Account", edit_user_registration_path, tag.span(current_user.email.first.upcase, class: "user-initial"),
-            controller_path.in?(%w[users/registrations admin/users])] %>
+            controller_path == "users/registrations" || controller_path.start_with?("admin/")] %>
 <nav class="bottom-nav fixed-bottom d-md-none" aria-label="Sections">
   <% tabs.each do |label, path, icon, active| %>
     <%= link_to path, class: class_names("bottom-nav-item", active:), aria: { current: ("page" if active) } do %>

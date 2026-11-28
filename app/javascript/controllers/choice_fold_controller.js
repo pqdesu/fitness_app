@@ -7,7 +7,9 @@ export default class extends Controller {
   static targets = ["current", "list"]
 
   pick(event) {
-    this.currentTarget.textContent = this.element.querySelector(`label[for="${event.target.id}"]`).textContent
+    const text = this.element.querySelector(`label[for="${event.target.id}"]`).textContent
+    this.currentTarget.textContent = text
+    this.currentTarget.classList.toggle("is-unset", text.trim() === "Not set")
     window.bootstrap.Collapse.getOrCreateInstance(this.listTarget, { toggle: false }).hide()
   }
 }

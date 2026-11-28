@@ -31,14 +31,14 @@
   // Pointing at the day draws a soft halo around its circle, whatever its look
   outline: 2px solid transparent;
   outline-offset: 2px;
-  transition: border-color .15s, background-color .15s, outline-color .15s;
+  transition: border-color .15s ease-out, background-color .15s ease-out, outline-color .15s ease-out;
 }
 
 .week-label {
   max-width: 100%;
   min-height: 1.1rem;
   overflow: hidden;
-  font-size: .75rem;
+  font-size: $fs-label;
   font-weight: 600;
   line-height: 1.1rem;
   text-overflow: ellipsis;

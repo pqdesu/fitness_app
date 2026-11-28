@@ -10,8 +10,8 @@
   .btn { min-height: 2.75rem; }
   form { display: inline-flex; }
 }
-.week-moves-note { margin-right: auto; font-size: .8rem; font-weight: 600; color: $muted; }
-.today-moved { margin: .125rem 0 0; font-size: .8rem; font-weight: 600; color: $muted; }
+.week-moves-note { margin-right: auto; font-size: $fs-label; font-weight: 600; color: $muted; }
+.today-moved { margin: .125rem 0 0; font-size: $fs-label; font-weight: 600; color: $muted; }
 
 // "Move a workout" pop-up: the days of the week left, as buttons
 .move-days {
@@ -20,7 +20,7 @@
   gap: .5rem;
 
   .btn { display: flex; flex-direction: column; align-items: center; min-height: 3.25rem; padding: .375rem .25rem; }
-  small { font-size: .75rem; font-weight: 600; }
+  small { font-size: $fs-label; font-weight: 600; }
 }
 
 // Rest day pop-up: one row per day the workout is on, with its two actions

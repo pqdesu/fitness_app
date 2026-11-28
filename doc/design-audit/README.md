@@ -67,6 +67,18 @@ Most of these were found by more than one reviewer. Tags: **A** = Impeccable des
 
 ### P2: minor (next pass)
 
+**Status (2026-11-27): the P2 and P3 items are done on the branch `design-audit-polish`**, with the owner's choices:
+- all four added changes: Delete at the bottom, the Equipment fold, the flash at the bottom on phones and the calendar legend, "Last time" for empty workouts and per exercise, and the installable app;
+- the approved wording changes: short dates, plain error messages, "Still to do" on both pages, the Recent chip only for other splits, and less repetition;
+- a 16px base with one type scale.
+
+What was done differently:
+- **Note arrow:** it keeps its button class (a test pins it) but looks light and grey.
+- **Users page:** it keeps no back arrow (a test pins it).
+- **Flash after Add set:** it stays (a test pins "Set 1 added"), now at the bottom on phones.
+- **Rows on admin and table cards:** only the padding and wrap changed.
+- **Import map:** the "unminified Popper and SortableJS" item was a false alarm (both are minified), so nothing changed there.
+
 - **Type**:
   - The SCSS declares 21 font sizes, four of them within 1 px (12, 12.48, 12.8 and 13 px). Fix: an 8-step scale of `.75 / .8125 / .875 / 1 / 1.125 / 1.375 / 1.75 / 2.25rem` (A).
   - Inter weight 700 is never loaded, so 14 selectors and every `<strong>` get a browser-faked bold. Fix: load the 700 weight, or use 600 (A).

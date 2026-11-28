@@ -31,7 +31,7 @@ namespace :mock do
     "Squat" => ["Legs", 110, 6],
     "Romanian deadlift" => ["Legs", 100, 8],
     "Leg press" => ["Legs", 180, 12],
-    "Calf raise" => ["Calves", 60, 15],
+    "Calf raise" => ["Legs", 60, 15],
     "Plank" => ["Core", nil, 60]
   }
   lower = ["Squat", "Romanian deadlift", "Leg press", "Calf raise"]

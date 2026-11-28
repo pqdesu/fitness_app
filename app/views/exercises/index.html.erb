@@ -1,18 +1,17 @@
 <div class="page-header">
   <div>
-    <p class="eyebrow">Catalogue</p>
     <h1>Exercises</h1>
     <p class="text-muted mb-0"><%= current_user.admin? ? "The catalogue is shared by everyone. As an admin you can add, edit and delete its exercises. Exercises you keep for yourself are marked “Yours”." : "The catalogue is shared by everyone and managed by an admin. Exercises you create yourself are marked “Yours”, and only you see them." %></p>
   </div>
   <% if current_user.admin? %>
-    <%= link_to new_exercise_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus"></i> New exercise<% end %>
+    <%= link_to new_exercise_path, class: "btn btn-primary" do %><i class="fa-solid fa-plus" aria-hidden="true"></i> New exercise<% end %>
   <% end %>
 </div>
 
 <div class="card">
   <% if @exercises.empty? %>
     <div class="empty-state">
-      <i class="fa-solid fa-dumbbell"></i>
+      <i class="fa-solid fa-dumbbell" aria-hidden="true"></i>
       <p>The catalogue is empty.</p>
     </div>
   <% else %>

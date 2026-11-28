@@ -6,7 +6,7 @@
       <%= button_to "Back to the plan", split_week_move_path(split), method: :delete, class: "btn btn-link btn-sm" %>
     <% end %>
     <% if dashboard.movable_days.any? %>
-      <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#move-workout"><i class="fa-solid fa-arrows-left-right"></i> Move a workout</button>
+      <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#move-workout"><i class="fa-solid fa-arrows-left-right" aria-hidden="true"></i> Move a workout</button>
     <% end %>
   </div>
 <% end %>
